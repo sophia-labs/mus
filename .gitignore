@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+.uv-cache/
+.DS_Store
+
+# Local test fixtures and outputs — not part of the published repo
+*.mid
+*.midi
+*.musicxml
+*.xml
+*.mxl
+*.mus
+_make_test_*.py
