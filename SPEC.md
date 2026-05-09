@@ -1,10 +1,12 @@
 # MUS — A Compact LLM-Readable Score Notation
 
-*Working spec, draft 0.4. By Eschaton + Beta, April 28 – May 9 2026. The first score notation designed to enable musical conversation between humans and LLMs as compositional peers — a format whose primary design goal is mutual legibility, with compression as the means rather than the end. Lossless w.r.t. typical sheet-music content, compact enough to fit dense pieces in an LLM context window, and natively readable as a score by both audiences.*
+*Working spec, draft 0.4. By Eschaton + Beta, April 28 – May 9 2026. The first score notation designed to enable musical conversation between humans and LLMs as compositional peers. The asymmetry is the design: the human reads the engraved sheet music in its native form, the LLM reads the MUS, and the two readings are faithful enough to the same source that the human and the LLM can talk about the music as peers. Lossless w.r.t. typical sheet-music content, compact enough to fit dense pieces in an LLM context window, and tractable for an LLM to read as a score where engraved notation isn't.*
 
 ## Why
 
-MUS makes a kind of conversation possible that wasn't quite possible before. A composer can show an LLM a score and the LLM can read it as music — see voicings, hear textural relationships, track structural arguments — and respond as something closer to a peer than as a search engine returning facts. The format's legibility is what makes the conversation possible; the compactness is what lets the conversation fit in the context window where it has to happen. The compression is the means; the bridge between human and machine compositional intelligence is the end.
+MUS makes a kind of conversation possible that wasn't quite possible before. A composer looks at the engraved score; the LLM reads the MUS file; both are reading the same music, and they can talk about it together — voicings, textural relationships, structural arguments — with the LLM responding as something closer to a peer than as a search engine returning facts. The format's job is to make the LLM's reading faithful enough to the human's that the conversation tracks the same musical object. The compactness is what lets the conversation fit in the context window where it has to happen. The compression is the means; the bridge between human and machine compositional intelligence is the end.
+
+MUS is not asking the human to read MUS instead of sheet music — engraved notation evolved for centuries as the human-native form and shouldn't be replaced. MUS is what the LLM reads on its side of the conversation. It's human-readable enough to write, edit, and diff by hand when the human needs to, but the primary reader of MUS-as-text is the LLM. The primary reader of the engraved score is the human. They meet in the middle through the conversation.
 
 Existing formats weren't designed for this audience. MusicXML round-trips between notation editors. LilyPond engraves to print. Humdrum analyses statistically. ABC fits folk-tune corpora. NoteSequence and REMI tokenize for ML training. Each does its own job; none enables the conversation. MUS is the first attempt at a format whose first audience is the dialogue itself.
 
@@ -12,7 +14,7 @@ Existing formats weren't designed for this audience. MusicXML round-trips betwee
 
 1. **Lossless-or-near-lossless** w.r.t. typical sheet-music content: pitches, durations, rhythms, voices, articulations, dynamics, slurs, ties, ornaments, repeats, sections, lyrics, tempo/time/key changes.
 2. **Tokens carry information.** No XML-style tag overhead.
-3. **Human-writable.** You can edit by hand without a tool.
+3. **Editable by hand.** A human can write, correct, or diff MUS without a notation tool when they need to — even though the engraved score remains the human's primary reading surface.
 4. **Linear and skimmable.** Top-to-bottom reading tracks a part naturally.
 5. **Both score-view and part-view** are first-class and convertible.
 6. **Convention over configuration.** Sensible defaults; specify only what's nonstandard.

@@ -1,6 +1,6 @@
 # mus
 
-A compact, LLM-readable score notation. Designed to enable musical conversation between humans and LLMs as compositional peers — a format whose primary design goal is mutual legibility, with compression as the means rather than the end. Lossless w.r.t. typical sheet-music content, ~10-20× more compact than MusicXML, and natively legible to both humans and LLMs.
+A compact, LLM-readable score notation. Designed to enable musical conversation between humans and LLMs as compositional peers. The asymmetry is the design: the human reads the engraved sheet music in its native form, the LLM reads the MUS, and the two readings are faithful enough to the same source that the human and the LLM can talk about the music as peers. Lossless w.r.t. typical sheet-music content, ~10-20× more compact than MusicXML, and tractable for an LLM to read as a score where engraved notation isn't.
 
 A Sophia Labs project. Spec: [`SPEC.md`](./SPEC.md).
 
@@ -8,7 +8,7 @@ A Sophia Labs project. Spec: [`SPEC.md`](./SPEC.md).
 
 Existing score formats weren't designed for the human-and-LLM-together audience. MusicXML round-trips between notation editors. LilyPond engraves to print. Humdrum analyses statistically. ABC fits folk-tune corpora. NoteSequence and REMI tokenize for ML training. Each does its own job; none enables the conversation.
 
-MUS is the first attempt at a format whose first audience is the dialogue itself — a composer can show an LLM a score, the LLM can read it as music, and respond as something closer to a peer than as a search engine returning facts. The legibility is what makes the conversation possible; the compactness is what lets the conversation fit in the context window where it has to happen.
+MUS is the first attempt at a format whose first audience is the dialogue itself — a composer looks at the engraved score, the LLM reads the MUS, and both are reading the same music. The LLM responds as something closer to a peer than a search engine returning facts. MUS isn't asking the human to read MUS instead of sheet music — engraved notation is the human-native form and shouldn't be replaced. It's what the LLM reads on its side of the conversation. Human-readable enough to write, edit, and diff by hand when needed, but the primary reader of MUS-as-text is the LLM. They meet in the middle through the conversation.
 
 ## Quick example
 
