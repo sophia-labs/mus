@@ -39,14 +39,25 @@ Not yet captured (planned v0.5+):
 """
 
 import sys
+import re
 import argparse
 import xml.etree.ElementTree as ET
 import zipfile
+from dataclasses import dataclass, field
 from fractions import Fraction
 from pathlib import Path
 from music21 import converter, stream, note, chord, meter, key, tempo as m21tempo
 from music21 import dynamics as m21dynamics, expressions as m21expressions
 from music21 import spanner as m21spanner
+from music21 import (
+    pitch as m21pitch,
+    duration as m21duration,
+    articulations as m21articulations,
+    clef as m21clef,
+    instrument as m21instrument,
+    metadata as m21metadata,
+    tie as m21tie,
+)
 
 
 # Articulation class name → MUS shorthand. Names are music21 class names.
@@ -704,13 +715,9 @@ def collect_inline_changes(
     return inline
 
 
-def main() -> int:
-    ap = argparse.ArgumentParser(description="Convert MIDI to MUS v0.1.1")
-    ap.add_argument("midi_path", help="Path to a .mid file")
-    ap.add_argument("--title", help="Override title (else inferred from metadata or filename)")
-    args = ap.parse_args()
-
-    score = converter.parse(args.midi_path)
+def main_forward(args) -> int:
+    """Score → MUS. Reads MIDI/MusicXML, emits MUS to stdout."""
+    score = converter.parse(args.input_path)
 
     # Title resolution order:
     #   1. Explicit --title flag
@@ -719,14 +726,14 @@ def main() -> int:
     #   4. Filename stem
     title = args.title
     if not title:
-        title = read_credit_title(args.midi_path)
+        title = read_credit_title(args.input_path)
     if not title:
         if score.metadata and score.metadata.title:
             mt = score.metadata.title.strip()
             if mt and mt.lower() != "untitled score":
                 title = mt
     if not title:
-        title = Path(args.midi_path).stem
+        title = Path(args.input_path).stem
 
     parts = list(score.parts)
     if not parts:
@@ -894,6 +901,912 @@ def main() -> int:
         idx = j
 
     return 0
+
+
+# ============================================================================
+# REVERSE DIRECTION: MUS → music21 → MusicXML/MIDI
+# ============================================================================
+#
+# Round-trip target: a .mus file produced by the forward direction can be
+# parsed back into a music21 Score and emitted as MusicXML or MIDI for
+# re-import into Musescore. This closes the conversational loop — edits
+# made in MUS by hand or by an LLM go back into the human's notation tool.
+
+
+# Inverse maps built from the forward dicts -----------------------------------
+
+QL_FROM_DURATION_CODE: dict[str, Fraction] = {v: k for k, v in DURATION_MAP.items()}
+TYPE_FROM_BASE: dict[str, str] = {v: k for k, v in TYPE_TO_BASE.items()}
+RATIO_FROM_TUPLET_SHORT: dict[str, tuple[int, int]] = {
+    v: k for k, v in TUPLET_SHORTHAND.items()
+}
+
+
+def _invert_first_wins(d: dict) -> dict:
+    """Invert a dict, taking the first-occurring source for each target."""
+    out: dict = {}
+    for k, v in d.items():
+        if v not in out:
+            out[v] = k
+    return out
+
+
+CLS_FROM_ARTICULATION_CODE = _invert_first_wins(ARTICULATION_MAP)
+CLS_FROM_EXPRESSION_CODE = _invert_first_wins(EXPRESSION_MAP)
+
+# Codes the forward converter emits as a class-name lowercase fallback (not via
+# the explicit maps). Match them back to their music21 class so they survive
+# round-trip.
+CLS_FROM_EXPRESSION_CODE.setdefault("arpeggiomark", "ArpeggioMark")
+CLS_FROM_EXPRESSION_CODE.setdefault("arpeggio", "ArpeggioMark")
+
+KEY_PAIRS_TO_SHARPS: dict[str, int] = {
+    f"{maj}/{minr}": s for s, (maj, minr) in SHARPS_TO_RELATIVE_PAIR.items()
+}
+KEY_MAJOR_TO_SHARPS: dict[str, int] = {
+    maj: s for s, (maj, _) in SHARPS_TO_RELATIVE_PAIR.items()
+}
+KEY_MINOR_TO_SHARPS: dict[str, int] = {
+    minr: s for s, (_, minr) in SHARPS_TO_RELATIVE_PAIR.items()
+}
+
+CLEF_FROM_NAME: dict[str, str] = {
+    "treble": "TrebleClef",
+    "bass": "BassClef",
+    "alto": "AltoClef",
+    "tenor": "TenorClef",
+    "perc": "PercussionClef",
+}
+
+
+# Pitch / duration / articulation token-level parsers -------------------------
+
+RE_PITCH = re.compile(r"^([A-G])(bb|b|n|##|#|x)?(-?\d+)$")
+RE_DURATION_BASE = re.compile(
+    r"^([whqestxWHQESTX][whqestxWHQESTX]?)(\.*)(\d+|\{\d+:\d+\})?$"
+)
+RE_ARTIC_SUFFIX = re.compile(r"\[([^\]]+)\]")
+RE_RANGE_PIECE = re.compile(r"^(\S+)\s*\(b(\d+)\)\s*$")
+
+_ACC_MAP = {None: "", "b": "-", "bb": "--", "n": "n", "#": "#", "x": "##", "##": "##"}
+
+
+def parse_pitch_token(s: str):
+    """Parse 'Bb4', 'F#5', 'Bbb3', 'Fx4' → music21 Pitch (or None)."""
+    m = RE_PITCH.match(s)
+    if not m:
+        return None
+    step = m.group(1)
+    acc = m.group(2)
+    octave = int(m.group(3))
+    acc_str = _ACC_MAP.get(acc, "")
+    try:
+        return m21pitch.Pitch(f"{step}{acc_str}{octave}")
+    except Exception:
+        return None
+
+
+def parse_duration_code(code: str):
+    """Parse 'q', 'q.', 'e3', 'q{5:6}', 'ww' → music21 Duration (or None)."""
+    if code in QL_FROM_DURATION_CODE:
+        return m21duration.Duration(float(QL_FROM_DURATION_CODE[code]))
+    m = RE_DURATION_BASE.match(code)
+    if not m:
+        return None
+    base = m.group(1).lower()
+    if base not in TYPE_FROM_BASE:
+        return None
+    dots = len(m.group(2))
+    tuplet_str = m.group(3)
+
+    d = m21duration.Duration()
+    try:
+        d.type = TYPE_FROM_BASE[base]
+    except Exception:
+        return None
+    if dots:
+        try:
+            d.dots = dots
+        except Exception:
+            pass
+    if tuplet_str:
+        if tuplet_str.startswith("{"):
+            mr = re.match(r"\{(\d+):(\d+)\}", tuplet_str)
+            if mr:
+                actual, normal = int(mr.group(1)), int(mr.group(2))
+                try:
+                    d.appendTuplet(m21duration.Tuplet(
+                        numberNotesActual=actual,
+                        numberNotesNormal=normal,
+                    ))
+                except Exception:
+                    pass
+        else:
+            ratio = RATIO_FROM_TUPLET_SHORT.get(tuplet_str)
+            if ratio:
+                try:
+                    d.appendTuplet(m21duration.Tuplet(
+                        numberNotesActual=ratio[0],
+                        numberNotesNormal=ratio[1],
+                    ))
+                except Exception:
+                    pass
+    return d
+
+
+def _titlecase_tag(tag: str) -> str:
+    """'arpeggiomark' → 'Arpeggiomark'; 'invmord' → 'Invmord'."""
+    if not tag:
+        return tag
+    return tag[0].upper() + tag[1:]
+
+
+def parse_articulation_codes(suffix: str):
+    """Parse 'stac,acc,fer' → (list[Articulation], list[Expression]).
+    First-pass: explicit maps. Second-pass: TitleCase the tag and try the music21
+    class by name. Unknown tags are silently dropped."""
+    arts: list = []
+    exprs: list = []
+    if not suffix:
+        return arts, exprs
+    for tag in (t.strip() for t in suffix.split(",")):
+        if not tag:
+            continue
+        base_tag = tag.split(".")[0]
+
+        # Explicit expression map first.
+        cls_name = (CLS_FROM_EXPRESSION_CODE.get(tag)
+                    or CLS_FROM_EXPRESSION_CODE.get(base_tag))
+        if cls_name:
+            cls = getattr(m21expressions, cls_name, None)
+            if cls:
+                try:
+                    exprs.append(cls())
+                    continue
+                except Exception:
+                    pass
+
+        # Explicit articulation map.
+        cls_name = (CLS_FROM_ARTICULATION_CODE.get(tag)
+                    or CLS_FROM_ARTICULATION_CODE.get(base_tag))
+        if cls_name:
+            cls = getattr(m21articulations, cls_name, None)
+            if cls:
+                try:
+                    arts.append(cls())
+                    continue
+                except Exception:
+                    pass
+
+        # Fallback: maybe the tag IS the lowercase class name (the forward
+        # converter emits cls.__name__.lower() for any unrecognized class).
+        titlecase = _titlecase_tag(base_tag)
+        for module, target_list in ((m21expressions, exprs),
+                                     (m21articulations, arts)):
+            cls = getattr(module, titlecase, None)
+            if cls is None:
+                # try CamelCase ("ArpeggioMark" from "arpeggiomark") via title()
+                cls = getattr(module, base_tag.title(), None)
+            if cls is not None:
+                try:
+                    target_list.append(cls())
+                    break
+                except Exception:
+                    pass
+    return arts, exprs
+
+
+def parse_key_string(key_str: str):
+    """Parse 'F/Dm', 'Gm', 'C' → (sharps, mode_or_None, tonic_or_None)."""
+    key_str = (key_str or "").strip()
+    if "/" in key_str:
+        sharps = KEY_PAIRS_TO_SHARPS.get(key_str)
+        return ((sharps if sharps is not None else 0), None, None)
+    if key_str.endswith("m") and len(key_str) > 1:
+        sharps = KEY_MINOR_TO_SHARPS.get(key_str)
+        if sharps is not None:
+            return (sharps, "minor", key_str[:-1])
+    sharps = KEY_MAJOR_TO_SHARPS.get(key_str)
+    if sharps is not None:
+        return (sharps, "major", key_str)
+    return (0, None, None)
+
+
+# File-level parser ----------------------------------------------------------
+
+@dataclass
+class MusInstrument:
+    abbrev: str
+    name: str
+    clef: str
+    transpose: int | None = None
+
+
+@dataclass
+class MusBar:
+    bar_num: int
+    end_bar: int
+    track_content: dict[str, str]
+    inline_changes: list[str] = field(default_factory=list)
+
+
+@dataclass
+class ParsedMus:
+    title: str
+    summary: str | None
+    tempo_changes: list[tuple[int, int]]
+    time_changes: list[tuple[int, str]]
+    key_changes: list[tuple[int, str]]
+    bar_count: int
+    instruments: list[MusInstrument]
+    bars: list[MusBar]
+    sections: list[tuple[int, int, str]]
+    text_at: dict[int, list[str]]
+
+
+RE_HEADER_KV = re.compile(r"^\s*(\w+)\s*:\s*(.+?)\s*$")
+RE_INSTRUMENT = re.compile(r"^\s*(\S+)\s*=\s*(.+?)\s*\(([^)]+)\)\s*$")
+RE_SECTION = re.compile(r"^\s*section\s*:\s*(.+?)\s*\[(\d+)-(\d+)\]\s*$")
+RE_TEXT = re.compile(r"^\s*text\s*@b(\d+)\s*:\s*(.+?)\s*$")
+RE_BAR = re.compile(r"^bar\s+(\d+)\s*(?:\[([^\]]+)\])?\s*:\s*(.+)$")
+RE_BARS_RANGE = re.compile(r"^bars\s+(\d+)-(\d+)\s*(?:\[([^\]]+)\])?\s*:\s*(.+)$")
+
+
+def parse_mus(text: str) -> ParsedMus:
+    """Parse a .mus file's text into a ParsedMus structure."""
+    title = "Untitled"
+    summary: str | None = None
+    bar_count = 0
+    tempo_str: str | None = None
+    time_str: str | None = None
+    key_str: str | None = None
+    instruments: list[MusInstrument] = []
+    bars: list[MusBar] = []
+    sections: list[tuple[int, int, str]] = []
+    text_at: dict[int, list[str]] = {}
+    in_instruments = False
+
+    for raw_line in text.splitlines():
+        line = raw_line.rstrip()
+        if not line.strip():
+            in_instruments = False
+            continue
+
+        if line.lstrip().startswith("#"):
+            body = line.lstrip("#").strip()
+
+            m_text = RE_TEXT.match(body)
+            if m_text:
+                bar = int(m_text.group(1))
+                text_at.setdefault(bar, []).append(m_text.group(2).strip())
+                in_instruments = False
+                continue
+
+            m_sec = RE_SECTION.match(body)
+            if m_sec:
+                name = m_sec.group(1).strip()
+                if "—" in name:
+                    name = name.split("—")[0].strip()
+                sections.append((int(m_sec.group(2)), int(m_sec.group(3)), name))
+                in_instruments = False
+                continue
+
+            if body.lower() in ("instruments:", "instruments"):
+                in_instruments = True
+                continue
+
+            if in_instruments:
+                m_inst = RE_INSTRUMENT.match(body)
+                if m_inst:
+                    parts = [p.strip() for p in m_inst.group(3).split(",")]
+                    clef_name = parts[0] if parts else "treble"
+                    transpose: int | None = None
+                    for p in parts[1:]:
+                        try:
+                            transpose = int(p)
+                        except ValueError:
+                            pass
+                    instruments.append(MusInstrument(
+                        abbrev=m_inst.group(1),
+                        name=m_inst.group(2),
+                        clef=clef_name,
+                        transpose=transpose,
+                    ))
+                continue
+
+            m_kv = RE_HEADER_KV.match(body)
+            if m_kv:
+                key_name = m_kv.group(1).lower()
+                val = m_kv.group(2).strip()
+                if key_name == "score":
+                    title = val
+                elif key_name == "summary":
+                    summary = val
+                elif key_name == "tempo":
+                    tempo_str = val
+                elif key_name == "time":
+                    time_str = val
+                elif key_name == "key":
+                    key_str = val
+                elif key_name == "bars":
+                    try:
+                        bar_count = int(val)
+                    except ValueError:
+                        pass
+            continue
+
+        m_bars = RE_BARS_RANGE.match(line)
+        m_single = RE_BAR.match(line)
+        if m_bars:
+            bar_num = int(m_bars.group(1))
+            end_bar = int(m_bars.group(2))
+            inline_str = m_bars.group(3) or ""
+            content = m_bars.group(4)
+        elif m_single:
+            bar_num = int(m_single.group(1))
+            end_bar = bar_num
+            inline_str = m_single.group(2) or ""
+            content = m_single.group(3)
+        else:
+            continue
+
+        inline_changes = (
+            [c.strip() for c in inline_str.split(",")] if inline_str else []
+        )
+
+        if content.strip() == "tacet":
+            track_content = {inst.abbrev: "-" for inst in instruments}
+        else:
+            track_content = _split_bar_content(
+                content, [inst.abbrev for inst in instruments]
+            )
+
+        bars.append(MusBar(bar_num, end_bar, track_content, inline_changes))
+
+    tempo_changes = _parse_header_change_list(tempo_str or "", to_int=True)
+    time_changes = _parse_header_change_list(time_str or "", to_int=False)
+    key_changes = _parse_header_change_list(key_str or "", to_int=False)
+
+    if not bar_count and bars:
+        bar_count = max(b.end_bar for b in bars)
+
+    return ParsedMus(
+        title=title,
+        summary=summary,
+        tempo_changes=tempo_changes,
+        time_changes=time_changes,
+        key_changes=key_changes,
+        bar_count=bar_count,
+        instruments=instruments,
+        bars=bars,
+        sections=sections,
+        text_at=text_at,
+    )
+
+
+def _split_bar_content(content: str, track_abbrevs: list[str]) -> dict[str, str]:
+    """Split 'pi.r=... pi.l=...' style content into {abbrev: substring}."""
+    if not track_abbrevs:
+        return {}
+    sorted_abbrevs = sorted(track_abbrevs, key=len, reverse=True)
+    pattern = re.compile(
+        r"(?:^|\s)(" + "|".join(re.escape(a) for a in sorted_abbrevs) + r")="
+    )
+    matches = list(pattern.finditer(content))
+    result: dict[str, str] = {}
+    for i, m in enumerate(matches):
+        abbr = m.group(1)
+        start = m.end()
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(content)
+        result[abbr] = content[start:end].strip()
+    return result
+
+
+def _parse_header_change_list(s: str, to_int: bool):
+    """Parse '72 (b1) → 60 (b67)' / '72' / '72 (initial; 60 changes inline)'."""
+    s = s.strip()
+    if not s:
+        return []
+
+    def coerce(v):
+        if not to_int:
+            return v
+        try:
+            return int(v)
+        except (ValueError, TypeError):
+            return v
+
+    if "(initial" in s:
+        first = s.split(" ", 1)[0]
+        try:
+            return [(1, coerce(first))]
+        except Exception:
+            return []
+
+    if "→" not in s and "(b" not in s:
+        try:
+            return [(1, coerce(s))]
+        except Exception:
+            return []
+
+    result: list = []
+    for piece in s.split("→"):
+        piece = piece.strip()
+        m = RE_RANGE_PIECE.match(piece)
+        if m:
+            try:
+                result.append((int(m.group(2)), coerce(m.group(1))))
+            except Exception:
+                pass
+        else:
+            try:
+                result.append((1, coerce(piece)))
+            except Exception:
+                pass
+    return result
+
+
+# Tokenizer ------------------------------------------------------------------
+
+def tokenize_bar_content(content: str) -> list[str]:
+    """Whitespace-split with bracket-balancing so <chords> and {marks} survive whole."""
+    tokens: list[str] = []
+    i = 0
+    n = len(content)
+    while i < n:
+        if content[i].isspace():
+            i += 1
+            continue
+        start = i
+        depth_angle = 0
+        depth_brace = 0
+        in_quote = False
+        while i < n:
+            c = content[i]
+            if in_quote:
+                if c == '"':
+                    in_quote = False
+                i += 1
+                continue
+            if c == '"':
+                in_quote = True
+                i += 1
+                continue
+            if c == "<":
+                depth_angle += 1
+                i += 1
+                continue
+            if c == ">":
+                if depth_angle > 0:
+                    depth_angle -= 1
+                i += 1
+                continue
+            if c == "{":
+                depth_brace += 1
+                i += 1
+                continue
+            if c == "}":
+                if depth_brace > 0:
+                    depth_brace -= 1
+                i += 1
+                continue
+            if c.isspace() and depth_angle == 0 and depth_brace == 0:
+                break
+            i += 1
+        tokens.append(content[start:i])
+    return tokens
+
+
+def expand_pattern_repetitions(tokens: list[str]) -> list[str]:
+    """Expand '(... ×N)' sub-bar pattern repetitions in-place."""
+    text = " ".join(tokens)
+    while True:
+        m = re.search(r"\(([^()]*?)\s*×\s*(\d+)\)", text)
+        if not m:
+            break
+        pattern = m.group(1).strip()
+        n = int(m.group(2))
+        text = text[:m.start()] + " ".join([pattern] * n) + text[m.end():]
+    return tokenize_bar_content(text)
+
+
+# Event-token parser ---------------------------------------------------------
+
+@dataclass
+class ParsedEventToken:
+    kind: str  # 'note' / 'chord' / 'rest' / 'dynamic' / 'hairpin_start' / 'hairpin_end' / 'tacet' / 'unknown'
+    pitches: list = field(default_factory=list)
+    duration_codes: list[str] = field(default_factory=list)
+    articulations: list = field(default_factory=list)
+    expressions: list = field(default_factory=list)
+    slur_start: bool = False
+    slur_end: bool = False
+    dynamic_value: str | None = None
+    raw: str = ""
+
+
+def parse_event_token(token: str) -> ParsedEventToken:
+    """Parse a single token like 'G4q' / '<C4 E4 G4>w[fer]' / 'Rh' / '{p}' / '{<}'."""
+    raw = token
+
+    # Slur wrappers: '(G4q' or 'G4q)' (must not mis-strip '({')
+    slur_start = token.startswith("(") and not token.startswith("({")
+    if slur_start:
+        token = token[1:]
+    slur_end = token.endswith(")") and not token.endswith(("}", ">"))
+    if slur_end:
+        token = token[:-1]
+
+    if token == "{<}":
+        return ParsedEventToken(kind="hairpin_start", dynamic_value="cresc", raw=raw)
+    if token == "{>}":
+        return ParsedEventToken(kind="hairpin_start", dynamic_value="decresc", raw=raw)
+    if token == "{|}":
+        return ParsedEventToken(kind="hairpin_end", raw=raw)
+    if token.startswith("{") and token.endswith("}"):
+        return ParsedEventToken(kind="dynamic", dynamic_value=token[1:-1], raw=raw)
+
+    if token == "-":
+        return ParsedEventToken(kind="tacet", raw=raw)
+
+    artic_match = RE_ARTIC_SUFFIX.search(token)
+    art_suffix = ""
+    if artic_match:
+        art_suffix = artic_match.group(1)
+        token = token[:artic_match.start()] + token[artic_match.end():]
+    arts, exprs = parse_articulation_codes(art_suffix)
+
+    if token.startswith("<"):
+        close = token.find(">")
+        if close < 0:
+            return ParsedEventToken(kind="unknown", raw=raw)
+        chord_body = token[1:close]
+        dur_part = token[close + 1:]
+        pitch_strs = chord_body.split()
+        pitches = [p for p in (parse_pitch_token(s) for s in pitch_strs) if p is not None]
+        if not pitches:
+            return ParsedEventToken(kind="unknown", raw=raw)
+        duration_codes = dur_part.split("~") if "~" in dur_part else [dur_part]
+        return ParsedEventToken(
+            kind="chord",
+            pitches=pitches,
+            duration_codes=duration_codes,
+            articulations=arts,
+            expressions=exprs,
+            slur_start=slur_start,
+            slur_end=slur_end,
+            raw=raw,
+        )
+
+    if token.startswith("R"):
+        dur_part = token[1:]
+        if not dur_part:
+            return ParsedEventToken(kind="rest", duration_codes=[], raw=raw)
+        duration_codes = dur_part.split("~") if "~" in dur_part else [dur_part]
+        return ParsedEventToken(kind="rest", duration_codes=duration_codes, raw=raw)
+
+    if token.startswith("X"):
+        # Unpitched/percussion — placeholder rest for MVP. (v0.5: GM mapping)
+        dur_match = re.search(r"([whqestx][whqestx]?\.*\d?(?:\{\d+:\d+\})?)$", token)
+        duration_codes = [dur_match.group(1)] if dur_match else ["q"]
+        return ParsedEventToken(kind="rest", duration_codes=duration_codes, raw=raw)
+
+    pitch_match = re.match(r"^([A-G](?:bb|b|n|##|#|x)?-?\d+)(.+)$", token)
+    if not pitch_match:
+        return ParsedEventToken(kind="unknown", raw=raw)
+    pitch = parse_pitch_token(pitch_match.group(1))
+    if pitch is None:
+        return ParsedEventToken(kind="unknown", raw=raw)
+    dur_part = pitch_match.group(2)
+    duration_codes = dur_part.split("~") if "~" in dur_part else [dur_part]
+    return ParsedEventToken(
+        kind="note",
+        pitches=[pitch],
+        duration_codes=duration_codes,
+        articulations=arts,
+        expressions=exprs,
+        slur_start=slur_start,
+        slur_end=slur_end,
+        raw=raw,
+    )
+
+
+# Score builder --------------------------------------------------------------
+
+def _make_clef(name: str):
+    cls_name = CLEF_FROM_NAME.get(name, "TrebleClef")
+    cls = getattr(m21clef, cls_name, m21clef.TrebleClef)
+    return cls()
+
+
+def build_score(parsed: ParsedMus):
+    """Build a music21 Score from a ParsedMus."""
+    score = stream.Score()
+    md = m21metadata.Metadata()
+    md.title = parsed.title
+    md.movementName = parsed.title
+    score.metadata = md
+
+    initial_tempo = parsed.tempo_changes[0][1] if parsed.tempo_changes else 120
+    initial_time = parsed.time_changes[0][1] if parsed.time_changes else "4/4"
+    initial_key = parsed.key_changes[0][1] if parsed.key_changes else "C"
+
+    # Expand 'bars N-M' into per-bar content
+    bar_content_at: dict[int, dict[str, str]] = {}
+    inline_changes_at: dict[int, list[str]] = {}
+    for mb in parsed.bars:
+        for b in range(mb.bar_num, mb.end_bar + 1):
+            bar_content_at[b] = dict(mb.track_content)
+            if mb.inline_changes:
+                inline_changes_at[b] = list(mb.inline_changes)
+
+    tempo_at: dict[int, int] = {b: v for b, v in parsed.tempo_changes}
+    time_at: dict[int, str] = {b: v for b, v in parsed.time_changes}
+    key_at: dict[int, str] = {b: v for b, v in parsed.key_changes}
+
+    for bar_num, changes in inline_changes_at.items():
+        for c in changes:
+            if "=" not in c:
+                continue
+            k, v = c.split("=", 1)
+            k, v = k.strip().lower(), v.strip()
+            if k == "tempo":
+                try:
+                    tempo_at[bar_num] = int(v)
+                except ValueError:
+                    pass
+            elif k == "time":
+                time_at[bar_num] = v
+            elif k == "key":
+                key_at[bar_num] = v
+
+    section_at: dict[int, str] = {start: name for start, _, name in parsed.sections}
+
+    inst_by_abbr: dict[str, MusInstrument] = {i.abbrev: i for i in parsed.instruments}
+    parts_in_order: list[tuple[str, stream.Part]] = []
+    for inst in parsed.instruments:
+        p = stream.Part()
+        p.id = inst.abbrev
+        p.partName = inst.name
+        try:
+            inst_obj = m21instrument.fromString(inst.name)
+        except Exception:
+            inst_obj = (m21instrument.Piano() if "piano" in inst.name.lower()
+                        else m21instrument.Instrument())
+        inst_obj.partName = inst.name
+        p.insert(0, inst_obj)
+        parts_in_order.append((inst.abbrev, p))
+
+    open_cresc: dict[str, list] = {abbr: [] for abbr, _ in parts_in_order}
+    open_decresc: dict[str, list] = {abbr: [] for abbr, _ in parts_in_order}
+    open_slurs: dict[str, list] = {abbr: [] for abbr, _ in parts_in_order}
+    pending_hairpins: list = []  # finalized hairpin spanners
+    pending_slurs: list = []     # finalized slur spanners
+
+    current_time_sig = initial_time
+
+    for bar_num in range(1, parsed.bar_count + 1):
+        bar_content = bar_content_at.get(bar_num, {})
+        if bar_num in time_at:
+            current_time_sig = time_at[bar_num]
+
+        for abbr, part in parts_in_order:
+            inst = inst_by_abbr[abbr]
+            m = stream.Measure(number=bar_num)
+
+            if bar_num == 1:
+                m.insert(0, _make_clef(inst.clef))
+
+            if bar_num == 1 or bar_num in time_at:
+                try:
+                    m.timeSignature = meter.TimeSignature(current_time_sig)
+                except Exception:
+                    m.timeSignature = meter.TimeSignature("4/4")
+
+            if bar_num == 1 or bar_num in key_at:
+                ks_str = key_at.get(bar_num, initial_key)
+                sharps, mode, tonic = parse_key_string(ks_str)
+                if mode == "minor" and tonic:
+                    try:
+                        m.keySignature = key.Key(tonic, "minor")
+                    except Exception:
+                        m.keySignature = key.KeySignature(sharps)
+                else:
+                    m.keySignature = key.KeySignature(sharps)
+
+            if bar_num == 1 or bar_num in tempo_at:
+                t_val = tempo_at.get(bar_num, initial_tempo)
+                try:
+                    m.insert(0, m21tempo.MetronomeMark(number=int(t_val)))
+                except Exception:
+                    pass
+
+            if bar_num in section_at:
+                try:
+                    m.insert(0, m21expressions.RehearsalMark(section_at[bar_num]))
+                except Exception:
+                    pass
+
+            if bar_num in parsed.text_at:
+                for txt in parsed.text_at[bar_num]:
+                    try:
+                        m.insert(0, m21expressions.TextExpression(txt))
+                    except Exception:
+                        pass
+
+            content = bar_content.get(abbr, "")
+            if not content or content == "-":
+                ts = m.timeSignature or meter.TimeSignature(current_time_sig)
+                r = note.Rest(quarterLength=float(ts.barDuration.quarterLength))
+                m.insert(0, r)
+                part.append(m)
+                continue
+
+            tokens = expand_pattern_repetitions(tokenize_bar_content(content))
+
+            offset = 0.0
+            last_pitched = None
+
+            for token in tokens:
+                ev = parse_event_token(token)
+
+                if ev.kind == "dynamic":
+                    try:
+                        m.insert(offset, m21dynamics.Dynamic(ev.dynamic_value))
+                    except Exception:
+                        pass
+                    continue
+
+                if ev.kind == "hairpin_start":
+                    if ev.dynamic_value == "cresc":
+                        open_cresc[abbr].append(m21dynamics.Crescendo())
+                    else:
+                        open_decresc[abbr].append(m21dynamics.Diminuendo())
+                    continue
+
+                if ev.kind == "hairpin_end":
+                    if last_pitched is not None:
+                        if open_cresc[abbr]:
+                            sp = open_cresc[abbr].pop(0)
+                            sp.addSpannedElements([last_pitched])
+                            pending_hairpins.append(sp)
+                        elif open_decresc[abbr]:
+                            sp = open_decresc[abbr].pop(0)
+                            sp.addSpannedElements([last_pitched])
+                            pending_hairpins.append(sp)
+                    continue
+
+                if ev.kind in ("tacet", "unknown"):
+                    continue
+
+                if ev.kind in ("note", "chord", "rest"):
+                    built = []
+                    for i_dc, dc in enumerate(ev.duration_codes):
+                        d = parse_duration_code(dc)
+                        if d is None:
+                            continue
+                        if ev.kind == "rest":
+                            n = note.Rest()
+                            n.duration = d
+                        elif ev.kind == "note":
+                            n = note.Note(ev.pitches[0])
+                            n.duration = d
+                        else:
+                            n = chord.Chord(ev.pitches)
+                            n.duration = d
+                        if i_dc == 0:
+                            for a in ev.articulations:
+                                n.articulations.append(a)
+                            for e in ev.expressions:
+                                n.expressions.append(e)
+                        if ev.kind in ("note", "chord") and len(ev.duration_codes) > 1:
+                            if i_dc == 0:
+                                n.tie = m21tie.Tie("start")
+                            elif i_dc == len(ev.duration_codes) - 1:
+                                n.tie = m21tie.Tie("stop")
+                            else:
+                                n.tie = m21tie.Tie("continue")
+                        m.insert(offset, n)
+                        built.append(n)
+                        offset += float(d.quarterLength)
+
+                    if built and ev.kind in ("note", "chord"):
+                        for sp in open_cresc[abbr]:
+                            if sp.getFirst() is None:
+                                sp.addSpannedElements([built[0]])
+                        for sp in open_decresc[abbr]:
+                            if sp.getFirst() is None:
+                                sp.addSpannedElements([built[0]])
+                        # Slur lifecycle: open on slur_start, close on slur_end.
+                        if ev.slur_start:
+                            slur = m21spanner.Slur()
+                            slur.addSpannedElements([built[0]])
+                            open_slurs[abbr].append(slur)
+                        if ev.slur_end and open_slurs[abbr]:
+                            slur = open_slurs[abbr].pop()
+                            slur.addSpannedElements([built[-1]])
+                            pending_slurs.append(slur)
+                        last_pitched = built[-1]
+
+            part.append(m)
+
+    # Insert parts into the score
+    for _, part in parts_in_order:
+        score.insert(0, part)
+
+    # Attach spanners (hairpins, slurs) after parts are in place — spanners
+    # need their elements to be reachable in the score hierarchy.
+    for sp in pending_hairpins + pending_slurs:
+        try:
+            score.insert(0, sp)
+        except Exception:
+            pass
+
+    return score
+
+
+# Output entrypoint ----------------------------------------------------------
+
+def score_to_musicxml_bytes(score) -> bytes:
+    """Render a music21 Score to MusicXML bytes."""
+    from music21.musicxml.m21ToXml import GeneralObjectExporter
+    exporter = GeneralObjectExporter(score)
+    return exporter.parse()
+
+
+def main_reverse(args) -> int:
+    """MUS → MusicXML/MIDI. Reads a .mus file; emits to stdout (MusicXML)
+    or to a target file (extension picks MusicXML/.mxl/MIDI)."""
+    text = Path(args.input_path).read_text()
+    parsed = parse_mus(text)
+    score = build_score(parsed)
+
+    if args.output:
+        out_path = Path(args.output)
+        suffix = out_path.suffix.lower()
+        if suffix in (".mid", ".midi"):
+            score.write("midi", fp=str(out_path))
+        elif suffix == ".mxl":
+            score.write("mxl", fp=str(out_path))
+        else:
+            score.write("musicxml", fp=str(out_path))
+        print(f"Wrote {out_path}", file=sys.stderr)
+    else:
+        xml_bytes = score_to_musicxml_bytes(score)
+        sys.stdout.write(xml_bytes.decode("utf-8"))
+    return 0
+
+
+# Main dispatcher ------------------------------------------------------------
+
+def main() -> int:
+    ap = argparse.ArgumentParser(
+        description=(
+            "MUS converter (bidirectional). Auto-detects direction from "
+            "input extension: .mid/.musicxml/.xml/.mxl → MUS; .mus → MusicXML."
+        )
+    )
+    ap.add_argument("input_path", help="Path to input file")
+    ap.add_argument("--title", help="Override title (forward direction only)")
+    ap.add_argument(
+        "-o", "--output",
+        help=(
+            "Output file (reverse direction). Extension picks format: "
+            ".musicxml/.xml writes XML; .mxl writes compressed; .mid writes MIDI. "
+            "If omitted, writes MusicXML to stdout."
+        ),
+    )
+    ap.add_argument(
+        "--from-mus",
+        action="store_true",
+        help="Force MUS → MusicXML even if extension is non-.mus.",
+    )
+    args = ap.parse_args()
+
+    suffix = Path(args.input_path).suffix.lower()
+    if args.from_mus or suffix == ".mus":
+        return main_reverse(args)
+    return main_forward(args)
 
 
 if __name__ == "__main__":
