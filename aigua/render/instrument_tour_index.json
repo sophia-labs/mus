@@ -1,0 +1,177 @@
+[
+ {
+  "t": 0.3,
+  "name": "buzz_01",
+  "desc": "A5 +23\u00a2 184ms rise"
+ },
+ {
+  "t": 0.83,
+  "name": "buzz_02",
+  "desc": "A5 +12\u00a2 516ms rise"
+ },
+ {
+  "t": 1.7,
+  "name": "buzz_03",
+  "desc": "A5 +12\u00a2 185ms rise"
+ },
+ {
+  "t": 2.24,
+  "name": "buzz_04",
+  "desc": "G#5 +28\u00a2 186ms v"
+ },
+ {
+  "t": 2.77,
+  "name": "buzz_05",
+  "desc": "G5 +26\u00a2 176ms v"
+ },
+ {
+  "t": 3.85,
+  "name": "chup_01",
+  "desc": "C6 -28\u00a2 207ms fall"
+ },
+ {
+  "t": 4.4,
+  "name": "chup_02",
+  "desc": "C6 -28\u00a2 196ms complex"
+ },
+ {
+  "t": 4.95,
+  "name": "chup_03",
+  "desc": "C#6 +18\u00a2 199ms fall"
+ },
+ {
+  "t": 6.05,
+  "name": "mid_01",
+  "desc": "G#6 -26\u00a2 841ms rise"
+ },
+ {
+  "t": 7.24,
+  "name": "mid_02",
+  "desc": "B5 -15\u00a2 239ms fall"
+ },
+ {
+  "t": 7.83,
+  "name": "mid_03",
+  "desc": "D#6 -40\u00a2 404ms complex"
+ },
+ {
+  "t": 8.58,
+  "name": "mid_04",
+  "desc": "D#6 -40\u00a2 407ms arch"
+ },
+ {
+  "t": 9.34,
+  "name": "mid_05",
+  "desc": "D6 -1\u00a2 432ms rise"
+ },
+ {
+  "t": 10.67,
+  "name": "call_01",
+  "desc": "A6 +20\u00a2 505ms arch"
+ },
+ {
+  "t": 11.53,
+  "name": "call_02",
+  "desc": "F#6 +21\u00a2 500ms arch"
+ },
+ {
+  "t": 12.38,
+  "name": "call_03",
+  "desc": "F#6 +48\u00a2 412ms arch"
+ },
+ {
+  "t": 13.14,
+  "name": "call_04",
+  "desc": "F#6 -35\u00a2 465ms fall"
+ },
+ {
+  "t": 13.95,
+  "name": "call_05",
+  "desc": "G6 -24\u00a2 1071ms fall"
+ },
+ {
+  "t": 15.92,
+  "name": "bright_01",
+  "desc": "G#6 +30\u00a2 535ms arch"
+ },
+ {
+  "t": 16.81,
+  "name": "bright_02",
+  "desc": "F6 +14\u00a2 607ms fall"
+ },
+ {
+  "t": 17.77,
+  "name": "bright_03",
+  "desc": "C7 -46\u00a2 273ms arch"
+ },
+ {
+  "t": 18.39,
+  "name": "bright_04",
+  "desc": "D#6 -40\u00a2 865ms fall"
+ },
+ {
+  "t": 19.6,
+  "name": "bright_05",
+  "desc": "G6 +25\u00a2 713ms arch"
+ },
+ {
+  "t": 21.22,
+  "name": "glide_01",
+  "desc": "B7 -26\u00a2 289ms rise"
+ },
+ {
+  "t": 21.86,
+  "name": "glide_02",
+  "desc": "A7 -2\u00a2 304ms arch"
+ },
+ {
+  "t": 22.51,
+  "name": "glide_03",
+  "desc": "B7 +16\u00a2 216ms flat"
+ },
+ {
+  "t": 23.08,
+  "name": "glide_04",
+  "desc": "C8 -45\u00a2 255ms arch"
+ },
+ {
+  "t": 23.68,
+  "name": "glide_05",
+  "desc": "G#7 +3\u00a2 212ms v"
+ },
+ {
+  "t": 24.79,
+  "name": "tick_01",
+  "desc": "A6 -49\u00a2 199ms v"
+ },
+ {
+  "t": 25.34,
+  "name": "tick_02",
+  "desc": "F6 -46\u00a2 288ms rise"
+ },
+ {
+  "t": 25.98,
+  "name": "tick_03",
+  "desc": "C#6 +27\u00a2 196ms fall"
+ },
+ {
+  "t": 26.53,
+  "name": "tick_04",
+  "desc": "F6 -46\u00a2 160ms arch"
+ },
+ {
+  "t": 27.04,
+  "name": "tick_05",
+  "desc": "C7 -16\u00a2 113ms fall"
+ },
+ {
+  "t": 28.05,
+  "name": "car",
+  "desc": "broadband vehicle pass-by; use as noise source / swe"
+ },
+ {
+  "t": 32.22,
+  "name": "sub",
+  "desc": "low bed <260 Hz, loudest 4 s; unpitched \u2014 resonate o"
+ }
+]

@@ -76,12 +76,60 @@ Auto-detects format from extension (`.mid` / `.midi` / `.musicxml` / `.xml` / `.
 - *Composition 1* — 37 bars, oboe + string trio, dense per-voice articulation
 - *Verklärte Nacht* (Schoenberg) — 421 bars, ~30 min, 4 piano staves, 60 tempo changes, late-Romantic chromatic harmony with quintuplet/sextuplet/septuplet figuration
 
-**v0.5 plans:** round-trip MUS → MusicXML/MIDI; GM percussion → K/S/H mapping; voltas / explicit repeats / DC / DS / coda; per-track range collapse for partial-match bar groups; cross-bar phrase detection.
+**v0.5 plans:** GM percussion → K/S/H mapping; voltas / explicit repeats / DC / DS / coda; per-track range collapse for partial-match bar groups; cross-bar phrase detection.
+
+**Fixed while building MUS-A** (all in the reverse direction, all found by
+converting a real score rather than by inspection):
+
+- Multi-key header lines (`# tempo: 82  time: 4/4  key: Dm  bars: 16`) didn't
+  parse, despite being the form `SPEC.md` documents — only the one-key-per-line
+  form `main_forward()` emits did. Both now work.
+- Pitch tokens carrying a cents offset silently became **rests**: the parser
+  matched the pitch head, failed on the remainder as a duration, and emitted
+  nothing. Cents are now parsed and carried as `Pitch.microtone`.
+- `MusInstrument.params` / `ParsedMus.extra` now retain `key=value` items and
+  unrecognised header lines instead of discarding them, so extensions can ride
+  on the same declarations.
+
+## Sample-bound MUS (MUS-A)
+
+MUS's core choice — absolute pitch — turns out to be exactly what a sampler
+needs: `A6` doesn't mean "the sixth degree in context", it means *this
+frequency*, and a frequency is what you compare against a sample's measured f0
+to get a transposition. So a MUS file can score recorded audio with no change to
+the note grammar at all.
+
+[`SPEC-AUDIO.md`](./SPEC-AUDIO.md) specifies the extension and
+[`mus_audio.py`](./mus_audio.py) renders it. What it adds is notation for the
+things engraved notation never needed symbols for — stereo position, filter
+motion, reverb send, time-stretch — carried inside the existing `[...]` suffix
+and distinguished from articulations by containing `=`:
+
+```
+sb 5: A1+22w[pan=-1->1, lpf=70->900]{ff}
+```
+
+That reads "a rumbling bass sweeping from left to right, opening as it goes".
+Also added: a cents offset on pitch tokens (`A6+22`), realising the microtonal
+extension `SPEC.md` raises as an open question, and `# tuning: A=445.6` so a
+score can be tuned to its material rather than to concert pitch.
+
+```bash
+./mus_audio.py aigua/aigua.mus -o out.wav
+```
+
+`aigua/` is a worked example: a 56-second field recording from Aigua, Uruguay,
+analysed into a playable instrument (segmentation → clustering → exemplar
+extraction → pitch measurement), and a 2.5-minute piece scored in MUS-A that
+uses nothing but that recording.
 
 ## Layout
 
-- `mus.py` — the v0.4 converter
+- `mus.py` — the v0.4 converter (MusicXML/MIDI ↔ MUS)
+- `mus_audio.py` — MUS-A → audio renderer
 - `SPEC.md` — full format specification
+- `SPEC-AUDIO.md` — the sample-bound extension
+- `aigua/` — worked example: analysis, sample instrument, score, renders
 - `README.md` — this file
 - `LICENSE` — MIT
 

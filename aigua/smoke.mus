@@ -1,0 +1,33 @@
+# score: Aigua — renderer smoke test
+# summary: 8 bars / 5 voices / feature exercise
+# tuning: A=445.6
+# pack: instrument.json
+# tempo: 96    time: 4/4    key: Gm    bars: 8
+
+# instruments:
+#   gl = high glide (treble, voice=glide, mode=varispeed, send=0.28)
+#   cl = signature call (treble, voice=call, send=0.18)
+#   tk = tick (perc, voice=tick, send=0.10, gain=-3)
+#   sb = sub (bass, voice=call, mode=varispeed, gain=4, send=0.05)
+#   cr = car (perc, voice=car, send=0.35)
+
+# section: natives [1-2] — every voice at or near its recorded pitch
+
+bar 1: gl=A7q Rq A7q Rq  cl=A6h A6h  tk=-  sb=-  cr=-
+bar 2: gl=Rq A7q Rq A7q  cl=A6h G6h  tk=A6e A6e A6e A6e A6e A6e A6e A6e  sb=-  cr=-
+
+# section: transposition [3-4] — same samples pushed away from native
+
+bar 3: gl=C8q A7q F7q D7q  cl=D6h F6h  tk=-  sb=A2w[str=fit]{f}  cr=-
+bar 4: gl=D7q F7q A7q C8q  cl=A5h C6h  tk=-  sb=D2w[str=fit]  cr=-
+
+# section: gestures [5-6] — the things engraved notation has no symbol for
+
+# text @b5: rumbling bass sweeping from left to right
+bar 5: gl=A7h[pan=-0.9->0.9] Rh  cl=-  tk=-  sb=A1w[pan=-1->1,lpf=70->900,str=fit]{ff}  cr=-
+bar 6: gl=A7q->C8 Rq A7q->F6 Rq  cl=A6h[reverse] A6h[stac]  tk=-  sb=A1w[pan=1->-1,lpf=900->70,str=fit]  cr=-
+
+# section: dynamics and noise [7-8]
+
+bar 7: gl={pp} A7q {<} A7q A7q A7q {|}  cl=-  tk=-  sb=-  cr=Xw[str=fit,lpf=400->6000,pan=-0.6->0.6]{mf}
+bar 8: gl={ff} A7q Rq Rh  cl=A6w[fer]  tk=A7s A7s A7s A7s Rh Rq  sb=A2w[str=fit]{f}  cr=-

@@ -1,0 +1,133 @@
+# score: gecs de Aigua
+# summary: 78 bars / 10 voices / ~2 min
+# tempo: 160
+# time: 4/4
+# key: Am
+# bars: 78
+# pack: instrument.json
+# sidechain: kk depth=0.74 rel=0.15
+# master: rms=-10.5
+
+# text @b1: no tuning line. everything is snapped to 12-TET on purpose — the
+# text @b1: opposite decision from the other piece, which tuned itself to the birds.
+
+# instruments:
+#   kk = kick (perc, voice=buzz, st=-32->-51, curve=exp, tau=0.028, dist=6, rel=0.06, duck=0, send=0.02, gain=0)
+#   sn = snare (perc, voice=car, off=1150, hpf=230, dist=5, rel=0.05, send=0.16, gain=3)
+#   cp = clap (perc, voice=chup, crush=5, hpf=700, dist=3, rel=0.04, send=0.20, gain=1)
+#   hh = hats (perc, voice=tick, hpf=5200, rel=0.008, send=0.05, gain=-5)
+#   bs = bass (bass, voice=buzz, dist=7, hpf=60, lpf=2600, rel=0.03, send=0.03, gain=-3)
+#   ld = lead (treble, voice=glide, dist=2.5, send=0.22, gain=2)
+#   vx = voice (treble, voice=call, dist=2, hpf=300, send=0.18, gain=3)
+#   sq = stab (treble, voice=bright, crush=6, dist=3, hpf=350, send=0.14, gain=0)
+#   nz = noise (perc, voice=car, send=0.24, gain=-7)
+#   ch = chirp (treble, voice=mid, dist=2, send=0.14, gain=-5)
+
+# section: intro [1-4]
+
+bar 1: vx={mf} A7q[lpf=1400] Rq A7e Re Rq
+bar 2: vx=A7q[lpf=2600] Rq C8e A7e Rq   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×4) Rh
+bar 3: vx=A7e G7e E7q Rh   ld={p} Rh A7h[lpf=900->9000]
+bar 4: nz=Xw[str=fit,st=0->22,lpf=400->9000,gain=-3]{<}   hh=(A8t[pan=-0.62] A8t[pan=0.62] ×8) (A8s[pan=-0.5] A8s[pan=0.5] ×2){|}
+
+# text @b5: drop
+# section: drop A [5-20]
+
+bar 5:  kk=Xe[gate] Rq Xe Xe[gate] Rq Re   sn=Rq Xe[gate] Rq Rq Xe[gate] Re
+bar 6:  kk=Xe[gate] Rq Xe Xe[gate] Rq Re   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)
+bar 7:  kk=Xe[gate] Rq Xe Xe[gate] Rq Re   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] Rq A2e[gate] Re G2q[gate]
+bar 8:  kk=Xe[gate] Rq Xe Xe[gate] Rq Re   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] Rq E2e[gate] Re F2q[gate]
+bar 9:  kk=Xe[gate] Rq Xe Xe[gate] Rq Re   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] Rq A2e[gate] Re G2q[gate]   vx={f} A7e C8e A7q Rq E7q
+bar 10: kk=Xe[gate] Rq Xe Xe[gate] Rq Re   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] Rq E2e[gate] Re F2q[gate]   vx=G7e A7e Rq C8h
+bar 11: kk=Xe[gate] Rq Xe Xe[gate] Rq Re   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] Rq A2e[gate] Re G2q[gate]   vx=A7e C8e D8e C8e A7q Rq   cp=Rq Xe[stut=3] Rq Rq Rq
+bar 12: kk=Xe[gate] Rq Xe Xe[gate] Rq Re   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8t[pan=-0.62] A8t[pan=0.62] ×8) (A8s[pan=-0.5] A8s[pan=0.5] ×2)   bs=E2q[gate] Rq E2e[gate] Re E2e[gate] Re   ld={f} A7q->E8 Rq C8h
+bar 13: kk=Xe[gate] Rq Xe Xe[gate] Rq Re   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] Rq A2e[gate] Re G2q[gate]   vx=A7e C8e A7q Rq E7q   sq=<A6 C7 E7>e Re Rq Rh
+bar 14: kk=Xe[gate] Rq Xe Xe[gate] Rq Re   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] Rq E2e[gate] Re F2q[gate]   vx=G7e A7e Rq C8h   sq=Rq <G6 C7 D7>e Re Rh
+bar 15: kk=Xe[gate] Rq Xe Xe[gate] Rq Re   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] Rq A2e[gate] Re G2q[gate]   ld=E8e D8e C8e A7e Rh   cp=Rq Xe[stut=4] Rq Rq Rq
+bar 16: kk=Xe[gate] Xe[gate] Xe[gate] Xe[gate] Xs Xs Xs Xs Xs Xs Xs Xs   sn=Rq Xe[gate] Rq Rq Xe[stut=4] Re   hh=(A8t[pan=-0.62] A8t[pan=0.62] ×16)   nz=Rh Xh[str=fit,st=0->18,lpf=900->10000]
+bar 17: kk=Xe[gate] Rq Xe Xe[gate] Rq Re   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] Rq A2e[gate] Re G2q[gate]   vx=A7e C8e A7q Rq E7q   ch=Rh A6e G6e Rq
+bar 18: kk=Xe[gate] Rq Xe Xe[gate] Rq Re   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] Rq E2e[gate] Re F2q[gate]   vx=G7e A7e Rq C8h
+bar 19: kk=Xe[gate] Rq Xe Xe[gate] Rq Re   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] Rq A2e[gate] Re G2q[gate]   ld=A7q->C9 Rq E8h[pan=-0.7->0.7]
+bar 20: kk=Xe[gate] Xe[gate] Xe[gate] Xe[gate] Xs Xs Xs Xs Xs Xs Xs Xs   sn=Rq Xe[stut=3] Rq Rq Xe[stut=6] Re   hh=(A8t[pan=-0.62] A8t[pan=0.62] ×16)   sq=<A6 C7 E7>q[stut=8] Rq Rh
+
+# text @b21: whiplash. half the drums drop out mid-phrase.
+# section: verse [21-28]
+
+bar 21: kk=Xe[gate] Rq Re Rq Xe[gate] Re   hh=(A8e[pan=-0.42] A8e[pan=0.42] ×4)   vx={mp} A7e G7e E7q Rh   bs=A2h[gate,lpf=700] Rh
+bar 22: kk=Xe[gate] Rq Re Rq Xe[gate] Re   hh=(A8e[pan=-0.42] A8e[pan=0.42] ×4)   vx=C8e A7e Rq G7q Rq   ch=Rh D6e F6e Rq
+bar 23: kk=Xe[gate] Rq Re Rq Xe[gate] Re   hh=(A8e[pan=-0.42] A8e[pan=0.42] ×4)   vx=A7e G7e E7q Rh   bs=F2h[gate,lpf=700] Rh   cp=Rh Xe[stut=2] Re Rq
+bar 24: kk=Xe[gate] Rq Re Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   ld=E7q->A8 Rq Rh   sq=Rh <G6 C7>e Re Rq
+bar 25: kk=Xe[gate] Rq Re Rq Xe[gate] Re   hh=(A8e[pan=-0.42] A8e[pan=0.42] ×4)   vx=A7e G7e E7q Rh   bs=A2h[gate,lpf=700] Rh
+bar 26: kk=Xe[gate] Rq Re Rq Xe[gate] Re   hh=(A8e[pan=-0.42] A8e[pan=0.42] ×4)   vx=C8e A7e Rq G7q Rq   ch=Rh D6e F6e Rq
+bar 27: kk=Xe[gate] Rq Re Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   vx=A7e C8e D8e C8e A7h   bs=G2h[gate,lpf=700] Rh
+bar 28: kk=Xe[gate] Xe[gate] Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs   sn=Rh Xe[stut=6] Re Rq   hh=(A8t[pan=-0.62] A8t[pan=0.62] ×16)
+
+# text @b29: build. hats accelerate, riser climbs, everything else evaporates.
+# section: build [29-36]
+
+bar 29: hh=(A8e[pan=-0.42] A8e[pan=0.42] ×4)   nz=Xw[str=fit,st=0->6,lpf=500->3000,gain=-8]{<}   bs=A2w[gate,lpf=400]
+bar 30: hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   nz=Xw[str=fit,st=6->12,lpf=3000->6000,gain=-6]   vx=A7q Rq C8q Rq
+bar 31: hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   nz=Xw[str=fit,st=12->18,lpf=6000->9000,gain=-4]   ld=A7h->D8 E8h
+bar 32: hh=(A8t[pan=-0.62] A8t[pan=0.62] ×16)   nz=Xw[str=fit,st=18->26,lpf=9000->12000,gain=-2]   cp=Xe[stut=8] Rq Rq Rq Re
+bar 33: kk=Xq[gate] Rq Xq[gate] Rq   hh=(A8t[pan=-0.62] A8t[pan=0.62] ×16)   nz=Xw[str=fit,st=0->14,lpf=800->9000,gain=-5]
+bar 34: kk=Xq[gate] Rq Xq[gate] Rq   hh=(A8t[pan=-0.62] A8t[pan=0.62] ×16)   sq=<A6 C7 E7>q[stut=4] <A6 C7 E7>q[stut=6] <A6 C7 E7>h[stut=12]
+bar 35: kk=Xe[gate] Xe[gate] Xe[gate] Xe[gate] Xe[gate] Xe[gate] Xe[gate] Xe[gate]   hh=(A8t[pan=-0.62] A8t[pan=0.62] ×16)   nz=Xw[str=fit,st=8->30,lpf=1000->14000,gain=0]{<}
+bar 36: kk=Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs   nz=Xw[str=fit,st=16->34,lpf=3000->16000]{|}   sn=Rh Rq Xe[stut=8] Re
+
+# text @b37: DROP
+# section: drop B [37-52]
+
+bar 37: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs={ff} A2q[gate] A2e[gate] Re G2q[gate] F2q[gate]   ld={ff} A7e C8e E8q Rq C8q
+bar 38: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re E2q[gate] E2q[gate]   ld=D8e C8e A7q Rq E8q   cp=Rq Xe[stut=3] Rq Rq Rq
+bar 39: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re G2q[gate] F2q[gate]   vx=A7e C8e A7e G7e E7h   sq=<A6 C7 E7>e Re Rq <G6 C7 D7>e Re Rq
+bar 40: kk=Xq[gate] Xq[gate] Xq[gate] Xs Xs Xs Xs   sn=Rq Xe[gate] Rq Rq Xe[stut=4] Re   hh=(A8t[pan=-0.62] A8t[pan=0.62] ×16)   bs=E2q[gate] E2e[gate] Re E2h[gate]   ld=E8q->A8 Rq C9h[pan=0.8->-0.8]
+bar 41: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re G2q[gate] F2q[gate]   vx=A7e C8e A7q Rq E7q   ch=Rh A6e G6e Rq
+bar 42: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re E2q[gate] E2q[gate]   vx=G7e A7e Rq C8h   sq=Rq <A6 C7 E7>e Re Rh
+bar 43: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re G2q[gate] F2q[gate]   ld=A7e C8e D8e E8e Rh   cp=Rq Xe[stut=4] Rq Rq Rq
+bar 44: kk=Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs   sn=Rq Xe[stut=3] Rq Rq Xe[stut=8] Re   hh=(A8t[pan=-0.62] A8t[pan=0.62] ×16)   nz=Rh Xh[str=fit,st=4->24,lpf=1200->12000]
+bar 45: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re G2q[gate] F2q[gate]   vx=A7e C8e A7e G7e E7h
+bar 46: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re E2q[gate] E2q[gate]   ld=C8e D8e E8q Rq A8q[pan=-0.6]
+bar 47: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re G2q[gate] F2q[gate]   vx=A7e C8e D8e C8e A7q Rq   sq=<A6 C7 E7>e Re Rq <F6 A6 C7>e Re Rq
+bar 48: kk=Xq[gate] Xq[gate] Xs Xs Xs Xs Xs Xs Xs Xs   sn=Rq Xe[stut=4] Rq Rq Xe[stut=6] Re   hh=(A8t[pan=-0.62] A8t[pan=0.62] ×16)   ld=E8q->C9 Rq A8h[pan=0.7->-0.7]
+bar 49: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re G2q[gate] F2q[gate]   vx=A7e C8e A7q Rq E7q
+bar 50: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re E2q[gate] E2q[gate]   ch=D6e F6e A6q Rh
+bar 51: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re G2q[gate] F2q[gate]   ld=A7e C8e E8e A8e Rh   sq=Rh <A6 C7 E7>q[stut=6] Rq
+bar 52: kk=Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs   sn=Xe[stut=8] Rq Rq Rq Xe[stut=12] Re   hh=(A8t[pan=-0.62] A8t[pan=0.62] ×16)   nz=Xw[str=fit,st=10->30,lpf=2000->15000]{ff}
+
+# text @b53: breakdown. half-time, nothing distorted, the recording surfaces.
+# section: breakdown [53-60]
+
+bar 53: vx={p} A7h[lpf=1100,dist=1] Rh   nz=Xw[str=fit,lpf=180,gain=-12]
+bar 54: ch={p} A6q[dist=1] Rq D6h[dist=1]
+bar 55: vx=G7h[lpf=1400,dist=1] Rh   nz=Xw[str=fit,lpf=220,gain=-12]
+bar 56: ld={pp} Rh A7h[lpf=2000,dist=1,pan=-0.5->0.5]
+bar 57: kk=Xh[gate] Rh   vx=A7h[lpf=1800,dist=1] Rh   nz=Xw[str=fit,lpf=300,gain=-11]
+bar 58: kk=Xh[gate] Rh   ch=A6q Rq C7h
+bar 59: kk=Xh[gate] Xh[gate]   vx=A7e C8e A7q Rh   hh={pp} (A8e[pan=-0.42] A8e[pan=0.42] ×4)
+bar 60: kk=Xq[gate] Xq[gate] Xe[gate] Xe[gate] Xs Xs Xs Xs   hh=(A8t[pan=-0.62] A8t[pan=0.62] ×16)   nz=Xw[str=fit,st=0->28,lpf=600->14000,gain=-1]{<}
+
+# text @b61: everything at once.
+# section: final [61-76]
+
+bar 61: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs={ff} A2q[gate] A2e[gate] Re G2q[gate] F2q[gate]   ld={ff} A7e C8e E8q Rq C8q   vx=Rh A7e C8e Rq
+bar 62: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re E2q[gate] E2q[gate]   ld=D8e C8e A7q Rq E8q   sq=<A6 C7 E7>e Re Rq Rh
+bar 63: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re G2q[gate] F2q[gate]   vx=A7e C8e A7e G7e E7h   cp=Rq Xe[stut=3] Rq Rq Rq
+bar 64: kk=Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs   sn=Rq Xe[stut=4] Rq Rq Xe[stut=8] Re   hh=(A8t[pan=-0.62] A8t[pan=0.62] ×16)   ld=E8q->C9 Rq A8h[pan=-0.8->0.8]
+bar 65: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re G2q[gate] F2q[gate]   vx=A7e C8e D8e C8e A7q Rq   sq=<A6 C7 E7>e Re Rq <G6 C7 D7>e Re Rq
+bar 66: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re E2q[gate] E2q[gate]   ld=A8e E8e C8e A7e Rh   ch=Rh A6e G6e Rq
+bar 67: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re G2q[gate] F2q[gate]   vx=A7e C8e A7q Rq E7q   cp=Rq Xe[stut=4] Rq Rq Rq
+bar 68: kk=Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs   sn=Xe[stut=6] Rq Rq Rq Xe[stut=10] Re   hh=(A8t[pan=-0.62] A8t[pan=0.62] ×16)   nz=Rh Xh[str=fit,st=6->26,lpf=1500->13000]
+bar 69: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re G2q[gate] F2q[gate]   ld=A7e C8e E8q Rq C8q   sq=<A6 C7 E7>e Re Rq Rh
+bar 70: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re E2q[gate] E2q[gate]   vx=G7e A7e Rq C8h
+bar 71: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re G2q[gate] F2q[gate]   ld=E8e D8e C8e A7e Rh   sq=Rh <F6 A6 C7>e Re Rq
+bar 72: kk=Xq[gate] Xq[gate] Xs Xs Xs Xs Xs Xs Xs Xs   sn=Rq Xe[stut=4] Rq Rq Xe[stut=8] Re   hh=(A8t[pan=-0.62] A8t[pan=0.62] ×16)   ld=A8q->C9 Rq E8h[pan=0.9->-0.9]
+bar 73: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re G2q[gate] F2q[gate]   vx=A7e C8e A7e G7e E7h
+bar 74: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re E2q[gate] E2q[gate]   ld=C8e E8e A8q Rq E8q
+bar 75: kk=Xq[gate] Xq[gate] Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xe[gate] Rq Rq Xe[gate] Re   hh=(A8s[pan=-0.5] A8s[pan=0.5] ×8)   bs=A2q[gate] A2e[gate] Re G2q[gate] F2q[gate]   vx=A7e C8e D8e C8e A7q Rq   sq=<A6 C7 E7>q[stut=8] Rq Rh
+bar 76: kk=Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs Xs   sn=Xe[stut=8] Rq Rq Rq Xe[stut=16] Re   hh=(A8t[pan=-0.62] A8t[pan=0.62] ×16)   nz=Xw[str=fit,st=12->32,lpf=2500->16000]{ff}   ld=C9w[pan=-1->1]
+
+# text @b77: hard cut. one bird, unprocessed.
+# section: out [77-78]
+
+bar 77: vx={f} A7q[dist=1,lpf=6000] Rq Rh
+bar 78: ch={p} A6q[dist=1] Rq Rh

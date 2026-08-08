@@ -221,10 +221,19 @@ def split_duration(quarter_length: float) -> list[str]:
 
 
 def pitch_to_mus(pitch) -> str:
-    """Convert music21 Pitch → MUS pitch string. C4 = middle C."""
+    """Convert music21 Pitch → MUS pitch string. C4 = middle C.
+
+    A non-zero microtone emits as a cents suffix ('A6+22'), so microtonal
+    sources survive the conversion instead of snapping to the semitone grid.
+    """
     name = pitch.name.replace("-", "b")  # music21 uses '-' for flat
     octave = pitch.octave if pitch.octave is not None else 4
-    return f"{name}{octave}"
+    cents = 0
+    try:
+        cents = int(round(pitch.microtone.cents))
+    except Exception:
+        pass
+    return f"{name}{octave}{cents:+d}" if cents else f"{name}{octave}"
 
 
 def find_pattern_in_events(events: list[str]) -> str:
@@ -961,7 +970,14 @@ CLEF_FROM_NAME: dict[str, str] = {
 
 # Pitch / duration / articulation token-level parsers -------------------------
 
-RE_PITCH = re.compile(r"^([A-G])(bb|b|n|##|#|x)?(-?\d+)$")
+# Optional trailing cents offset (`A6+22`) — the microtonal form SPEC.md raises
+# as an open question and SPEC-AUDIO.md adopts. Carried as music21's
+# Pitch.microtone, so it survives MUS → music21 → MUS intact. It does NOT reach
+# MusicXML: music21's exporter emits only the integer accidental as <alter>
+# (F#6+21 → <alter>1</alter>) and nothing at all for an inflected natural, even
+# though MusicXML itself permits a fractional alter.
+RE_PITCH = re.compile(r"^([A-G])(bb|b|n|##|#|x)?(-?\d+)([+-]\d+)?$")
+RE_PITCH_HEAD = r"[A-G](?:bb|b|n|##|#|x)?-?\d+(?:[+-]\d+)?"
 RE_DURATION_BASE = re.compile(
     r"^([whqestxWHQESTX][whqestxWHQESTX]?)(\.*)(\d+|\{\d+:\d+\})?$"
 )
@@ -972,18 +988,25 @@ _ACC_MAP = {None: "", "b": "-", "bb": "--", "n": "n", "#": "#", "x": "##", "##":
 
 
 def parse_pitch_token(s: str):
-    """Parse 'Bb4', 'F#5', 'Bbb3', 'Fx4' → music21 Pitch (or None)."""
+    """Parse 'Bb4', 'F#5', 'Bbb3', 'Fx4', 'A6+22' → music21 Pitch (or None)."""
     m = RE_PITCH.match(s)
     if not m:
         return None
     step = m.group(1)
     acc = m.group(2)
     octave = int(m.group(3))
+    cents = int(m.group(4)) if m.group(4) else 0
     acc_str = _ACC_MAP.get(acc, "")
     try:
-        return m21pitch.Pitch(f"{step}{acc_str}{octave}")
+        p = m21pitch.Pitch(f"{step}{acc_str}{octave}")
     except Exception:
         return None
+    if cents:
+        try:
+            p.microtone = cents
+        except Exception:
+            pass
+    return p
 
 
 def parse_duration_code(code: str):
@@ -1120,6 +1143,10 @@ class MusInstrument:
     name: str
     clef: str
     transpose: int | None = None
+    # Any further `key=value` items in the instrument parenthetical. Unknown to
+    # the notation converter, but preserved so extensions (e.g. sample binding
+    # for the audio renderer) can read them off the same declaration line.
+    params: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -1142,9 +1169,18 @@ class ParsedMus:
     bars: list[MusBar]
     sections: list[tuple[int, int, str]]
     text_at: dict[int, list[str]]
+    # Header `# key: value` lines the notation converter doesn't recognise
+    # (e.g. `# tuning: A=445.6`). Preserved rather than dropped.
+    extra: dict[str, str] = field(default_factory=dict)
 
 
 RE_HEADER_KV = re.compile(r"^\s*(\w+)\s*:\s*(.+?)\s*$")
+# SPEC.md documents the metadata block as one line —
+#   `# tempo: 82    time: 4/4    key: Dm    bars: 16`
+# — while main_forward() emits one key per line. Accept both by splitting a
+# header line before any *known* subsequent key, which leaves free-text values
+# (titles, summaries) that happen to contain a colon intact.
+RE_HEADER_SPLIT = re.compile(r"\s+(?=(?:tempo|time|key|bars)\s*:)", re.IGNORECASE)
 RE_INSTRUMENT = re.compile(r"^\s*(\S+)\s*=\s*(.+?)\s*\(([^)]+)\)\s*$")
 RE_SECTION = re.compile(r"^\s*section\s*:\s*(.+?)\s*\[(\d+)-(\d+)\]\s*$")
 RE_TEXT = re.compile(r"^\s*text\s*@b(\d+)\s*:\s*(.+?)\s*$")
@@ -1164,6 +1200,7 @@ def parse_mus(text: str) -> ParsedMus:
     bars: list[MusBar] = []
     sections: list[tuple[int, int, str]] = []
     text_at: dict[int, list[str]] = {}
+    extra: dict[str, str] = {}
     in_instruments = False
 
     for raw_line in text.splitlines():
@@ -1201,7 +1238,12 @@ def parse_mus(text: str) -> ParsedMus:
                     parts = [p.strip() for p in m_inst.group(3).split(",")]
                     clef_name = parts[0] if parts else "treble"
                     transpose: int | None = None
+                    params: dict[str, str] = {}
                     for p in parts[1:]:
+                        if "=" in p:
+                            k, v = p.split("=", 1)
+                            params[k.strip().lower()] = v.strip()
+                            continue
                         try:
                             transpose = int(p)
                         except ValueError:
@@ -1211,11 +1253,14 @@ def parse_mus(text: str) -> ParsedMus:
                         name=m_inst.group(2),
                         clef=clef_name,
                         transpose=transpose,
+                        params=params,
                     ))
                 continue
 
-            m_kv = RE_HEADER_KV.match(body)
-            if m_kv:
+            for piece in RE_HEADER_SPLIT.split(body):
+                m_kv = RE_HEADER_KV.match(piece)
+                if not m_kv:
+                    continue
                 key_name = m_kv.group(1).lower()
                 val = m_kv.group(2).strip()
                 if key_name == "score":
@@ -1233,6 +1278,8 @@ def parse_mus(text: str) -> ParsedMus:
                         bar_count = int(val)
                     except ValueError:
                         pass
+                else:
+                    extra[key_name] = val
             continue
 
         m_bars = RE_BARS_RANGE.match(line)
@@ -1281,6 +1328,7 @@ def parse_mus(text: str) -> ParsedMus:
         bars=bars,
         sections=sections,
         text_at=text_at,
+        extra=extra,
     )
 
 
@@ -1491,7 +1539,7 @@ def parse_event_token(token: str) -> ParsedEventToken:
         duration_codes = [dur_match.group(1)] if dur_match else ["q"]
         return ParsedEventToken(kind="rest", duration_codes=duration_codes, raw=raw)
 
-    pitch_match = re.match(r"^([A-G](?:bb|b|n|##|#|x)?-?\d+)(.+)$", token)
+    pitch_match = re.match(rf"^({RE_PITCH_HEAD})(.+)$", token)
     if not pitch_match:
         return ParsedEventToken(kind="unknown", raw=raw)
     pitch = parse_pitch_token(pitch_match.group(1))

@@ -1,0 +1,96 @@
+# score: Aigua
+# summary: 56 bars / 9 voices / ~2.5 min
+# tempo: 80 (b1) → 88 (b11) → 104 (b23) → 116 (b35) → 80 (b47)
+# time: 4/4
+# key: Am
+# bars: 56
+# tuning: A=445.6
+# pack: instrument.json
+
+# instruments:
+#   dr = low bed (bass, voice=sub, send=0.05, gain=-4)
+#   sb = sub (bass, voice=buzz, mode=varispeed, send=0.04, gain=5)
+#   bz = buzz (bass, voice=buzz, send=0.14)
+#   ch = chup (perc, voice=chup, send=0.10, gain=-4)
+#   tk = tick (perc, voice=tick, send=0.08, gain=-5)
+#   md = mid (treble, voice=mid, send=0.16)
+#   cl = call (treble, voice=call, send=0.20)
+#   br = bright (treble, voice=bright, send=0.18)
+#   gl = glide (treble, voice=glide, send=0.30)
+#   cr = car (perc, voice=car, send=0.26)
+
+# text @b1: everything is at the pitch it was recorded at. nothing has been moved yet.
+# section: dawn [1-10]
+
+bar 1:  dr=Xww[str=fit,atk=0.02,rel=0.04,gain=-13]  cl={p} A6+20h Rh
+bar 2:  gl={pp} Rh A7-2h[pan=0.45]
+bar 3:  dr=Xww[str=fit,atk=0.02,rel=0.04,gain=-13]  cl=Rq F#6+21h Rq
+bar 4:  ch=Rh C6-28q[pan=-0.5] Rq
+bar 5:  dr=Xww[str=fit,atk=0.02,rel=0.04,gain=-12]  cl=A6+20h G6-24h
+bar 6:  gl=Rq B7-26q[pan=-0.55] Rh   ch=Rh Rq C#6+18q[pan=0.4]
+bar 7:  dr=Xww[str=fit,atk=0.02,rel=0.04,gain=-12]  cl=Rq A6+20h Rq
+bar 8:  md={pp} D6-1q Rq D#6-40h
+bar 9:  dr=Xww[str=fit,atk=0.02,rel=0.04,gain=-11]  cl=A6+20w
+bar 10: gl=A7-2h[pan=0.3] Rh   ch=Rh C6-28q Rq
+
+# text @b11: the ground opens. the bass is a bird dropped four octaves.
+# section: ground [11-22]
+
+bar 11 [tempo=88]: dr=Xww[str=fit,atk=0.02,rel=0.04,gain=-11]  sb={mf} A1+22w[str=fit,pan=-1->1,lpf=60->700]  cl=Rh A6+20h
+bar 12: gl={pp} Rq A7-2h[pan=0.5] Rq   md=D6-1h Rh
+bar 13: dr=Xww[str=fit,atk=0.02,rel=0.04,gain=-11]  sb=A1+22w[str=fit,pan=1->-1,lpf=700->60]  tk={p} (A6-49e Re ×4)  cl=A6+20h Rh
+bar 14: tk=(A6-49e Re ×4)   ch=Rq C6-28e Re Rh   br={p} Rh G6+25h
+bar 15: dr=Xww[str=fit,atk=0.02,rel=0.04,gain=-10]  sb=G1-47w[str=fit,pan=-0.8->0.8,lpf=60->600]  tk=(A6-49e Re ×4)  cl=G6-24h F#6+21h
+bar 16: tk=(A6-49s A6-49s Re Re ×2)   gl=Rh B7-26q[pan=-0.6] Rq
+bar 17: dr=Xww[str=fit,atk=0.02,rel=0.04,gain=-10]  sb=D#2-44w[str=fit,pan=0.8->-0.8,lpf=600->90]  tk=(A6-49e Re ×4)  md=D#6-40h D6-1h
+bar 18: tk=(A6-49e Re ×4)   cl=A6+20h[acc] Rh   ch=Rh Rq C#6+18q[pan=0.55]
+bar 19: dr=Xww[str=fit,atk=0.02,rel=0.04,gain=-9]  sb=A1+22w[str=fit,pan=-1->1,lpf=60->800]  tk=(A6-49e Re ×4)  cl={mf} <F#6+21 A6+20>h Rh
+bar 20: tk=(A6-49s Rs A6-49e Re A6-49e ×2)   br=Rh <D#6-44 G6-47>h   gl={p} Rq A7-2q[pan=0.35] Rh
+bar 21: dr=Xww[str=fit,atk=0.02,rel=0.04,gain=-9]  sb=A1+22w[str=fit,pan=1->-1,lpf=800->60]  tk=(A6-49e Re ×4)  cl=<D#6-44 G6-47 A6+22>h Rh
+bar 22: tk=(A6-49e Re ×4)   gl=B7-26q->G#7+3 Rq A7-2h[pan=-0.4]   ch=Rh C6-28e Re Rq
+
+# text @b23: the car. it was always going to arrive.
+# section: machine [23-34]
+
+bar 23 [tempo=104]: cr={mf} Xw[str=fit,lpf=300->5000,pan=-0.7->0.7]  sb={f} A1+22w[str=fit,lpf=60->500]  tk=(A6-49e Re ×4)  bz={p} A5+23h Rh
+bar 24: cr=Xw[str=fit,lpf=5000->300,pan=0.7->-0.7]   tk=(A6-49s A6-49s Re Re ×2)   cl=A6+20h <F#6+21 A6+20>h
+bar 25: sb=G1-47w[str=fit,lpf=60->500]   tk=(A6-49e Re ×4)   br={mf} <D#6-44 G6-47>q Rq <G6-47 A6+22>h   bz=G5+26h Rh
+bar 26: cr=Xw[str=fit,lpf=400->7000,pan=-0.8->0.8]   tk=(A6-49e A6-49e Re Re ×2)   gl={mf} A7-2q C8-45q[pan=0.5] B7-26h
+bar 27: sb=D#2-44w[str=fit,lpf=90->600]   tk=(A6-49e Re ×4)   cl=<D#6-44 G6-47 A6+22>h Rh   md=Rh D#6-40h
+bar 28: cr=Xw[str=fit,lpf=7000->400,pan=0.8->-0.8]   tk=(A6-49s Rs A6-49e Re A6-49e ×2)   br=<G6-47 A6+22>q Rq <F6+14 A6+20>h
+bar 29: sb=A1+22w[str=fit,lpf=60->700,pan=-0.9->0.9]   tk=(A6-49e Re ×4)   bz=A5+23q[acc] Rq G#5+28h   gl=Rh A7-2h[pan=0.4]
+bar 30: cr=Xw[str=fit,lpf=300->6000]   tk=(A6-49e A6-49e Re Re ×2)   cl={f} A6+20h[marc] G6-24h
+bar 31: sb=G1-47w[str=fit,lpf=60->700,pan=0.9->-0.9]   tk=(A6-49e Re ×4)   br=<D#6-44 G6-47 A6+22>w   md=D6-1q Rq D#6-40h
+bar 32: cr=Xw[str=fit,lpf=6000->300]   tk=(A6-49s A6-49s Re Re ×2)   gl=C8-45q->A7-2 Rq B7-26h[pan=-0.5]
+bar 33: sb=D#2-44w[str=fit,lpf=90->800]   tk=(A6-49e Re ×4)   cl=<F#6+21 A6+20>h <G6-47 A6+22>h   bz=A5+12h Rh
+bar 34: cr=Xw[str=fit,lpf=800->9000,pan=-1->1]{f}   tk=(A6-49s Rs A6-49s Rs ×4)   gl={f} A7-2q B7-26q C8-45h
+
+# text @b35: swarm. this is the density the recording actually has, sped up and stacked.
+# section: swarm [35-46]
+
+bar 35 [tempo=116]: sb={ff} A1+22w[str=fit,lpf=60->900]  tk=(A6-49s A6-49s A6-49e ×4)  cl={f} A6+20q A6+20q <F#6+21 A6+20>h  gl=Rh B7-26q C8-45q
+bar 36: tk=(A6-49s A6-49s A6-49e ×4)   br=<D#6-44 G6-47>q <G6-47 A6+22>q <F6+14 A6+20>h   md=D6-1e D#6-40e Rq Rh   ch=Rq C6-28e Re Rq C#6+18e Re
+bar 37: sb=G1-47w[str=fit,lpf=60->900]   tk=(A6-49s A6-49s A6-49e ×4)   gl=A7-2q->C8-45 Rq B7-26q->G#7+3 Rq   cl=Rh A6+20h[acc]
+bar 38: tk=(A6-49e A6-49s A6-49s ×4)   bz=A5+23q G5+26q G#5+28h   br=Rh <D#6-44 G6-47 A6+22>h
+bar 39: sb=D#2-44w[str=fit,lpf=90->900]   tk=(A6-49s A6-49s A6-49e ×4)   cl=<D#6-44 G6-47 A6+22>q Rq A6+20h   gl=C8-45h[pan=-0.7->0.7] Rh
+bar 40: tk=(A6-49s A6-49s A6-49e ×4)   md=D#6-40e D6-1e B5-15q G#6-26h   ch=(C6-28e Re ×4)
+bar 41: sb=A1+22w[str=fit,lpf=60->1000,pan=-1->1]   tk=(A6-49s A6-49s A6-49e ×4)   br={ff} <G6-47 A6+22>q <F6+14 A6+20>q <D#6-44 G6-47 A6+22>h   gl=Rq A7-2q B7-26h
+bar 42: tk=(A6-49e A6-49s A6-49s ×4)   cl=A6+20q[marc] G6-24q F#6+21h   bz=A5+12h A5+23h
+bar 43: sb=G1-47w[str=fit,lpf=60->1000,pan=1->-1]   tk=(A6-49s A6-49s A6-49e ×4)   gl=B7-26q->F6+14 Rq C8-45h   cr=Rh Xh[str=fit,lpf=2000->9000,pan=0.8]
+bar 44: tk=(A6-49s A6-49s A6-49e ×4)   br=<D#6-44 G6-47 A6+22>w   md=D6-1q D#6-40q Rh
+bar 45: sb=D#2-44w[str=fit,lpf=90->1100]   tk=(A6-49s Rs A6-49s Rs ×4)   cl={ff} <F#6+21 A6+20>h <G6-47 A6+22>h   gl=A7-2q C8-45q B7-26h
+bar 46: cr=Xw[str=fit,lpf=400->9000,pan=-1->1]{ff}   tk=(A6-49s A6-49s A6-49s A6-49s ×4)   bz=A5+23w[marc]   gl=C8-45w[pan=0.9->-0.9]
+
+# text @b47: everything transposed is withdrawn. what is left is the recording.
+# section: leaving [47-56]
+
+bar 47 [tempo=80]: dr=Xww[str=fit,atk=0.02,rel=0.04,gain=-9]  sb={f} A1+22w[str=fit,lpf=900->60] {>}  cl={mf} A6+20h Rh
+bar 48: gl={mp} Rh A7-2h[pan=0.4]   tk={pp} (A6-49e Re ×4)
+bar 49: dr=Xww[str=fit,atk=0.02,rel=0.04,gain=-10]  sb=A1+22w[str=fit,lpf=500->50] {|}  cl=Rq F#6+21h Rq
+bar 50: ch={pp} Rh C6-28q Rq   md={pp} Rh Rq D6-1q
+bar 51: dr=Xww[str=fit,atk=0.02,rel=0.04,gain=-11]  cl={p} A6+20h G6-24h
+bar 52: gl={pp} Rq B7-26q[pan=-0.5] Rh
+bar 53: dr=Xww[str=fit,atk=0.02,rel=0.04,gain=-12]  cl=Rh A6+20h
+bar 54: ch=Rh C#6+18q[pan=0.45] Rq
+bar 55: dr=Xww[str=fit,atk=0.02,rel=0.04,gain=-13]  cl={pp} A6+20w[fer]
+bar 56: gl={ppp} Rh A7-2h
