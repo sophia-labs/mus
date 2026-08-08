@@ -1,0 +1,66 @@
+# score: Aigua — chorale
+# summary: 26 bars / 7 voices / ~2.5 min
+# tempo: 52
+# time: 5/4
+# key: Am
+# bars: 26
+# tuning: A=445.6
+# pack: instrument.json
+# master: rms=-20
+
+# text @b1: every pad is one bird call stretched ten to twenty times its length.
+# text @b1: the smear is the phase vocoder failing gracefully. that is the instrument.
+
+# instruments:
+#   dr = drone (bass, voice=sub, str=fit, atk=0.02, rel=0.04, send=0.10, gain=-14)
+#   bs = low (bass, voice=buzz, str=fit, atk=0.5, rel=2.4, lpf=900, send=0.22, gain=-4)
+#   p1 = pad low (treble, voice=call, str=fit, atk=0.7, rel=2.9, send=0.42, gain=-6)
+#   p2 = pad mid (treble, voice=mid, str=fit, atk=0.8, rel=3.1, send=0.44, gain=-7)
+#   p3 = pad high (treble, voice=bright, str=fit, atk=0.9, rel=3.3, send=0.46, gain=-9)
+#   sh = shimmer (treble, voice=glide, send=0.55, gain=-13)
+#   ch = chirp (treble, voice=tick, send=0.35, gain=-16)
+
+# section: unison [1-4]
+
+bar 1:  dr=Xw~q[gain=-16]   p1={pp} A4+22w~h[pan=-0.25]
+bar 2:  dr=Xw~q[gain=-15]   p1=A4+22w~h[pan=-0.25]   bs=A2+22w~h[gain=-9]
+bar 3:  dr=Xw~q[gain=-15]   p1=A4+22w~h[pan=-0.25]   bs=A2+22w~h[gain=-8]   p2={ppp} A5+22w~h[pan=0.3]
+bar 4:  dr=Xw~q[gain=-14]   p1=A4+22w~h[pan=-0.25]   bs=A2+22w~h[gain=-8]   p2=A5+22w~h[pan=0.3]   sh={ppp} Rw A7-2q[pan=0.7]
+
+# text @b5: the second peak of the pitch field arrives. it is 2.7 semitones down — a neutral interval, not a tone and not a third.
+# section: G enters [5-10]
+
+bar 5:  dr=Xw~q[gain=-14]   p1=A4+22w~h[pan=-0.25]   bs=A2+22w~h[gain=-8]   p2=<G5-47 A5+22>w~h[pan=0.3]
+bar 6:  dr=Xw~q[gain=-13]   p1=<G4-47 A4+22>w~h[pan=-0.3]   bs=G2-47w~h[gain=-8]   p2=<G5-47 A5+22>w~h[pan=0.3]
+bar 7:  dr=Xw~q[gain=-13]   p1=<G4-47 A4+22>w~h[pan=-0.3]   bs=G2-47w~h[gain=-7]   p2=<G5-47 A5+22>w~h[pan=0.3]   p3={ppp} A6+22w~h[pan=-0.5]
+bar 8:  dr=Xw~q[gain=-13]   p1=<G4-47 A4+22>w~h[pan=-0.3]   bs=A2+22w~h[gain=-7]   p2=<G5-47 A5+22>w~h[pan=0.35]   p3=A6+22w~h[pan=-0.5]   sh=Rh Rq B7-26q[pan=-0.65] Rq
+bar 9:  dr=Xw~q[gain=-12]   p1=<G4-47 A4+22>w~h[pan=-0.3]   bs=A2+22w~h[gain=-7]   p2=<G5-47 A5+22>w~h[pan=0.35]   p3=<G6-47 A6+22>w~h[pan=-0.5]
+bar 10: dr=Xw~q[gain=-12]   p1=<G4-47 A4+22>w~h[pan=-0.3]   bs=G2-47w~h[gain=-6]   p2=<G5-47 A5+22>w~h[pan=0.35]   p3=<G6-47 A6+22>w~h[pan=-0.5]   ch={ppp} Rw C7-16q[pan=0.6]
+
+# text @b11: full cluster. D# is 44 cents flat, which is why it does not resolve anything.
+# section: full cluster [11-16]
+
+bar 11: dr=Xw~q[gain=-11]   p1=<D#4-44 G4-47 A4+22>w~h[pan=-0.35]   bs=D#2-44w~h[gain=-6]   p2=<G5-47 A5+22>w~h[pan=0.35]   p3=<G6-47 A6+22>w~h[pan=-0.5]
+bar 12: dr=Xw~q[gain=-11]   p1=<D#4-44 G4-47 A4+22>w~h[pan=-0.35]   bs=D#2-44w~h[gain=-5]   p2=<D#5-44 G5-47 A5+22>w~h[pan=0.4]   p3=<G6-47 A6+22>w~h[pan=-0.55]   sh=Rq A7-2q[pan=0.7] Rh Rq
+bar 13: dr=Xw~q[gain=-10]   p1=<D#4-44 G4-47 A4+22>w~h[pan=-0.35]   bs=A2+22w~h[gain=-5]   p2=<D#5-44 G5-47 A5+22>w~h[pan=0.4]   p3=<D#6-44 G6-47 A6+22>w~h[pan=-0.55]
+bar 14: dr=Xw~q[gain=-10]   p1=<D#4-44 G4-47 A4+22>w~h[pan=-0.35]   bs=A2+22w~h[gain=-5]   p2=<D#5-44 G5-47 A5+22>w~h[pan=0.4]   p3=<D#6-44 G6-47 A6+22>w~h[pan=-0.55]   sh=Rh C8-45q[pan=-0.7] Rq Rq   ch=Rq Rq A6-49q[pan=0.55] Rh
+bar 15: dr=Xw~q[gain=-10]   p1=<D#4-44 G4-47 A4+22>w~h[pan=-0.35]   bs=G2-47w~h[gain=-4]   p2=<D#5-44 G5-47 A5+22>w~h[pan=0.4]   p3=<D#6-44 G6-47 A6+22>w~h[pan=-0.55]
+bar 16: dr=Xw~q[gain=-9]    p1=<D#4-44 G4-47 A4+22>w~h[pan=-0.35]   bs=D#2-44w~h[gain=-4]   p2=<D#5-44 G5-47 A5+22>w~h[pan=0.4]   p3=<D#6-44 G6-47 A6+22>w~h[pan=-0.55]   sh=Rw B7-26q[pan=0.75]
+
+# text @b17: sideways. the cluster slides onto F# and the ground drops out from under it.
+# section: sideways [17-21]
+
+bar 17: dr=Xw~q[gain=-10]   p1=<F#4+21 A4+22>w~h[pan=-0.4]   bs=F#2+21w~h[gain=-5]   p2=<F#5+21 A5+22>w~h[pan=0.45]   p3=<D#6-44 F#6+21>w~h[pan=-0.6]
+bar 18: dr=Xw~q[gain=-11]   p1=<F#4+21 A4+22>w~h[pan=-0.4]   bs=F#2+21w~h[gain=-5]   p2=<F#5+21 A5+22>w~h[pan=0.45]   p3=<D#6-44 F#6+21>w~h[pan=-0.6]   sh=Rq Rq G#7+3q[pan=0.7] Rh
+bar 19: dr=Xw~q[gain=-11]   p1=<D#4-44 F#4+21>w~h[pan=-0.4]   bs=D#2-44w~h[gain=-6]   p2=<D#5-44 F#5+21 A5+22>w~h[pan=0.45]   p3=<D#6-44 F#6+21>w~h[pan=-0.6]
+bar 20: dr=Xw~q[gain=-12]   p1=<D#4-44 F#4+21>w~h[pan=-0.4]   bs=D#2-44w~h[gain=-6]   p2=<D#5-44 F#5+21 A5+22>w~h[pan=0.45]   p3=A6+22w~h[pan=-0.6]   ch=Rh Rq F6-46q[pan=0.5] Rq
+bar 21: dr=Xw~q[gain=-12]   p1=<G4-47 A4+22>w~h[pan=-0.35]   bs=G2-47w~h[gain=-7]   p2=<G5-47 A5+22>w~h[pan=0.4]   p3=A6+22w~h[pan=-0.6]   sh=Rw A7-2q[pan=-0.75]
+
+# text @b22: subtraction. one voice leaves each bar until only the low A is left.
+# section: subtraction [22-26]
+
+bar 22: dr=Xw~q[gain=-13]   p1=<G4-47 A4+22>w~h[pan=-0.3]   bs=A2+22w~h[gain=-8]   p2=A5+22w~h[pan=0.35]
+bar 23: dr=Xw~q[gain=-14]   p1=A4+22w~h[pan=-0.3]   bs=A2+22w~h[gain=-9]   p2=A5+22w~h[pan=0.35]   sh={ppp} Rh Rq A7-2q[pan=0.6] Rq
+bar 24: dr=Xw~q[gain=-15]   p1=A4+22w~h[pan=-0.25]   bs=A2+22w~h[gain=-10]
+bar 25: dr=Xw~q[gain=-16]   p1=A4+22w~h[pan=-0.25]
+bar 26: dr=Xw~q[gain=-18]   ch={ppp} Rw A6-49q

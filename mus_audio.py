@@ -271,7 +271,16 @@ def master(x, target_rms_db=-17.0, ceiling=0.89):
     x = x * g
 
     x = np.tanh(x * 1.08) * 0.95
-    return (x * ((10 ** (-1.0 / 20)) / (np.abs(x).max() + 1e-9))).astype(np.float32)
+    # Land on the requested RMS, bounded by the peak ceiling. Neither half of
+    # this is optional: normalising peak unconditionally lets crest factor
+    # decide the level and silently overrides `# master: rms=` (a -20 target
+    # came out at -17.8), while pre-gain alone undershoots it by however much
+    # the limiter then removed (-17 came out at -18.3).
+    ceil_lin = 10 ** (-1.0 / 20)
+    cur = float(np.sqrt((x ** 2).mean()) + 1e-12)
+    want = 10 ** ((target_rms_db - 20 * math.log10(cur)) / 20.0)
+    allowed = ceil_lin / (float(np.abs(x).max()) + 1e-9)
+    return (x * min(want, allowed)).astype(np.float32)
 
 
 # ------------------------------------------------------------------- the pack
@@ -529,7 +538,7 @@ def render(score_path: Path, out_path: Path, verbose=True):
         for b in range(mb.bar_num, mb.end_bar + 1):
             bar_content[b] = mb.track_content
 
-    stats = {"notes": 0, "skipped": 0}
+    stats = {"notes": 0, "skipped": 0, "bad": []}
 
     for abbr, voice in voices.items():
         cur_dyn = "mf"
@@ -545,7 +554,15 @@ def render(score_path: Path, out_path: Path, verbose=True):
             for tk in toks:
                 ev = parse_token(tk)
                 if ev is None:
+                    # Silently dropping unparseable tokens hides typos that
+                    # shift a whole bar's timing. A homoglyph in a duration
+                    # ('Rе' with a Cyrillic e) cost two debugging passes.
+                    if tk.strip() not in ("-", ""):
+                        stats["bad"].append(f"b{b} {abbr}: {tk}")
                     continue
+                if (ev.ql <= 0 and tk.strip() != "R"
+                        and ev.kind in ("note", "chord", "rest", "unpitched")):
+                    stats["bad"].append(f"b{b} {abbr}: {tk} (zero duration)")
                 if voice.defaults:
                     ev.params = {**voice.defaults, **ev.params}
 
@@ -724,6 +741,12 @@ def render(score_path: Path, out_path: Path, verbose=True):
     out = master(out, target_rms_db=mtgt)
 
     sf.write(str(out_path), out.T, SR, subtype="PCM_24")
+    if stats["bad"]:
+        print(f"  ! {len(stats['bad'])} unparseable token(s):", file=sys.stderr)
+        for b in stats["bad"][:12]:
+            print(f"      {b}", file=sys.stderr)
+        if len(stats["bad"]) > 12:
+            print(f"      ... and {len(stats['bad']) - 12} more", file=sys.stderr)
     if verbose:
         rms = float(np.sqrt((out ** 2).mean()))
         print(f"{score_path.name}: {stats['notes']} events, "

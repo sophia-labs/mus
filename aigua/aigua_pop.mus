@@ -1,0 +1,127 @@
+# score: Aigua — Bright Bird (pop)
+# summary: 68 bars / 10 voices / ~2.6 min
+# tempo: 104
+# time: 4/4
+# key: A
+# bars: 68
+# pack: instrument.json
+# sidechain: kk depth=0.34 rel=0.13
+# master: rms=-13
+
+# text @b1: third position. the first score bent to the birds, the second overrode
+# text @b1: them. this one makes them legible: A major, I-V-vi-IV, a hook that repeats.
+
+# instruments:
+#   kk = kick (perc, voice=buzz, st=-30->-48, curve=exp, tau=0.038, dist=2, lpf=210, rel=0.10, duck=0, send=0.04, gain=-1)
+#   sn = snare (perc, voice=car, off=1150, hpf=260, lpf=7500, dist=2, rel=0.07, send=0.20, gain=-1)
+#   hh = hats (perc, voice=tick, hpf=6200, rel=0.010, send=0.07, gain=-15)
+#   bs = bass (bass, voice=buzz, lpf=1100, dist=1.4, rel=0.05, send=0.03, gain=-2)
+#   pd = pad (treble, voice=mid, str=fit, atk=0.22, rel=0.60, lpf=4200, send=0.34, gain=-13)
+#   ld = lead (treble, voice=call, lpf=6500, send=0.22, gain=1)
+#   hm = harmony (treble, voice=bright, lpf=5200, send=0.26, gain=-9)
+#   pl = pluck (treble, voice=tick, hpf=900, send=0.24, gain=-11)
+#   sh = sparkle (treble, voice=glide, send=0.40, gain=-16)
+#   ch = answer (treble, voice=mid, lpf=5000, send=0.28, gain=-10)
+
+# section: intro [1-4]
+
+bar 1: pd={p} <A5 C#6 E6>w   pl=Rh A6e C#7e Rq
+bar 2: pd=<G#5 B5 E6>w   pl=Rh B6e G#6e Rq   sh={pp} Rw
+bar 3: pd=<F#5 A5 C#6>w   pl=Rh A6e F#6e Rq
+bar 4: pd=<F#5 A5 D6>w   pl=A6e F#6e D6e F#6e A6q Rq   sh=Rh Rq A7q[pan=0.5]
+
+# section: verse 1 [5-12]
+
+bar 5:  kk=Xq[gate] Rq Xq[gate] Rq   hh=(A8e[pan=-0.3] A8e[pan=0.3] ×4)   bs=A2q[gate] Rq A2e[gate] Re A2q[gate]   pd=<A5 C#6 E6>w   ld={mf} Rq E6q C#6q A5q
+bar 6:  kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8e[pan=-0.3] A8e[pan=0.3] ×4)   bs=E2q[gate] Rq E2e[gate] Re E2q[gate]   pd=<G#5 B5 E6>w   ld=B5h Rh
+bar 7:  kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8e[pan=-0.3] A8e[pan=0.3] ×4)   bs=F#2q[gate] Rq F#2e[gate] Re F#2q[gate]   pd=<F#5 A5 C#6>w   ld=Rq C#6q A5q F#5q
+bar 8:  kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8e[pan=-0.3] A8e[pan=0.3] ×4)   bs=D2q[gate] Rq D2e[gate] Re D2q[gate]   pd=<F#5 A5 D6>w   ld=A5h Rh   ch=Rh D6e F#6e Rq
+bar 9:  kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8e[pan=-0.3] A8e[pan=0.3] ×4)   bs=A2q[gate] Rq A2e[gate] Re A2q[gate]   pd=<A5 C#6 E6>w   ld=Rq E6q C#6q A5q
+bar 10: kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8e[pan=-0.3] A8e[pan=0.3] ×4)   bs=E2q[gate] Rq E2e[gate] Re E2q[gate]   pd=<G#5 B5 E6>w   ld=B5q G#5q E5h
+bar 11: kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8e[pan=-0.3] A8e[pan=0.3] ×4)   bs=F#2q[gate] Rq F#2e[gate] Re F#2q[gate]   pd=<F#5 A5 C#6>w   ld=Rq C#6q E6q F#6q
+bar 12: kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=D2q[gate] Rq D2e[gate] Re D2e[gate] Re   pd=<F#5 A5 D6>w   ld=E6h Rh   pl=Rh D6e F#6e A6e Re
+
+# text @b13: pre-chorus. the line climbs and the floor drops out on the last bar.
+# section: pre-chorus [13-16]
+
+bar 13: kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=F#2q[gate] F#2e[gate] Re F#2q[gate] F#2q[gate]   pd=<F#5 A5 C#6>w   ld={mf} F#5q A5q C#6q E6q
+bar 14: kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=D2q[gate] D2e[gate] Re D2q[gate] D2q[gate]   pd=<F#5 A5 D6>w   ld=D6q F#6q A6h   hm=Rh F#6e A6e Rq
+bar 15: kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=E2q[gate] E2e[gate] Re E2q[gate] E2q[gate]   pd=<G#5 B5 E6>w   ld=E6q G#6q B6h   hm=Rh B6e G#6e Rq
+bar 16: sn=Rh Xe[stut=4] Re Xq[gate]   hh=(A8t[pan=-0.45] A8t[pan=0.45] ×8)   pd=<G#5 B5 E6>h Rh   ld=B6h Rh   sh=Rh A7h[pan=-0.6->0.6]
+
+# text @b17: chorus. same four chords, but the hook is one rhythm repeated four times.
+# section: chorus 1 [17-24]
+
+bar 17: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=A2q[gate] A2e[gate] Re A2q[gate] A2q[gate]   pd={f} <A5 C#6 E6>w   ld={f} E6e E6e C#6q A5h   hm=Rh <C#6 E6>h   sh=A7q[pan=0.55] Rq Rh
+bar 18: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=E2q[gate] E2e[gate] Re E2q[gate] E2q[gate]   pd=<G#5 B5 E6>w   ld=E6e E6e B5q G#5h   hm=Rh <B5 E6>h
+bar 19: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=F#2q[gate] F#2e[gate] Re F#2q[gate] F#2q[gate]   pd=<F#5 A5 C#6>w   ld=C#6e C#6e A5q F#5h   hm=Rh <A5 C#6>h   pl=Rh Rq A6e C#7e
+bar 20: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xe[stut=3] Re   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=D2q[gate] D2e[gate] Re D2q[gate] D2q[gate]   pd=<F#5 A5 D6>w   ld=D6e D6e F#6q A6h   hm=Rh <F#6 A6>h
+bar 21: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=A2q[gate] A2e[gate] Re A2q[gate] A2q[gate]   pd=<A5 C#6 E6>w   ld=E6e E6e C#6q A5h   hm=Rh <C#6 E6>h   sh=A7q[pan=-0.55] Rq Rh
+bar 22: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=E2q[gate] E2e[gate] Re E2q[gate] E2q[gate]   pd=<G#5 B5 E6>w   ld=E6e E6e B5q G#5h   hm=Rh <B5 E6>h
+bar 23: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=F#2q[gate] F#2e[gate] Re F#2q[gate] F#2q[gate]   pd=<F#5 A5 C#6>w   ld=C#6e C#6e E6q F#6h   hm=Rh <A5 C#6>h
+bar 24: kk=Xq[gate] Xe[gate] Re Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xq[gate] Rq Xe[stut=4] Re   hh=(A8t[pan=-0.45] A8t[pan=0.45] ×8)   bs=E2q[gate] E2e[gate] Re E2h[gate]   pd=<G#5 B5 E6>w   ld=E6h Rh   pl=Rh A6e C#7e E7e Re
+
+# section: verse 2 [25-32]
+
+bar 25: kk=Xq[gate] Rq Xq[gate] Rq   hh=(A8e[pan=-0.3] A8e[pan=0.3] ×4)   bs=A2q[gate] Rq A2e[gate] Re A2q[gate]   pd={mp} <A5 C#6 E6>w   ld={mf} Rq E6q C#6q A5q   pl=Rh A6e C#7e Rq
+bar 26: kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8e[pan=-0.3] A8e[pan=0.3] ×4)   bs=E2q[gate] Rq E2e[gate] Re E2q[gate]   pd=<G#5 B5 E6>w   ld=B5h Rh   ch=Rh B5e E6e Rq
+bar 27: kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8e[pan=-0.3] A8e[pan=0.3] ×4)   bs=F#2q[gate] Rq F#2e[gate] Re F#2q[gate]   pd=<F#5 A5 C#6>w   ld=Rq C#6q A5q F#5q
+bar 28: kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=D2q[gate] Rq D2e[gate] Re D2q[gate]   pd=<F#5 A5 D6>w   ld=A5h Rh   ch=Rh D6e F#6e A6e Re
+bar 29: kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=A2q[gate] Rq A2e[gate] Re A2q[gate]   pd=<A5 C#6 E6>w   ld=Rq E6q C#6q A5q   pl=Rh Rq A6e E7e
+bar 30: kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=E2q[gate] Rq E2e[gate] Re E2q[gate]   pd=<G#5 B5 E6>w   ld=B5q G#5q E5h
+bar 31: kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=F#2q[gate] Rq F#2e[gate] Re F#2q[gate]   pd=<F#5 A5 C#6>w   ld=Rq C#6q E6q F#6q   hm=Rh Rq A6q
+bar 32: kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xe[stut=3] Re   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=D2q[gate] Rq D2e[gate] Re D2e[gate] Re   pd=<F#5 A5 D6>w   ld=E6h Rh
+
+# section: pre-chorus 2 [33-36]
+
+bar 33: kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=F#2q[gate] F#2e[gate] Re F#2q[gate] F#2q[gate]   pd=<F#5 A5 C#6>w   ld=F#5q A5q C#6q E6q
+bar 34: kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=D2q[gate] D2e[gate] Re D2q[gate] D2q[gate]   pd=<F#5 A5 D6>w   ld=D6q F#6q A6h   hm=Rh F#6e A6e Rq
+bar 35: kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8t[pan=-0.45] A8t[pan=0.45] ×8)   bs=E2q[gate] E2e[gate] Re E2q[gate] E2q[gate]   pd=<G#5 B5 E6>w   ld=E6q G#6q B6h   hm=Rh B6e G#6e Rq
+bar 36: sn=Rh Xe[stut=6] Re Xq[gate]   hh=(A8t[pan=-0.45] A8t[pan=0.45] ×8)   pd=<G#5 B5 E6>h Rh   ld=B6h Rh   sh=Rh A7h[pan=0.6->-0.6]
+
+# section: chorus 2 [37-44]
+
+bar 37: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=A2q[gate] A2e[gate] Re A2q[gate] A2q[gate]   pd={f} <A5 C#6 E6>w   ld={f} E6e E6e C#6q A5h   hm=Rh <C#6 E6>h   sh=A7q[pan=0.55] Rq Rh
+bar 38: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=E2q[gate] E2e[gate] Re E2q[gate] E2q[gate]   pd=<G#5 B5 E6>w   ld=E6e E6e B5q G#5h   hm=Rh <B5 E6>h   pl=Rh Rq B6e G#6e
+bar 39: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=F#2q[gate] F#2e[gate] Re F#2q[gate] F#2q[gate]   pd=<F#5 A5 C#6>w   ld=C#6e C#6e A5q F#5h   hm=Rh <A5 C#6>h
+bar 40: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xe[stut=3] Re   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=D2q[gate] D2e[gate] Re D2q[gate] D2q[gate]   pd=<F#5 A5 D6>w   ld=D6e D6e F#6q A6h   hm=Rh <F#6 A6>h
+bar 41: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=A2q[gate] A2e[gate] Re A2q[gate] A2q[gate]   pd=<A5 C#6 E6>w   ld=E6e E6e C#6q A5h   hm=Rh <C#6 E6>h   sh=A7q[pan=-0.55] Rq Rh
+bar 42: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=E2q[gate] E2e[gate] Re E2q[gate] E2q[gate]   pd=<G#5 B5 E6>w   ld=E6e E6e B5q G#5h   hm=Rh <B5 E6>h
+bar 43: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   bs=F#2q[gate] F#2e[gate] Re F#2q[gate] F#2q[gate]   pd=<F#5 A5 C#6>w   ld=C#6e C#6e E6q F#6h   hm=Rh <A5 C#6>h
+bar 44: kk=Xq[gate] Xe[gate] Re Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xq[gate] Rq Xe[stut=4] Re   hh=(A8t[pan=-0.45] A8t[pan=0.45] ×8)   bs=D2q[gate] D2e[gate] Re D2h[gate]   pd=<F#5 A5 D6>w   ld=A6h Rh   pl=Rh D6e F#6e A6e Re
+
+# text @b45: bridge. the field recording comes back — no drums, one bird at its own pitch.
+# section: bridge [45-52]
+
+bar 45: pd={p} <F#5 A5 C#6>w   ld={mp} A6h[dist=1] Rh   sh=Rh Rq A7q[pan=0.5]
+bar 46: pd=<F#5 A5 D6>w   ch=D6e F#6e A6q Rh
+bar 47: pd=<A5 C#6 E6>w   ld=E6h[dist=1] C#6h[dist=1]
+bar 48: pd=<G#5 B5 E6>w   ch=Rh B5e E6e Rq   sh=Rw
+bar 49: kk=Xq[gate] Rq Rq Rq   pd=<F#5 A5 C#6>w   bs=F#2h[gate,lpf=650] Rh   ld=F#5q A5q C#6h
+bar 50: kk=Xq[gate] Rq Rq Rq   pd=<F#5 A5 D6>w   bs=D2h[gate,lpf=650] Rh   ld=D6q F#6q A6h
+bar 51: kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.35] A8s[pan=0.35] ×8)   pd=<G#5 B5 E6>w   bs=E2q[gate] Rq E2e[gate] Re E2q[gate]   ld=E6q G#6q B6h   hm=Rh B6e G#6e Rq
+bar 52: sn=Rh Xe[stut=6] Re Xe[stut=8] Re   hh=(A8t[pan=-0.45] A8t[pan=0.45] ×8)   pd=<G#5 B5 E6>h Rh   ld=B6h Rh   sh=Rh A7h[pan=-0.7->0.7]
+
+# text @b53: last chorus, up a fourth of arrangement rather than key — everything doubles.
+# section: final chorus [53-64]
+
+bar 53: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.4] A8s[pan=0.4] ×8)   bs={ff} A2q[gate] A2e[gate] Re A2q[gate] A2q[gate]   pd={ff} <A5 C#6 E6>w   ld={ff} E6e E6e C#6q A5h   hm=<A6 C#7>h <C#6 E6>h   sh=A7q[pan=0.6] Rq Rh   pl=Rh A6e C#7e Rq
+bar 54: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.4] A8s[pan=0.4] ×8)   bs=E2q[gate] E2e[gate] Re E2q[gate] E2q[gate]   pd=<G#5 B5 E6>w   ld=E6e E6e B5q G#5h   hm=<G#6 B6>h <B5 E6>h
+bar 55: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.4] A8s[pan=0.4] ×8)   bs=F#2q[gate] F#2e[gate] Re F#2q[gate] F#2q[gate]   pd=<F#5 A5 C#6>w   ld=C#6e C#6e A5q F#5h   hm=<A6 C#7>h <A5 C#6>h   pl=Rh Rq A6e C#7e
+bar 56: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xe[stut=3] Re   hh=(A8s[pan=-0.4] A8s[pan=0.4] ×8)   bs=D2q[gate] D2e[gate] Re D2q[gate] D2q[gate]   pd=<F#5 A5 D6>w   ld=D6e D6e F#6q A6h   hm=<F#6 A6>h <D6 F#6>h
+bar 57: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.4] A8s[pan=0.4] ×8)   bs=A2q[gate] A2e[gate] Re A2q[gate] A2q[gate]   pd=<A5 C#6 E6>w   ld=E6e E6e C#6q A5h   hm=<A6 C#7>h <C#6 E6>h   sh=A7q[pan=-0.6] Rq Rh
+bar 58: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.4] A8s[pan=0.4] ×8)   bs=E2q[gate] E2e[gate] Re E2q[gate] E2q[gate]   pd=<G#5 B5 E6>w   ld=E6e E6e B5q G#5h   hm=<G#6 B6>h <B5 E6>h   pl=Rh Rq B6e E7e
+bar 59: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.4] A8s[pan=0.4] ×8)   bs=F#2q[gate] F#2e[gate] Re F#2q[gate] F#2q[gate]   pd=<F#5 A5 C#6>w   ld=C#6e C#6e E6q F#6h   hm=<A6 C#7>h <A5 C#6>h
+bar 60: kk=Xq[gate] Xe[gate] Re Xq[gate] Xe[gate] Xe[gate]   sn=Rq Xq[gate] Rq Xe[stut=4] Re   hh=(A8t[pan=-0.45] A8t[pan=0.45] ×8)   bs=D2q[gate] D2e[gate] Re D2h[gate]   pd=<F#5 A5 D6>w   ld=A6h Rh   pl=Rh D6e F#6e A6e Re
+bar 61: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.4] A8s[pan=0.4] ×8)   bs=A2q[gate] A2e[gate] Re A2q[gate] A2q[gate]   pd=<A5 C#6 E6>w   ld=E6e E6e C#6q A5h   hm=<A6 C#7>h <C#6 E6>h
+bar 62: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.4] A8s[pan=0.4] ×8)   bs=E2q[gate] E2e[gate] Re E2q[gate] E2q[gate]   pd=<G#5 B5 E6>w   ld=E6e E6e B5q G#5h   hm=<G#6 B6>h <B5 E6>h
+bar 63: kk=Xq[gate] Xe[gate] Re Xq[gate] Xq[gate]   sn=Rq Xq[gate] Rq Xq[gate]   hh=(A8s[pan=-0.4] A8s[pan=0.4] ×8)   bs=F#2q[gate] F#2e[gate] Re F#2q[gate] F#2q[gate]   pd=<F#5 A5 D6>w   ld=D6e D6e F#6q A6h   hm=<F#6 A6>h <D6 F#6>h
+bar 64: kk=Xq[gate] Rq Xq[gate] Rq   sn=Rq Xq[gate] Rq Xe[stut=6] Re   hh=(A8t[pan=-0.45] A8t[pan=0.45] ×8)   bs=E2q[gate] Rq E2h[gate]   pd=<G#5 B5 E6>w   ld=E6h Rh   sh=Rh A7h[pan=0.7->-0.7]
+
+# text @b65: resolve. the whole point of the key.
+# section: outro [65-68]
+
+bar 65: pd={mf} <A5 C#6 E6>w   ld={mp} E6q C#6q A5h   bs=A2h[gate,lpf=700] Rh   pl=Rh A6e C#7e Rq
+bar 66: pd=<F#5 A5 C#6>w   ch=Rh A6e F#6e Rq   sh={pp} Rh Rq A7q[pan=0.4]
+bar 67: pd={p} <A5 C#6 E6>w   ld={p} A5w
+bar 68: pd={pp} <A5 C#6 E6>w[fer]   ch={pp} Rh Rq A6q[dist=1]
