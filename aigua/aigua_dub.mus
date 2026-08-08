@@ -1,0 +1,80 @@
+# score: Aigua — Submerged (dub techno)
+# summary: 88 bars / 8 voices / ~2.9 min
+# tempo: 124
+# time: 4/4
+# key: Am
+# bars: 88
+# tuning: A=445.6
+# pack: instrument.json
+# sidechain: kk depth=0.55 rel=0.30
+# master: rms=-15
+
+# text @b1: the echoes are not an effect. each one is a written note, three
+# text @b1: sixteenths after the last, darker and quieter and further across.
+# text @b1: a dub delay is a thing a score can say.
+
+# instruments:
+#   dr = rumble bed (bass, voice=sub, str=fit, atk=0.02, rel=0.04, lpf=190, send=0.06, gain=-19)
+#   hs = hiss (perc, voice=car, str=fit, off=900, hpf=2400, lpf=8000, atk=0.4, rel=0.5, send=0.18, gain=-26)
+#   kk = kick (perc, voice=buzz, st=-30->-50, curve=exp, tau=0.045, lpf=150, dist=1.6, rel=0.14, duck=0, send=0.05, gain=-2)
+#   bs = sub (bass, voice=buzz, str=fit, lpf=340, rel=0.10, send=0.02, gain=-1)
+#   sb = stab (treble, voice=mid, send=0.88, gain=-7)
+#   pc = tick (perc, voice=tick, hpf=4000, rel=0.012, send=0.45, gain=-19)
+#   sh = high (treble, voice=glide, send=0.92, gain=-21)
+#   ch = call (treble, voice=call, send=0.80, gain=-17)
+
+# section: surface [1-8]
+
+bars 1-4:  dr=Xww[gain=-22]   hs=Xw[gain=-30]
+bars 5-6:  dr=Xww[gain=-20]   hs=Xw[gain=-28]   sb={pp} Rq. <A5+22 C6 E6>s[lpf=900] Re <A5+22 C6 E6>s[gain=-8,lpf=700,pan=0.5] Rq
+bars 7-8:  dr=Xww[gain=-20]   hs=Xw[gain=-27]   sb=Rq. <A5+22 C6 E6>s[lpf=1400] Re <A5+22 C6 E6>s[gain=-8,lpf=1000,pan=0.55] Re <A5+22 C6 E6>s[gain=-14,lpf=750,pan=-0.55] Re
+
+# text @b9: the pulse. four to the floor, and the bass is one bird holding a whole bar.
+# section: pulse [9-24]
+
+bars 9-12:  dr=Xww[gain=-19]  hs=Xw[gain=-26]  kk={mf} Xq[gate] Xq[gate] Xq[gate] Xq[gate]  bs=A1+22w   sb=Rq. <A5+22 C6 E6>s[lpf=2200] Re <A5+22 C6 E6>s[gain=-7,lpf=1500,pan=0.55] Re <A5+22 C6 E6>s[gain=-13,lpf=1000,pan=-0.55] Re
+bars 13-14: dr=Xww[gain=-19]  hs=Xw[gain=-26]  kk=Xq[gate] Xq[gate] Xq[gate] Xq[gate]  bs=A1+22w   sb=Rq. <A5+22 C6 E6>s[lpf=2600] Re <A5+22 C6 E6>s[gain=-7,lpf=1800,pan=0.6] Re <A5+22 C6 E6>s[gain=-13,lpf=1200,pan=-0.6] Re <A5+22 C6 E6>s[gain=-19,lpf=800,pan=0.75]
+bars 15-16: dr=Xww[gain=-18]  hs=Xw[gain=-25]  kk=Xq[gate] Xq[gate] Xq[gate] Xq[gate]  bs=G1-47w   sb=Rq. <G5-47 A#5 D6>s[lpf=2600] Re <G5-47 A#5 D6>s[gain=-7,lpf=1800,pan=0.6] Re <G5-47 A#5 D6>s[gain=-13,lpf=1200,pan=-0.6] Re <G5-47 A#5 D6>s[gain=-19,lpf=800,pan=0.75]
+bars 17-20: dr=Xww[gain=-18]  hs=Xw[gain=-25]  kk=Xq[gate] Xq[gate] Xq[gate] Xq[gate]  bs=A1+22w   sb=Rq. <A5+22 C6 E6>s[lpf=3200] Re <A5+22 C6 E6>s[gain=-7,lpf=2200,pan=0.6] Re <A5+22 C6 E6>s[gain=-13,lpf=1400,pan=-0.6] Re <A5+22 C6 E6>s[gain=-19,lpf=900,pan=0.75]   pc=Re A7-49e Re A7-49e Re A7-49e Re A7-49e
+bars 21-22: dr=Xww[gain=-17]  hs=Xw[gain=-24]  kk=Xq[gate] Xq[gate] Xq[gate] Xq[gate]  bs=A1+22w   sb=Rq. <A5+22 C6 E6>s[lpf=3600] Re <A5+22 C6 E6>s[gain=-7,lpf=2400,pan=0.62] Re <A5+22 C6 E6>s[gain=-13,lpf=1500,pan=-0.62] Re <A5+22 C6 E6>s[gain=-19,lpf=950,pan=0.78]   pc=Re A7-49e Re A7-49e Re A7-49e Re A7-49e
+bars 23-24: dr=Xww[gain=-17]  hs=Xw[gain=-24]  kk=Xq[gate] Xq[gate] Xq[gate] Xq[gate]  bs=G1-47w   sb=Rq. <G5-47 A#5 D6>s[lpf=3600] Re <G5-47 A#5 D6>s[gain=-7,lpf=2400,pan=0.62] Re <G5-47 A#5 D6>s[gain=-13,lpf=1500,pan=-0.62] Re <G5-47 A#5 D6>s[gain=-19,lpf=950,pan=0.78]   pc=Re A7-49e Re A7-49e Re A7-49e Re A7-49e   sh={pp} Rh Rq A7-2q[pan=-0.7]
+
+# text @b25: the filter opens across sixteen bars. nothing else changes. that is the genre.
+# section: open [25-40]
+
+bars 25-28: dr=Xww[gain=-16]  hs=Xw[gain=-23]  kk=Xq[gate] Xq[gate] Xq[gate] Xq[gate]  bs=A1+22w   sb={p} Rq. <A5+22 C6 E6 G6-47>s[lpf=4200] Re <A5+22 C6 E6 G6-47>s[gain=-7,lpf=2800,pan=0.62] Re <A5+22 C6 E6 G6-47>s[gain=-13,lpf=1700,pan=-0.62] Re <A5+22 C6 E6 G6-47>s[gain=-19,lpf=1000,pan=0.78]   pc=Re A7-49e Re A7-49e Re A7-49e Re A7-49e
+bars 29-30: dr=Xww[gain=-16]  hs=Xw[gain=-22]  kk=Xq[gate] Xq[gate] Xq[gate] Xq[gate]  bs=A1+22w   sb=Rq. <A5+22 C6 E6 G6-47>s[lpf=5200] Re <A5+22 C6 E6 G6-47>s[gain=-7,lpf=3400,pan=0.65] Re <A5+22 C6 E6 G6-47>s[gain=-13,lpf=2000,pan=-0.65] Re <A5+22 C6 E6 G6-47>s[gain=-19,lpf=1200,pan=0.8]   pc=Re A7-49e Re A7-49e Re A7-49e Re A7-49e   ch=Rh A6+20h[lpf=2600,pan=-0.4]
+bars 31-32: dr=Xww[gain=-16]  hs=Xw[gain=-22]  kk=Xq[gate] Xq[gate] Xq[gate] Xq[gate]  bs=G1-47w   sb=Rq. <G5-47 A#5 D6 F6>s[lpf=5200] Re <G5-47 A#5 D6 F6>s[gain=-7,lpf=3400,pan=0.65] Re <G5-47 A#5 D6 F6>s[gain=-13,lpf=2000,pan=-0.65] Re <G5-47 A#5 D6 F6>s[gain=-19,lpf=1200,pan=0.8]   pc=Re A7-49e Re A7-49e Re A7-49e Re A7-49e
+bars 33-36: dr=Xww[gain=-15]  hs=Xw[gain=-21]  kk=Xq[gate] Xq[gate] Xq[gate] Xq[gate]  bs=A1+22w   sb={mp} Rq. <A5+22 C6 E6 G6-47>s[lpf=6500] Re <A5+22 C6 E6 G6-47>s[gain=-7,lpf=4200,pan=0.65] Re <A5+22 C6 E6 G6-47>s[gain=-13,lpf=2400,pan=-0.65] Re <A5+22 C6 E6 G6-47>s[gain=-19,lpf=1400,pan=0.82]   pc=Re A7-49e Re A7-49s A7-49s Re A7-49e Re A7-49e
+bars 37-38: dr=Xww[gain=-15]  hs=Xw[gain=-21]  kk=Xq[gate] Xq[gate] Xq[gate] Xq[gate]  bs=A1+22w   sb=Rq. <A5+22 C6 E6 G6-47>s[lpf=7500] Re <A5+22 C6 E6 G6-47>s[gain=-7,lpf=4800,pan=0.68] Re <A5+22 C6 E6 G6-47>s[gain=-13,lpf=2800,pan=-0.68] Re <A5+22 C6 E6 G6-47>s[gain=-19,lpf=1600,pan=0.85]   pc=Re A7-49e Re A7-49s A7-49s Re A7-49e Re A7-49e   sh=Rq A7-2q[pan=0.7] Rh
+bars 39-40: dr=Xww[gain=-15]  hs=Xw[gain=-20]  kk=Xq[gate] Xq[gate] Xq[gate] Xq[gate]  bs=G1-47w   sb=Rq. <G5-47 A#5 D6 F6>s[lpf=7500] Re <G5-47 A#5 D6 F6>s[gain=-7,lpf=4800,pan=0.68] Re <G5-47 A#5 D6 F6>s[gain=-13,lpf=2800,pan=-0.68] Re <G5-47 A#5 D6 F6>s[gain=-19,lpf=1600,pan=0.85]   pc=Re A7-49e Re A7-49e Re A7-49e Re A7-49e   ch=Rh F#6+21h[lpf=3000,pan=0.45]
+
+# text @b41: submerge. the floor goes. only the reverb tail is left holding time.
+# section: submerge [41-52]
+
+bars 41-44: dr=Xww[gain=-17]  hs=Xw[gain=-19]  sb={p} Rq. <A5+22 C6 E6 G6-47>s[lpf=5000] Re <A5+22 C6 E6 G6-47>s[gain=-6,lpf=3400,pan=0.7] Re <A5+22 C6 E6 G6-47>s[gain=-11,lpf=2200,pan=-0.7] Re <A5+22 C6 E6 G6-47>s[gain=-16,lpf=1300,pan=0.85]
+bars 45-46: dr=Xww[gain=-18]  hs=Xw[gain=-19]  sb=Rq. <G5-47 A#5 D6 F6>s[lpf=4200] Re <G5-47 A#5 D6 F6>s[gain=-6,lpf=2800,pan=0.7] Re <G5-47 A#5 D6 F6>s[gain=-11,lpf=1800,pan=-0.7] Re <G5-47 A#5 D6 F6>s[gain=-16,lpf=1100,pan=0.85]   ch={pp} Rh A6+20h[lpf=2200,pan=-0.5]
+bars 47-48: dr=Xww[gain=-19]  hs=Xw[gain=-20]  sb=Rq. <A5+22 C6 E6>s[lpf=3200] Re <A5+22 C6 E6>s[gain=-6,lpf=2200,pan=0.72] Re <A5+22 C6 E6>s[gain=-11,lpf=1400,pan=-0.72] Re
+bars 49-50: dr=Xww[gain=-20]  hs=Xw[gain=-21]  sb=Rq. <A5+22 C6 E6>s[lpf=2200] Re <A5+22 C6 E6>s[gain=-6,lpf=1500,pan=0.75] Rq   sh={ppp} Rh A7-2h[pan=-0.8->0.8]
+bars 51-52: dr=Xww[gain=-19]  hs=Xw[gain=-20]  sb=Rq. <A5+22 C6 E6>s[lpf=2800] Re <A5+22 C6 E6>s[gain=-6,lpf=1900,pan=0.75] Re <A5+22 C6 E6>s[gain=-11,lpf=1300,pan=-0.75] Re   kk={p} Rh Rq Xq[gate]
+
+# text @b53: it comes back the way it left, one element at a time.
+# section: return [53-76]
+
+bars 53-56: dr=Xww[gain=-17]  hs=Xw[gain=-22]  kk={mf} Xq[gate] Xq[gate] Xq[gate] Xq[gate]  bs=A1+22w   sb=Rq. <A5+22 C6 E6 G6-47>s[lpf=5000] Re <A5+22 C6 E6 G6-47>s[gain=-7,lpf=3400,pan=0.65] Re <A5+22 C6 E6 G6-47>s[gain=-13,lpf=2200,pan=-0.65] Re <A5+22 C6 E6 G6-47>s[gain=-19,lpf=1300,pan=0.8]
+bars 57-60: dr=Xww[gain=-16]  hs=Xw[gain=-22]  kk=Xq[gate] Xq[gate] Xq[gate] Xq[gate]  bs=A1+22w   sb=Rq. <A5+22 C6 E6 G6-47>s[lpf=6200] Re <A5+22 C6 E6 G6-47>s[gain=-7,lpf=4000,pan=0.65] Re <A5+22 C6 E6 G6-47>s[gain=-13,lpf=2500,pan=-0.65] Re <A5+22 C6 E6 G6-47>s[gain=-19,lpf=1500,pan=0.82]   pc=Re A7-49e Re A7-49e Re A7-49e Re A7-49e
+bars 61-62: dr=Xww[gain=-15]  hs=Xw[gain=-21]  kk=Xq[gate] Xq[gate] Xq[gate] Xq[gate]  bs=G1-47w   sb=Rq. <G5-47 A#5 D6 F6>s[lpf=6800] Re <G5-47 A#5 D6 F6>s[gain=-7,lpf=4400,pan=0.68] Re <G5-47 A#5 D6 F6>s[gain=-13,lpf=2700,pan=-0.68] Re <G5-47 A#5 D6 F6>s[gain=-19,lpf=1600,pan=0.85]   pc=Re A7-49e Re A7-49s A7-49s Re A7-49e Re A7-49e
+bars 63-66: dr=Xww[gain=-15]  hs=Xw[gain=-21]  kk=Xq[gate] Xq[gate] Xq[gate] Xq[gate]  bs=A1+22w   sb={mf} Rq. <A5+22 C6 E6 G6-47>s[lpf=7800] Re <A5+22 C6 E6 G6-47>s[gain=-7,lpf=5000,pan=0.68] Re <A5+22 C6 E6 G6-47>s[gain=-13,lpf=3000,pan=-0.68] Re <A5+22 C6 E6 G6-47>s[gain=-19,lpf=1800,pan=0.85]   pc=Re A7-49e Re A7-49s A7-49s Re A7-49e Re A7-49e   ch=Rh A6+20h[lpf=3400,pan=-0.45]
+bars 67-70: dr=Xww[gain=-14]  hs=Xw[gain=-20]  kk=Xq[gate] Xq[gate] Xq[gate] Xq[gate]  bs=A1+22w   sb=Rq. <A5+22 C6 E6 G6-47>s[lpf=9000] Re <A5+22 C6 E6 G6-47>s[gain=-7,lpf=5800,pan=0.7] Re <A5+22 C6 E6 G6-47>s[gain=-13,lpf=3400,pan=-0.7] Re <A5+22 C6 E6 G6-47>s[gain=-19,lpf=2000,pan=0.88]   pc=Re A7-49e Re A7-49s A7-49s Re A7-49e Re A7-49e   sh=Rq A7-2q[pan=0.75] Rh
+bars 71-72: dr=Xww[gain=-14]  hs=Xw[gain=-20]  kk=Xq[gate] Xq[gate] Xq[gate] Xq[gate]  bs=G1-47w   sb=Rq. <G5-47 A#5 D6 F6>s[lpf=9000] Re <G5-47 A#5 D6 F6>s[gain=-7,lpf=5800,pan=0.7] Re <G5-47 A#5 D6 F6>s[gain=-13,lpf=3400,pan=-0.7] Re <G5-47 A#5 D6 F6>s[gain=-19,lpf=2000,pan=0.88]   pc=Re A7-49e Re A7-49e Re A7-49e Re A7-49e   ch=Rh F#6+21h[lpf=3600,pan=0.5]
+bars 73-76: dr=Xww[gain=-15]  hs=Xw[gain=-21]  kk=Xq[gate] Xq[gate] Xq[gate] Xq[gate]  bs=A1+22w   sb=Rq. <A5+22 C6 E6 G6-47>s[lpf=7000] Re <A5+22 C6 E6 G6-47>s[gain=-7,lpf=4600,pan=0.68] Re <A5+22 C6 E6 G6-47>s[gain=-13,lpf=2800,pan=-0.68] Re <A5+22 C6 E6 G6-47>s[gain=-19,lpf=1700,pan=0.85]   pc=Re A7-49e Re A7-49e Re A7-49e Re A7-49e
+
+# text @b77: dissolve. the kick goes, then the bass, then the stab, then the hiss.
+# section: dissolve [77-88]
+
+bars 77-78: dr=Xww[gain=-16]  hs=Xw[gain=-22]  kk={mp} Xq[gate] Xq[gate] Xq[gate] Xq[gate]  bs=A1+22w   sb={mp} Rq. <A5+22 C6 E6>s[lpf=5000] Re <A5+22 C6 E6>s[gain=-7,lpf=3200,pan=0.65] Re <A5+22 C6 E6>s[gain=-13,lpf=2000,pan=-0.65] Re
+bars 79-80: dr=Xww[gain=-17]  hs=Xw[gain=-22]  kk={p} Xq[gate] Rq Xq[gate] Rq  bs=A1+22w   sb=Rq. <A5+22 C6 E6>s[lpf=4000] Re <A5+22 C6 E6>s[gain=-7,lpf=2600,pan=0.68] Rq
+bars 81-82: dr=Xww[gain=-18]  hs=Xw[gain=-23]  bs=A1+22w[gain=-6]  sb={p} Rq. <A5+22 C6 E6>s[lpf=3000] Re <A5+22 C6 E6>s[gain=-7,lpf=2000,pan=0.7] Rq   sh={ppp} Rh A7-2h[pan=0.8->-0.8]
+bars 83-84: dr=Xww[gain=-19]  hs=Xw[gain=-24]  sb={pp} Rq. <A5+22 C6 E6>s[lpf=2200] Rq Rq Re
+bars 85-86: dr=Xww[gain=-21]  hs=Xw[gain=-26]  ch={ppp} Rh A6+20h[lpf=1800,dist=1]
+bars 87-88: dr=Xww[gain=-24]  hs=Xw[gain=-29]
