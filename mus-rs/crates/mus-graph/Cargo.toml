@@ -1,0 +1,10 @@
+[package]
+name = "mus-graph"
+version = "0.1.0"
+description = "The hinge: project(op-log) -> ScoreGraph (typed operative body; contested forks represented, never resolved) + the canonical text-reduction face."
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+mus-oplog = { path = "../mus-oplog" }

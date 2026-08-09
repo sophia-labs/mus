@@ -1,0 +1,12 @@
+[package]
+name = "mus-oplog"
+version = "0.1.0"
+description = "The mergeable source of a MUS score: content-addressed musical operations, union-merge logs, deterministic projection order, two-tier identity."
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"

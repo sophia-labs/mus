@@ -1,0 +1,24 @@
+@prefix mop: <https://sophia-labs.ai/ontology/mus-ops#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# mus-ops v0 DRAFT (2026-08-09) — the operation vocabulary: the MERGEABLE
+# SOURCE of a Score (R1). Ops are append-only; logs merge by union; projection
+# order is (lamport, actor, seq); op ids are content hashes (idempotent).
+# The Rust source of truth for shapes is mus-rs/crates/mus-oplog (keystone);
+# this file names the vocabulary for the graph face of logs themselves.
+
+mop:Op a rdfs:Class .
+mop:ScoreInit a rdfs:Class ; rdfs:comment "titles the score; exactly one per log (shape)." .
+mop:SetHeader a rdfs:Class ; rdfs:comment "tuning/tempo/meter/room/master/swing-annotation… typed keys." .
+mop:DeclareInstrument a rdfs:Class ; rdfs:comment "mints a Track lineage: abbrev, clef, source, defaults." .
+mop:AddEvent a rdfs:Class ; rdfs:comment "mints an EventLineage; carries the full initial EventState." .
+mop:SupersedeEvent a rdfs:Class ; rdfs:comment "new version of a lineage; carries basis (the version it saw). Two supersedes sharing a basis = contested heads." .
+mop:RetractEvent a rdfs:Class ; rdfs:comment "supersede-to-absence; tombstone semantics; basis-carrying like any supersede." .
+mop:AddSection a rdfs:Class .
+mop:SetSectionProse a rdfs:Class .
+mop:AnnotatePerformance a rdfs:Class ; rdfs:comment "swing and friends (R6)." .
+
+mop:actor a rdfs:Property .
+mop:seq a rdfs:Property ; rdfs:comment "per-actor monotone" .
+mop:lamport a rdfs:Property ; rdfs:comment "max(observed)+1 at append; first projection sort key" .
+mop:basis a rdfs:Property .

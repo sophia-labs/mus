@@ -1,0 +1,43 @@
+@prefix mus: <https://sophia-labs.ai/ontology/mus-score#> .
+@prefix musx: <https://sophia-labs.ai/ontology/mus-x#> .
+@prefix maud: <https://sophia-labs.ai/ontology/mus-audio#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# mus-core v0 DRAFT (2026-08-09) — the sealed layer of the MUS MO language.
+# Ratification pending (R2, plans/mus-mo-language-20260809.md §3).
+# One namespace family with mus-audio (maud:) — quotation edges cross them.
+
+mus:Score a rdfs:Class ; rdfs:comment "The Meaningful Object. Source: an op-log; this graph is its projection." .
+mus:Section a rdfs:Class .
+mus:Track a rdfs:Class ; rdfs:comment "A voice: an instrument binding plus its event lineages." .
+mus:Instrument a rdfs:Class .
+mus:VoiceSource a rdfs:Class ; rdfs:comment "sampler-pack voice | direct sample | tape. (Synth sources are mus-x.)" .
+mus:EventLineage a rdfs:Class ; rdfs:comment "Stable identity across edits (R5). Minted by the creating op." .
+mus:EventVersion a rdfs:Class ; rdfs:comment "Content-addressed state of a lineage. >1 current head = mus:contested." .
+mus:Quotation a rdfs:Class ; rdfs:comment "Edge to evidence: target is a maud: segment/hypothesis IRI. Core, not experimental." .
+mus:PerformanceAnnotation a rdfs:Class ; rdfs:comment "Swing etc. — applied by the render face, never baked into onsets (R6)." .
+mus:RenderReceipt a rdfs:Class ; rdfs:comment "Testimony: names contractHash, head-selection, engine version, pack/tape digests (R7)." .
+
+# Reserved, unimplemented (R4): forks promoted from tolerated to celebrated in v1.1.
+mus:Take a rdfs:Class ; rdfs:comment "RESERVED." .
+mus:TakeSelection a rdfs:Class ; rdfs:comment "RESERVED." .
+
+mus:lineage a rdfs:Property ; rdfs:comment "version → its lineage" .
+mus:basis a rdfs:Property ; rdfs:comment "version → the version its authoring op saw. Fork detection root." .
+mus:contested a rdfs:Property ; rdfs:comment "lineage → true when heads > 1. Advisory, loud, never auto-resolved (R8)." .
+mus:bar a rdfs:Property ; rdfs:range xsd:integer .
+mus:onsetQlNum a rdfs:Property ; rdfs:comment "rational onset numerator (R6)" .
+mus:onsetQlDen a rdfs:Property .
+mus:durQlNum a rdfs:Property .
+mus:durQlDen a rdfs:Property .
+mus:pitchMidiCents a rdfs:Property ; rdfs:comment "integer: midi*100 + cents. Chords repeat the property." .
+mus:dynamic a rdfs:Property .
+mus:param a rdfs:Property ; rdfs:comment "reified core param (name from the closed core set, value, optional sweep target)" .
+mus:glissTarget a rdfs:Property .
+mus:quotes a rdfs:Property ; rdfs:comment "event version → mus:Quotation → maud: IRI" .
+mus:quoteLayer a rdfs:Property ; rdfs:comment "resolved | octave" .
+mus:quoteSource a rdfs:Property ; rdfs:comment "pack | raw (tape)" .
+
+# Core param names (closed set, v0): pan gain lpf hpf send s str off st atk
+# rel curve tau drive dist crush decim stut duck. Everything else: musx:.
