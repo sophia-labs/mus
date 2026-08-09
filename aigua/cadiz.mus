@@ -1,0 +1,248 @@
+# score: Marcha de Cádiz — «Los cornetas nos anuncian» (Chueca & Valverde, 1886)
+# summary: 200 bars / 9 voices / 3:27
+# tempo: 116
+# time: 2/4
+# key: Bb
+# bars: 200
+# pack: instrument.json
+# master: rms=-13
+
+# text @b1: Final del Acto I de la zarzuela «Cádiz», Teatro Apolo, Madrid,
+# text @b1: 20 de noviembre de 1886. Fue himno nacional de facto una década.
+# text @b1: The opening fanfare uses only the natural harmonics a bugle can
+# text @b1: sound — Bb F Bb D F Bb — because that is what a corneta is.
+# text @b2: FORM and idiom are faithful. The NOTES are not: no score was
+# text @b2: reachable, so the copla and estribillo are written to the shape of
+# text @b2: the sung text, not transcribed. The bugle calls are constrained by
+# text @b2: physics and are probably close.
+# text @b3: Las cornetas son un pájaro. El platillo es un coche que pasaba.
+
+# instruments:
+#   c1 = corneta I (treble, voice=bright, send=0.20, gain=-3)
+#   c2 = corneta II (treble, voice=bright, s=2, send=0.20, gain=-7)
+#   me = melodía (treble, voice=call, send=0.18, gain=-2)
+#   hi = flautín (treble, voice=glide, send=0.24, gain=-13)
+#   ha = armonía (treble, voice=mid, send=0.16, gain=-13)
+#   ba = bajo (bass, voice=buzz, lpf=1100, send=0.05, gain=-6)
+#   sn = caja (perc, voice=tick, hpf=1700, rel=0.02, send=0.12, gain=-9)
+#   bd = bombo (perc, voice=buzz, st=-28->-46, curve=exp, tau=0.04, lpf=200, rel=0.10, send=0.04, gain=-4)
+#   cy = platillo (perc, voice=car, send=0.34, gain=-9)
+
+
+# section: llamada — the buglers announce them [1-8]
+bar 1: c1={mf} Rq Bb4e Bb4e
+bar 2: c1=D5q F5q
+bar 3: c1=F5e D5e Bb4e D5e
+bar 4: c1=F5h
+bar 5: c1=Bb5q F5q  c2=Bb4q F4q  sn=Xe Xs Xs Xe Xe
+bar 6: c1=D5e F5e D5e Bb4e  c2=D4e F4e D4e Bb3e  sn=Xe Xs Xs Xe Xe
+bar 7: c1=F4e Bb4e D5e F5e  c2=F3e Bb3e D4e F4e  sn=Xe Xs Xs Xe Xe
+bar 8: c1=Bb5h  c2=Bb4h  sn=Xe Xs Xs Xe Xe
+
+# section: rataplán [9-16]
+bar 9: sn={mp} Xs Xs Xs Xs Xs Xs Xs Xs  bd={mp} Xq Rq
+bar 10: sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 11: sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Rq
+bar 12: sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 13: ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Rq
+bar 14: ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 15: ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Rq
+bar 16: ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt  bd=Xq Rq
+
+# section: copla I [17-48]
+bar 17: me={mf} Bb4e Bb4e C5e D5e  ha={mf} Rq <D4 F4 Bb4>q  ba={mf} Bb2q Rq  sn={mf} Xe Xs Xs Xe Xe  bd={mf} Xq Rq
+bar 18: me=D5q C5q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 19: me=Bb4e C5e D5e Eb5e  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 20: me=F5h  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 21: me=F5e F5e Eb5e D5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 22: me=C5q Bb4q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 23: me=A4e Bb4e C5e A4e  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 24: me=Bb4h  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 25: me=F5e F5e G5e A5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 26: me=Bb5q A5q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 27: me=G5e F5e Eb5e D5e  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 28: me=C5h  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 29: me=D5e Eb5e F5e G5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 30: me=F5q D5q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 31: me=C5e D5e C5e Bb4e  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 32: me=Bb4h  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 33: me=Bb4e Bb4e C5e D5e  hi=Bb4e Bb4e C5e D5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 34: me=D5q C5q  hi=D5q C5q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 35: me=Bb4e C5e D5e Eb5e  hi=Bb4e C5e D5e Eb5e  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 36: me=F5h  hi=F5h  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 37: me=F5e F5e Eb5e D5e  hi=F5e F5e Eb5e D5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 38: me=C5q Bb4q  hi=C5q Bb4q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 39: me=A4e Bb4e C5e A4e  hi=A4e Bb4e C5e A4e  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 40: me=Bb4h  hi=Bb4h  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 41: me=F5e F5e G5e A5e  hi=F5e F5e G5e A5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 42: me=Bb5q A5q  hi=Bb5q A5q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 43: me=G5e F5e Eb5e D5e  hi=G5e F5e Eb5e D5e  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 44: me=C5h  hi=C5h  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 45: me=D5e Eb5e F5e G5e  hi=D5e Eb5e F5e G5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 46: me=F5q D5q  hi=F5q D5q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 47: me=C5e D5e C5e Bb4e  hi=C5e D5e C5e Bb4e  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 48: me=Bb4h  hi=Bb4h  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+
+# section: puente [49-56]
+bar 49: c1={f} Rq Bb4e Bb4e  ha={f} Rq <C4 F4 A4>q  ba={f} Bb2q F2q  sn={f} Xe Xs Xs Xe Xe  bd={f} Xq Xq
+bar 50: c1=D5q F5q  ha=Rq <C4 F4 A4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq
+bar 51: c1=F5e D5e Bb4e D5e  ha=Rq <C4 F4 A4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 52: c1=F5h  ha=Rq <C4 F4 A4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq
+bar 53: c1=Bb5q F5q  ha=Rq <C4 F4 A4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 54: c1=D5e F5e D5e Bb4e  ha=Rq <C4 F4 A4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq
+bar 55: c1=F4e Bb4e D5e F5e  ha=Rq <C4 F4 A4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 56: c1=Bb5h  ha=Rq <C4 F4 A4>q  ba=Bb2q F2q  sn=Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt  bd=Xq Xq  cy=Xh[str=fit,lpf=600->9000]
+
+# section: estribillo — ¡Que viva España! [57-88]
+bar 57: c1={ff} Bb5q F5q  me={ff} Bb5h  hi={ff} Bb5h  ha={ff} Rq <D4 F4 Bb4>q  ba={ff} Bb2q F2q  sn={ff} Xe Xs Xs Xe Xe  bd={ff} Xq Xq
+bar 58: me=Bb5e A5e G5e F5e  hi=Bb5e A5e G5e F5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 59: me=G5q F5q  hi=G5q F5q  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 60: me=Eb5h  hi=Eb5h  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 61: c1=Bb5q F5q  me=F5h  hi=F5h  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 62: me=F5e G5e A5e Bb5e  hi=F5e G5e A5e Bb5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 63: me=C6q Bb5q  hi=C6q Bb5q  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 64: me=A5h  hi=A5h  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 65: c1=Bb5q F5q  me=Bb5h  hi=Bb5h  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 66: me=Bb5e C6e D6e C6e  hi=Bb5e C6e D6e C6e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 67: me=Bb5q A5q  hi=Bb5q A5q  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 68: me=G5h  hi=G5h  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 69: c1=Bb5q F5q  me=F5e G5e A5e Bb5e  hi=F5e G5e A5e Bb5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 70: me=A5q G5q  hi=A5q G5q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 71: me=F5e Eb5e D5e C5e  hi=F5e Eb5e D5e C5e  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 72: me=Bb4h  hi=Bb4h  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 73: c1=Bb5q F5q  me=Bb5h  hi=Bb5h  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 74: me=Bb5e A5e G5e F5e  hi=Bb5e A5e G5e F5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 75: me=G5q F5q  hi=G5q F5q  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 76: me=Eb5h  hi=Eb5h  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 77: c1=Bb5q F5q  me=F5h  hi=F5h  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 78: me=F5e G5e A5e Bb5e  hi=F5e G5e A5e Bb5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 79: me=C6q Bb5q  hi=C6q Bb5q  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 80: me=A5h  hi=A5h  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 81: c1=Bb5q F5q  me=Bb5h  hi=Bb5h  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 82: me=Bb5e C6e D6e C6e  hi=Bb5e C6e D6e C6e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 83: me=Bb5q A5q  hi=Bb5q A5q  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 84: me=G5h  hi=G5h  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 85: c1=Bb5q F5q  me=F5e G5e A5e Bb5e  hi=F5e G5e A5e Bb5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 86: me=A5q G5q  hi=A5q G5q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 87: me=F5e Eb5e D5e C5e  hi=F5e Eb5e D5e C5e  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 88: me=Bb4h  hi=Bb4h  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+
+# section: copla II [89-120]
+bar 89: c2={mf} Bb4e Bb4e C5e D5e  me={mf} Bb4e Bb4e C5e D5e  ha={mf} Rq <D4 F4 Bb4>q  ba={mf} Bb2q Rq  sn={mf} Xe Xs Xs Xe Xe  bd={mf} Xq Rq
+bar 90: c2=D5q C5q  me=D5q C5q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 91: c2=Bb4e C5e D5e Eb5e  me=Bb4e C5e D5e Eb5e  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 92: c2=F5h  me=F5h  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 93: c2=F5e F5e Eb5e D5e  me=F5e F5e Eb5e D5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 94: c2=C5q Bb4q  me=C5q Bb4q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 95: c2=A4e Bb4e C5e A4e  me=A4e Bb4e C5e A4e  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 96: c2=Bb4h  me=Bb4h  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 97: c2=F5e F5e G5e A5e  me=F5e F5e G5e A5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 98: c2=Bb5q A5q  me=Bb5q A5q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 99: c2=G5e F5e Eb5e D5e  me=G5e F5e Eb5e D5e  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 100: c2=C5h  me=C5h  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 101: c2=D5e Eb5e F5e G5e  me=D5e Eb5e F5e G5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 102: c2=F5q D5q  me=F5q D5q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 103: c2=C5e D5e C5e Bb4e  me=C5e D5e C5e Bb4e  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 104: c2=Bb4h  me=Bb4h  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 105: c2=Bb4e Bb4e C5e D5e  me=Bb4e Bb4e C5e D5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 106: c2=D5q C5q  me=D5q C5q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 107: c2=Bb4e C5e D5e Eb5e  me=Bb4e C5e D5e Eb5e  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 108: c2=F5h  me=F5h  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 109: c2=F5e F5e Eb5e D5e  me=F5e F5e Eb5e D5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 110: c2=C5q Bb4q  me=C5q Bb4q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 111: c2=A4e Bb4e C5e A4e  me=A4e Bb4e C5e A4e  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 112: c2=Bb4h  me=Bb4h  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 113: c2=F5e F5e G5e A5e  me=F5e F5e G5e A5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 114: c2=Bb5q A5q  me=Bb5q A5q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 115: c2=G5e F5e Eb5e D5e  me=G5e F5e Eb5e D5e  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 116: c2=C5h  me=C5h  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 117: c2=D5e Eb5e F5e G5e  me=D5e Eb5e F5e G5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 118: c2=F5q D5q  me=F5q D5q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 119: c2=C5e D5e C5e Bb4e  me=C5e D5e C5e Bb4e  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+bar 120: c2=Bb4h  me=Bb4h  ha=Rq <C4 F4 A4>q  ba=F2q Rq  sn=Xe Xs Xs Xe Xe  bd=Xq Rq
+
+# section: trío [121-152]
+bar 121: me={mp} Bb4e C5e D5e Eb5e  ha={mp} Rq <Eb4 G4 Bb4>q  ba={mp} Eb2q Rq  sn={mp} Xe Re Xe Re
+bar 122: me=G5q F5q  ha=Rq <Eb4 G4 Bb4>q  ba=Eb2q Rq  sn=Xe Re Xe Re
+bar 123: me=Eb5e D5e C5e Bb4e  ha=Rq <Bb3 D4 F4>q  ba=Bb1q Rq  sn=Xe Re Xe Re
+bar 124: me=Bb4h  ha=Rq <Bb3 D4 F4>q  ba=Bb1q Rq  sn=Xe Re Xe Re
+bar 125: me=C5e D5e Eb5e F5e  ha=Rq <Eb4 G4 Bb4>q  ba=Eb2q Rq  sn=Xe Re Xe Re
+bar 126: me=G5q Ab5q  ha=Rq <Eb4 G4 Bb4>q  ba=Eb2q Rq  sn=Xe Re Xe Re
+bar 127: me=G5e F5e Eb5e D5e  ha=Rq <Bb3 D4 F4>q  ba=Bb1q Rq  sn=Xe Re Xe Re
+bar 128: me=Eb5h  ha=Rq <Bb3 D4 F4>q  ba=Bb1q Rq  sn=Xe Re Xe Re
+bar 129: me=Eb5e F5e G5e Ab5e  ha=Rq <Eb4 G4 Bb4>q  ba=Eb2q Rq  sn=Xe Re Xe Re
+bar 130: me=Bb5q Ab5q  ha=Rq <Eb4 G4 Bb4>q  ba=Eb2q Rq  sn=Xe Re Xe Re
+bar 131: me=G5e F5e Eb5e F5e  ha=Rq <Bb3 D4 F4>q  ba=Bb1q Rq  sn=Xe Re Xe Re
+bar 132: me=G5h  ha=Rq <Bb3 D4 F4>q  ba=Bb1q Rq  sn=Xe Re Xe Re
+bar 133: me=F5e Eb5e D5e C5e  ha=Rq <Eb4 G4 Bb4>q  ba=Eb2q Rq  sn=Xe Re Xe Re
+bar 134: me=D5q Eb5q  ha=Rq <Eb4 G4 Bb4>q  ba=Eb2q Rq  sn=Xe Re Xe Re
+bar 135: me=F5e Eb5e D5e C5e  ha=Rq <Bb3 D4 F4>q  ba=Bb1q Rq  sn=Xe Re Xe Re
+bar 136: me=Bb4h  ha=Rq <Bb3 D4 F4>q  ba=Bb1q Rq  sn=Xe Re Xe Re
+bar 137: me=Bb4e C5e D5e Eb5e  hi=Bb4e C5e D5e Eb5e  ha=Rq <Eb4 G4 Bb4>q  ba=Eb2q Rq  sn=Xe Re Xe Re
+bar 138: me=G5q F5q  hi=G5q F5q  ha=Rq <Eb4 G4 Bb4>q  ba=Eb2q Rq  sn=Xe Re Xe Re
+bar 139: me=Eb5e D5e C5e Bb4e  hi=Eb5e D5e C5e Bb4e  ha=Rq <Bb3 D4 F4>q  ba=Bb1q Rq  sn=Xe Re Xe Re
+bar 140: me=Bb4h  hi=Bb4h  ha=Rq <Bb3 D4 F4>q  ba=Bb1q Rq  sn=Xe Re Xe Re
+bar 141: me=C5e D5e Eb5e F5e  hi=C5e D5e Eb5e F5e  ha=Rq <Eb4 G4 Bb4>q  ba=Eb2q Rq  sn=Xe Re Xe Re
+bar 142: me=G5q Ab5q  hi=G5q Ab5q  ha=Rq <Eb4 G4 Bb4>q  ba=Eb2q Rq  sn=Xe Re Xe Re
+bar 143: me=G5e F5e Eb5e D5e  hi=G5e F5e Eb5e D5e  ha=Rq <Bb3 D4 F4>q  ba=Bb1q Rq  sn=Xe Re Xe Re
+bar 144: me=Eb5h  hi=Eb5h  ha=Rq <Bb3 D4 F4>q  ba=Bb1q Rq  sn=Xe Re Xe Re
+bar 145: me=Eb5e F5e G5e Ab5e  hi=Eb5e F5e G5e Ab5e  ha=Rq <Eb4 G4 Bb4>q  ba=Eb2q Rq  sn=Xe Re Xe Re
+bar 146: me=Bb5q Ab5q  hi=Bb5q Ab5q  ha=Rq <Eb4 G4 Bb4>q  ba=Eb2q Rq  sn=Xe Re Xe Re
+bar 147: me=G5e F5e Eb5e F5e  hi=G5e F5e Eb5e F5e  ha=Rq <Bb3 D4 F4>q  ba=Bb1q Rq  sn=Xe Re Xe Re
+bar 148: me=G5h  hi=G5h  ha=Rq <Bb3 D4 F4>q  ba=Bb1q Rq  sn=Xe Re Xe Re
+bar 149: me=F5e Eb5e D5e C5e  hi=F5e Eb5e D5e C5e  ha=Rq <Eb4 G4 Bb4>q  ba=Eb2q Rq  sn=Xe Re Xe Re
+bar 150: me=D5q Eb5q  hi=D5q Eb5q  ha=Rq <Eb4 G4 Bb4>q  ba=Eb2q Rq  sn=Xe Re Xe Re
+bar 151: me=F5e Eb5e D5e C5e  hi=F5e Eb5e D5e C5e  ha=Rq <Bb3 D4 F4>q  ba=Bb1q Rq  sn=Xe Re Xe Re
+bar 152: me=Bb4h  hi=Bb4h  ha=Rq <Bb3 D4 F4>q  ba=Bb1q Rq  sn=Xe Re Xe Re
+
+# section: estribillo final — tutti [153-192]
+bar 153: c1={ff} Bb5h  me={ff} Bb5h  hi={ff} Bb5h  ha={ff} Rq <D4 F4 Bb4>q  ba={ff} Bb2q F2q  sn={ff} Xs Xs Xs Xs Xs Xs Xs Xs  bd={ff} Xq Xq  cy={ff} Xh[str=fit,lpf=800->9000]
+bar 154: c1=Bb5e A5e G5e F5e  me=Bb5e A5e G5e F5e  hi=Bb5e A5e G5e F5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 155: c1=G5q F5q  me=G5q F5q  hi=G5q F5q  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 156: c1=Eb5h  me=Eb5h  hi=Eb5h  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 157: c1=F5h  me=F5h  hi=F5h  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq
+bar 158: c1=F5e G5e A5e Bb5e  me=F5e G5e A5e Bb5e  hi=F5e G5e A5e Bb5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 159: c1=C6q Bb5q  me=C6q Bb5q  hi=C6q Bb5q  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 160: c1=A5h  me=A5h  hi=A5h  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 161: c1=Bb5h  me=Bb5h  hi=Bb5h  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq  cy=Xh[str=fit,lpf=800->9000]
+bar 162: c1=Bb5e C6e D6e C6e  me=Bb5e C6e D6e C6e  hi=Bb5e C6e D6e C6e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 163: c1=Bb5q A5q  me=Bb5q A5q  hi=Bb5q A5q  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 164: c1=G5h  me=G5h  hi=G5h  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 165: c1=F5e G5e A5e Bb5e  me=F5e G5e A5e Bb5e  hi=F5e G5e A5e Bb5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq
+bar 166: c1=A5q G5q  me=A5q G5q  hi=A5q G5q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 167: c1=F5e Eb5e D5e C5e  me=F5e Eb5e D5e C5e  hi=F5e Eb5e D5e C5e  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 168: c1=Bb4h  me=Bb4h  hi=Bb4h  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 169: c1=Bb5h  me=Bb5h  hi=Bb5h  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq  cy=Xh[str=fit,lpf=800->9000]
+bar 170: c1=Bb5e A5e G5e F5e  me=Bb5e A5e G5e F5e  hi=Bb5e A5e G5e F5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 171: c1=G5q F5q  me=G5q F5q  hi=G5q F5q  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 172: c1=Eb5h  me=Eb5h  hi=Eb5h  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 173: c1=F5h  me=F5h  hi=F5h  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq
+bar 174: c1=F5e G5e A5e Bb5e  me=F5e G5e A5e Bb5e  hi=F5e G5e A5e Bb5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 175: c1=C6q Bb5q  me=C6q Bb5q  hi=C6q Bb5q  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 176: c1=A5h  me=A5h  hi=A5h  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 177: c1=Bb5h  me=Bb5h  hi=Bb5h  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq  cy=Xh[str=fit,lpf=800->9000]
+bar 178: c1=Bb5e C6e D6e C6e  me=Bb5e C6e D6e C6e  hi=Bb5e C6e D6e C6e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 179: c1=Bb5q A5q  me=Bb5q A5q  hi=Bb5q A5q  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 180: c1=G5h  me=G5h  hi=G5h  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 181: c1=F5e G5e A5e Bb5e  me=F5e G5e A5e Bb5e  hi=F5e G5e A5e Bb5e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq
+bar 182: c1=A5q G5q  me=A5q G5q  hi=A5q G5q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 183: c1=F5e Eb5e D5e C5e  me=F5e Eb5e D5e C5e  hi=F5e Eb5e D5e C5e  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 184: c1=Bb4h  me=Bb4h  hi=Bb4h  ha=Rq <C4 F4 A4>q  ba=F2q Bb2q  sn=Xe Xs Xs Xe Xe  bd=Xq Xq
+bar 185: c1={fff} Rq Bb4e Bb4e  c2={fff} Rq Bb3e Bb3e  ha={fff} Rq <D4 F4 Bb4>q  ba={fff} Bb2q F2q  sn={fff} Xs Xs Xs Xs Xs Xs Xs Xs  bd={fff} Xq Xq
+bar 186: c1=D5q F5q  c2=D4q F4q  ha=Rq <C4 F4 A4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq
+bar 187: c1=F5e D5e Bb4e D5e  c2=F4e D4e Bb3e D4e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq
+bar 188: c1=F5h  c2=F4h  ha=Rq <C4 F4 A4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq
+bar 189: c1=Bb5q F5q  c2=Bb4q F4q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq
+bar 190: c1=D5e F5e D5e Bb4e  c2=D4e F4e D4e Bb3e  ha=Rq <C4 F4 A4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq
+bar 191: c1=F4e Bb4e D5e F5e  c2=F3e Bb3e D4e F4e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq
+bar 192: c1=Bb5h  c2=Bb4h  ha=Rq <C4 F4 A4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq
+
+# section: coda [193-200]
+bar 193: c1={fff} Bb5e Bb5e F5e D5e  me={fff} Bb5e Bb5e F5e D5e  hi={fff} Bb5e Bb5e F5e D5e  ha={fff} Rq <D4 F4 Bb4>q  ba={fff} Bb2q F2q  sn={fff} Xs Xs Xs Xs Xs Xs Xs Xs  bd={fff} Xq Xq  cy={fff} Xh[str=fit,lpf=500->9000,gain=-4]
+bar 194: c1=Bb5q F5q  me=Bb5q F5q  hi=Bb5q F5q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq
+bar 195: c1=D5e F5e Bb5e D6e  me=D5e F5e Bb5e D6e  hi=D5e F5e Bb5e D6e  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq
+bar 196: c1=Bb5h  me=Bb5h  hi=Bb5h  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq
+bar 197: c1=F5q Bb5q  me=F5q Bb5q  hi=F5q Bb5q  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq
+bar 198: c1=Bb5h  me=Bb5h  hi=Bb5h  ha=Rq <D4 F4 Bb4>q  ba=Bb2q F2q  sn=Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt  bd=Xq Xq
+bar 199: c1=Rh  me=Rh  hi=Rh  ha=Rq <D4 F4 Bb4>q  ba=Bb2h  sn=Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt Xt  bd=Xq Xq
+bar 200: c1=Bb5h  me=Bb5h  hi=Bb5h  ha=Rq <D4 F4 Bb4>q  ba=Bb2h  sn=Xs Xs Xs Xs Xs Xs Xs Xs  bd=Xq Xq  cy=Xh[str=fit,lpf=200->9000,gain=-1]

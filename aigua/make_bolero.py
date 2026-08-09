@@ -229,21 +229,21 @@ for bar in range(1, TOTAL_BARS + 1):
     parts = []
 
     # the ostinato — every bar, no exceptions
-    sn_gain = cres_db(bar, -34.0, -2.0)
+    sn_gain = cres_db(bar, -36.0, -7.0)
     pat = OSTINATO_ODD if bar % 2 == 1 else OSTINATO_EVEN
     parts.append("sn=" + " ".join(f"{t}[gate,gain={sn_gain:.1f}]"
                                   for t in pat.split()))
 
     # pizzicato bass, from bar 1
-    ba_gain = cres_db(bar, -30.0, -4.0)
-    root = "C2" if bar < E_MAJOR_AT or bar >= CODA_AT else "E2"
-    fifth = "G1" if bar < E_MAJOR_AT or bar >= CODA_AT else "B1"
+    ba_gain = cres_db(bar, -34.0, -11.0)
+    root = "C3" if bar < E_MAJOR_AT or bar >= CODA_AT else "E3"
+    fifth = "G2" if bar < E_MAJOR_AT or bar >= CODA_AT else "B2"
     if bar % 2 == 1:
-        parts.append(f"ba={root}h[gate,gain={ba_gain:.1f}] Rq")
+        parts.append(f"ba={root}q[stac,gain={ba_gain:.1f}] Rq Rq")
     else:
-        parts.append(f"ba={root}q[gate,gain={ba_gain:.1f}] Rq {fifth}q[gate,gain={ba_gain:.1f}]")
+        parts.append(f"ba={root}q[stac,gain={ba_gain:.1f}] Rq {fifth}q[stac,gain={ba_gain:.1f}]")
 
-    mel_gain = cres_db(bar, -16.0, 0.0)
+    mel_gain = cres_db(bar, -13.0, 2.0)
     for vname, toks in sorted(lines_for_bar.get(bar, {}).items()):
         if bar >= CODA_AT:
             continue
