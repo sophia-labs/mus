@@ -147,6 +147,70 @@ material sound like itself. Two modifiers change that — `[gate]` truncates to
 the slot, `[str=fit]` stretches to fill it exactly. Everything else about
 rhythm — where the slot begins — is unchanged.
 
+### 8. Gesture quotation: `gest=`
+
+```
+# gestures: v2/sweep-events.json
+
+gl 33: C6q[gest=h67]
+br 13: C5q[gest=h71,glayer=octave]
+```
+
+The `# gestures:` header points at an `aigua-sweep-events` file (the compact
+per-event records the v2 analysis sweep emits, carrying each reconciled
+event's consensus pitch contour). A note with `gest=` then *quotes* a measured
+gesture: instead of a fixed transposition or a straight `->` line, the sample
+is read along the polyline the pitch-consensus ensemble actually resolved.
+This is `->` generalised one more step — pitch_ramp draws the line a composer
+asserts; a quotation follows the line an analysis measured.
+
+Semantics:
+
+- The notated pitch states where the gesture's **median resolved pitch**
+  lands. A quote is transposable material — the same bird gesture can be
+  harmonised, doubled at the fifth, or dropped an octave, and its internal
+  shape survives exactly.
+- The gesture defines the duration (its measured extent), in keeping with
+  §7's one-shot philosophy: the sample is tape read at the trajectory's
+  varying rate, and if the gesture wants more tape than the sample has, the
+  quote fades where the tape runs out. `str=` still applies afterwards;
+  `str=fit` freezes a quote across its notated slot.
+- `glayer=octave` quotes the event's **octave-conflict shadow** — the
+  octave-equivalent candidates the ensemble recorded instead of a consensus —
+  referenced to the same median, so shadow and backbone sit where they were
+  heard relative to each other. Events that resolved nothing can *only* be
+  quoted as shadows.
+- Nothing is invented for disagreement frames. A quote can play only what
+  the ensemble agreed it heard; gaps between resolved anchors are bridged by
+  interpolation for playback continuity, not asserted as measurements.
+- `gest=` keys: `h<N>` (index in gestures-file order) or a unique prefix of
+  the event's sha256 segment hash for a durable reference.
+- `gsrc=raw` sources the quote from the recording itself rather than a pack
+  sample: the event plays its own slice of the tape named by a `# tape:`
+  header. A notated pitch transposes the whole call from its consensus median
+  (phase vocoder, so notated time stays the score's); an unpitched `X` event
+  takes the bird verbatim. With `str=fit` a raw quote elongates into its slot
+  — a held call becomes a cantus firmus, which is what
+  `aigua/motet.mus` builds its tenor from.
+
+A third header, `# reverb: <seconds>`, sets the size of the room the mix is
+convolved into (default 2.6 s). A drum piece wants a booth; a motet wants a
+nave.
+
+A fourth, `# swing: [unit] <percent>` (default unit 16), applies MPC-style
+swing at render time: every second grid position at that subdivision is
+delayed so the pair divides percent/(100−percent) instead of 50/50.
+`# swing: 16 56` is a light pocket; 66 is full triplet shuffle. Only onsets
+move — notated durations, bar accounting, and the engraved score stay on the
+grid, which is also how drum machines have always told this particular
+truth.
+
+The epistemic framing is deliberate. The gestures file carries, per frame,
+whether the pitch ensemble resolved a frequency, recorded an octave conflict,
+or refused (`disagreement`); a score can orchestrate those states — the
+reference piece `aigua/aigua_states.mus` builds its three sections from
+exactly that split, and notates the events that refused a pitch as rests.
+
 ## Backward compatibility
 
 A MUS-A score parses under `mus.py` today. Three small changes were made to the

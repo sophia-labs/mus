@@ -147,6 +147,182 @@ def pitch_ramp(x, st0, st1, curve="lin", tau=0.045):
     return np.interp(pos, np.arange(n_in), x).astype(np.float32)
 
 
+def pitch_polyline(x, t_anchor, st_anchor):
+    """Continuous varispeed along a measured pitch polyline.
+
+    This is `->` generalised one more step: pitch_ramp draws a line between
+    two pitches; a gesture quotation follows the polyline an analysis actually
+    measured. The gesture defines the duration — the sample is tape material
+    read through at the trajectory's varying rate, and if the gesture wants
+    more sample than exists, the quote fades where the tape runs out rather
+    than inventing material.
+    """
+    n_in = len(x)
+    if n_in < 8 or len(t_anchor) < 2:
+        return x
+    dur = float(t_anchor[-1]) - float(t_anchor[0])
+    n_out = max(16, int(dur * SR))
+    tt = np.linspace(t_anchor[0], t_anchor[-1], n_out)
+    st = np.interp(tt, t_anchor, st_anchor)
+    rate = 2.0 ** (st / 12.0)
+    pos = np.cumsum(rate) - rate[0]
+    valid = pos <= (n_in - 1)
+    pos = np.clip(pos, 0.0, n_in - 1.0)
+    y = np.interp(pos, np.arange(n_in), x).astype(np.float32)
+    if not valid.all():
+        k = max(int(valid.sum()), 0)
+        f = min(k, int(0.010 * SR))
+        if f > 1:
+            y[k - f:k] *= np.linspace(1, 0, f).astype(np.float32)
+        y[k:] = 0.0
+    return y
+
+
+def load_gestures(path: Path):
+    """Load consensus contours from an aigua-sweep-events file.
+
+    Returns {key: {"resolved": [(t, hz)...], "octave": [(t, hz)...],
+    "median_hz": float}} keyed three ways: full hypothesis id, `h<index>` in
+    file order, and the sha256 segment hash (matched by unique prefix at
+    lookup). Only frames the consensus actually emitted are used: the
+    resolved layer is the r-frames, the octave layer is the o-frames'
+    octave-equivalent candidates. Nothing is invented for disagreement
+    frames — a quote can only play what the ensemble agreed it heard.
+    """
+    data = json.load(open(path))
+    events = data.get("events", data if isinstance(data, list) else [])
+    out = {}
+    for i, e in enumerate(events):
+        contour = e.get("contour")
+        if not contour:
+            continue
+        resolved = [(r[0], r[1]) for r in contour if r[2] == "r" and r[1]]
+        octave = [(r[0], r[3]) for r in contour if r[2] == "o" and len(r) > 3 and r[3]]
+        ref = resolved or octave
+        if len(ref) < 2:
+            continue
+        med = sorted(hz for _, hz in ref)[len(ref) // 2]
+        rec = {"resolved": resolved, "octave": octave, "median_hz": med,
+               "t0": e.get("start_seconds"), "t1": e.get("end_seconds"),
+               "id": e.get("hypothesis_id", f"h{i}")}
+        out[f"h{i}"] = rec
+        hid = e.get("hypothesis_id")
+        if hid:
+            out[hid] = rec
+            m = re.search(r"sha256:([0-9a-f]+)", hid)
+            if m:
+                out.setdefault(m.group(1), rec)
+    return out
+
+
+def lookup_gesture(gestures: dict, key: str):
+    if key in gestures:
+        return gestures[key]
+    hits = [v for k, v in gestures.items()
+            if len(key) >= 6 and k.startswith(key) and not k.startswith("h")]
+    if len(hits) == 1:
+        return hits[0]
+    return None
+
+
+SYNTH_KEYS = {"synth", "osc2", "mix2", "detune", "sub", "cutoff",
+              "famt", "fdec", "satk", "sdec", "ssus", "srel"}
+
+
+def _osc(wave: str, phase: np.ndarray) -> np.ndarray:
+    frac = phase - np.floor(phase)
+    if wave == "square":
+        return np.where(frac < 0.5, 1.0, -1.0).astype(np.float32)
+    if wave == "tri":
+        return (2.0 * np.abs(2.0 * frac - 1.0) - 1.0).astype(np.float32)
+    if wave == "sine":
+        return np.sin(2 * np.pi * frac).astype(np.float32)
+    return (2.0 * frac - 1.0).astype(np.float32)          # saw
+
+
+def synth_note(patch: dict, freqs_hz, slot_s: float, gliss_ratio: float = 1.0):
+    """A small subtractive synth: osc1 + detuned copy + optional osc2 and
+    sub-oscillator, ADSR, and a downward filter sweep standing in for a
+    filter envelope. Deterministic, unapologetically simple — a funk box,
+    not a workstation. Chords render all tones; a gliss target sweeps every
+    tone by the same ratio (synth portamento is a frequency ramp, not a
+    resample, so there is no tape artifact)."""
+    satk = float(patch.get("satk", 0.004))
+    sdec = float(patch.get("sdec", 0.05))
+    ssus = float(patch.get("ssus", 0.75))
+    srel = float(patch.get("srel", 0.12))
+    n = max(64, int((slot_s + srel) * SR))
+    t = np.arange(n, dtype=np.float32) / SR
+    wave = str(patch.get("synth", "saw"))
+    osc2 = patch.get("osc2")
+    mix2 = float(patch.get("mix2", 0.5))
+    det = float(patch.get("detune", 0.0))          # cents
+    sub = float(patch.get("sub", 0.0))
+    out = np.zeros(n, np.float32)
+    for f in freqs_hz:
+        ramp = np.linspace(1.0, gliss_ratio, n).astype(np.float32) if abs(gliss_ratio - 1.0) > 1e-6 else 1.0
+        freq = f * ramp
+        phase = np.cumsum(freq) / SR
+        tone = _osc(wave, phase)
+        if det > 0:
+            r = 2.0 ** (det / 1200.0)
+            tone = tone + _osc(wave, np.cumsum(freq * r) / SR) \
+                        + _osc(wave, np.cumsum(freq / r) / SR)
+            tone /= 3.0
+        if osc2:
+            tone = (1.0 - mix2) * tone + mix2 * _osc(str(osc2), np.cumsum(freq) / SR * 2.0)
+        if sub > 0:
+            tone = tone + sub * _osc("sine", np.cumsum(freq * 0.5) / SR)
+        out += tone
+    out /= math.sqrt(max(len(freqs_hz), 1))
+    # ADSR: attack, decay to sustain, hold to the slot, release beyond it
+    env = np.full(n, ssus, np.float32)
+    na, nd = max(int(satk * SR), 1), max(int(sdec * SR), 1)
+    env[:na] = np.linspace(0, 1, na)
+    if n > na:
+        nd2 = min(nd, n - na)
+        env[na:na + nd2] = np.linspace(1, ssus, nd2)
+    ns = int(slot_s * SR)
+    if ns < n:
+        env[ns:] = env[min(ns, n - 1)] * np.linspace(1, 0, n - ns) ** 1.4
+    out *= env
+    cutoff = float(patch.get("cutoff", 4200.0))
+    famt = float(patch.get("famt", 0.0))
+    if famt > 0:
+        out = sweep_filter(out, cutoff + famt, cutoff, "low")
+    else:
+        out = sweep_filter(out, cutoff, cutoff, "low")
+    return (out * 0.5).astype(np.float32)
+
+
+def chop_shuffle(x: np.ndarray, n_grains: int, slot_samples: int) -> np.ndarray:
+    """Granular resequence: cut the material into n grains and deal them
+    back evens-first, every fourth grain reversed. Deterministic — the same
+    token always renders the same scatter. The bird becomes a drummer."""
+    n_grains = max(2, min(int(n_grains), 64))
+    seg = max(len(x) // n_grains, 64)
+    grains = [x[i * seg:(i + 1) * seg].copy() for i in range(n_grains)]
+    order = list(range(0, n_grains, 2)) + list(range(1, n_grains, 2))
+    f = min(int(0.004 * SR), seg // 4)
+    outs = []
+    for j, gi in enumerate(order):
+        g = grains[gi]
+        if j % 4 == 3:
+            g = g[::-1].copy()
+        if f > 1:
+            g[:f] *= np.linspace(0, 1, f, dtype=np.float32)
+            g[-f:] *= np.linspace(1, 0, f, dtype=np.float32)
+        outs.append(g)
+    y = np.concatenate(outs)
+    return y[:max(slot_samples, seg)] if len(y) > max(slot_samples, seg) else y
+
+
+def ring_mod(x: np.ndarray, f_hz: float, wet: float = 1.0) -> np.ndarray:
+    """Multiply by a sine — inharmonic sidebands, the classic weird-ifier."""
+    car = np.sin(2 * np.pi * f_hz * np.arange(len(x)) / SR).astype(np.float32)
+    return ((1.0 - wet) * x + wet * x * car).astype(np.float32)
+
+
 def bitcrush(x, bits=None, decim=None):
     """Quantise amplitude and/or hold samples. Both are aliasing on purpose."""
     if bits:
@@ -323,6 +499,7 @@ class Voice:
     # Any other params on the instrument line become per-track defaults, so a
     # drum voice can declare its whole character once instead of on every hit.
     defaults: dict = field(default_factory=dict)
+    synth: dict = None          # a `synth=` instrument generates instead of sampling
 
 
 STRUCTURAL_PARAMS = {"voice", "sample", "root", "mode", "gain", "pan",
@@ -487,6 +664,21 @@ def render(score_path: Path, out_path: Path, verbose=True):
     pack_ref = parsed.extra.get("pack")
     pack = load_pack((score_path.parent / pack_ref).resolve()) if pack_ref else {}
 
+    # `# gestures: <path>` — measured consensus contours available for
+    # quotation via `gest=`. Rides ParsedMus.extra like `pack`/`tuning`.
+    gest_ref = parsed.extra.get("gestures")
+    gestures = load_gestures((score_path.parent / gest_ref).resolve()) if gest_ref else {}
+
+    # `# tape: <path>` — the source recording itself, for `gsrc=raw` quotes:
+    # a quoted event plays its own slice of the tape (the bird's actual voice)
+    # rather than a pack sample bent along the contour.
+    tape_audio = None
+    tape_ref = parsed.extra.get("tape")
+    if tape_ref:
+        tape_audio, _ = librosa.load(
+            str((score_path.parent / tape_ref).resolve()), sr=SR, mono=True)
+        tape_audio = tape_audio.astype(np.float32)
+
     voices = {}
     for inst in parsed.instruments:
         p = inst.params
@@ -497,7 +689,8 @@ def render(score_path: Path, out_path: Path, verbose=True):
         if "sample" in p:
             sp = (score_path.parent / p["sample"]).resolve()
             samples = [Sample(sp, 0.0)]
-        if not samples:
+        synth_patch = {k: p[k] for k in SYNTH_KEYS if k in p} if "synth" in p else None
+        if not samples and synth_patch is None:
             print(f"  ! no samples for track '{inst.abbrev}' — skipped", file=sys.stderr)
             continue
         if "root" in p:
@@ -512,8 +705,32 @@ def render(score_path: Path, out_path: Path, verbose=True):
             gain_db=float(p.get("gain", 0.0)),
             pan=float(p.get("pan", 0.0)),
             send=float(p.get("send", 0.12)),
-            defaults={k: v for k, v in p.items() if k not in STRUCTURAL_PARAMS},
+            defaults={k: v for k, v in p.items()
+                      if k not in STRUCTURAL_PARAMS and k not in SYNTH_KEYS},
+            synth=synth_patch,
         )
+
+    # `# swing: [unit] percent` — MPC-style swing: every second grid position
+    # at the given subdivision is delayed so the pair divides percent/(100-
+    # percent) instead of 50/50. `# swing: 16 56` is a classic light pocket.
+    # Onsets shift; notated durations and bar accounting stay on the grid.
+    swing_unit_ql, swing_r = 0.0, 0.5
+    swm = parsed.extra.get("swing", "").split()
+    if swm:
+        try:
+            unit, pct = (int(swm[0]), float(swm[1])) if len(swm) > 1 else (16, float(swm[0]))
+            swing_unit_ql = 4.0 / unit
+            swing_r = min(0.75, max(0.5, pct / 100.0))
+        except (ValueError, ZeroDivisionError):
+            pass
+
+    def swung(q_pos: float) -> float:
+        if swing_unit_ql <= 0 or swing_r <= 0.5:
+            return q_pos
+        k = int(q_pos / swing_unit_ql + 1e-6)
+        if k % 2 == 1 and abs(q_pos - k * swing_unit_ql) < 1e-6:
+            return q_pos + swing_unit_ql * (2.0 * swing_r - 1.0)
+        return q_pos
 
     # ---- bar → seconds map
     tempo_at = {b: v for b, v in parsed.tempo_changes}
@@ -639,15 +856,29 @@ def render(score_path: Path, out_path: Path, verbose=True):
                     q_off += ev.ql
                     continue
 
-                onset = bar_start[b] + q_off * bar_spq[b]
+                onset = bar_start[b] + swung(q_off) * bar_spq[b]
                 slot = max(ev.ql * bar_spq[b], 1e-3)
                 q_off += ev.ql
 
-                # --- sample choice
-                si = int(float(ev.params.get("s", 1))) - 1
-                si = max(0, min(si, len(voice.samples) - 1))
-                smp = voice.samples[si]
-                x = smp.load().copy()
+                # --- source: synth patch or sample
+                if voice.synth is not None:
+                    if not ev.midis:
+                        stats["bad"].append(f"b{b} {abbr}: synth track needs a pitch")
+                        continue
+                    patch = {**voice.synth,
+                             **{k: ev.params[k] for k in SYNTH_KEYS if k in ev.params}}
+                    slot_pre = max(ev.ql * bar_spq[b], 1e-3)
+                    ratio = 1.0
+                    if ev.gliss_midi is not None:
+                        ratio = midi_to_hz(ev.gliss_midi, a4) / midi_to_hz(ev.midis[0], a4)
+                    x = synth_note(patch, [midi_to_hz(m_, a4) for m_ in ev.midis],
+                                   slot_pre, ratio)
+                    smp = None
+                else:
+                    si = int(float(ev.params.get("s", 1))) - 1
+                    si = max(0, min(si, len(voice.samples) - 1))
+                    smp = voice.samples[si]
+                    x = smp.load().copy()
                 if "off" in ev.params:
                     o = int(float(ev.params["off"]) * SR / 1000.0)
                     x = x[min(o, max(len(x) - 64, 0)):]
@@ -661,7 +892,7 @@ def render(score_path: Path, out_path: Path, verbose=True):
                 mode = ev.params.get("mode", voice.mode)
                 st = 0.0
                 st_end = None
-                if ev.kind in ("note", "chord") and smp.f0_hz > 0:
+                if smp is not None and ev.kind in ("note", "chord") and smp.f0_hz > 0:
                     st = 12 * math.log2(midi_to_hz(ev.midis[0], a4) / smp.f0_hz)
                     if ev.gliss_midi is not None:
                         st_end = 12 * math.log2(midi_to_hz(ev.gliss_midi, a4) / smp.f0_hz)
@@ -672,12 +903,140 @@ def render(score_path: Path, out_path: Path, verbose=True):
 
                 curve = ev.params.get("curve", "lin")
                 tau = float(ev.params.get("tau", 0.045))
-                if st_end is not None:
+                quoted = False
+                if "gest" in ev.params and ev.params.get("gsrc") == "raw" \
+                        and ev.kind in ("note", "unpitched"):
+                    # Cantus-firmus quotation: the event plays its own slice
+                    # of the tape. A notated pitch transposes the whole call
+                    # from its consensus median (vocoder, so time is the
+                    # score's to shape); an X event takes the bird verbatim.
+                    g = lookup_gesture(gestures, str(ev.params["gest"]))
+                    if g is None or tape_audio is None or g.get("t0") is None:
+                        stats["bad"].append(
+                            f"b{b} {abbr}: gest={ev.params['gest']} "
+                            f"({'no tape header' if tape_audio is None else 'unknown gesture'})")
+                    else:
+                        x = tape_audio[int(g["t0"] * SR): int(g["t1"] * SR)].copy()
+                        if ev.kind == "note" and ev.midis:
+                            shift = 12 * math.log2(
+                                midi_to_hz(ev.midis[0], a4) / g["median_hz"])
+                            if abs(shift) > 0.05:
+                                x = vocode(x, shift)
+                        quoted = True
+                elif "gest" in ev.params and ev.kind == "note" \
+                        and smp is not None and smp.f0_hz > 0:
+                    g = lookup_gesture(gestures, str(ev.params["gest"]))
+                    layer = ev.params.get("glayer", "resolved")
+                    anchors = g.get(layer, []) if g else []
+                    if g is None or len(anchors) < 2:
+                        stats["bad"].append(
+                            f"b{b} {abbr}: gest={ev.params['gest']} "
+                            f"({'unknown gesture' if g is None else f'layer {layer} too sparse'})")
+                    else:
+                        # The notated pitch states where the gesture's median
+                        # resolved pitch lands; the contour supplies the shape
+                        # around it. A quote is transposable material, and the
+                        # octave layer transposes with the same reference so
+                        # the conflict shadow stays where it was heard.
+                        base_st = 12 * math.log2(midi_to_hz(ev.midis[0], a4) / smp.f0_hz)
+                        med = g["median_hz"]
+                        t_arr = [a[0] for a in anchors]
+                        st_arr = [base_st + 12 * math.log2(hz / med) for _, hz in anchors]
+                        x = pitch_polyline(x, t_arr, st_arr)
+                        quoted = True
+                if quoted:
+                    pass
+                elif ev.kind == "chord" and len(ev.midis) > 1 \
+                        and smp is not None and smp.f0_hz > 0:
+                    # Layer every chord tone. Until now a chord silently
+                    # played only its first pitch; a sampler has no excuse.
+                    # Varispeed tones end at different times (tape physics —
+                    # reads as a strum tail); vocoder tones stay aligned.
+                    parts = []
+                    for m_ in ev.midis:
+                        st_i = 12 * math.log2(midi_to_hz(m_, a4) / smp.f0_hz)
+                        parts.append(vocode(x, st_i) if mode == "vocoder"
+                                     else varispeed(x, st_i))
+                    acc = np.zeros(max(len(p) for p in parts), np.float32)
+                    for p in parts:
+                        acc[:len(p)] += p
+                    x = acc / math.sqrt(len(parts))
+                elif st_end is not None:
                     x = pitch_ramp(x, st, st_end, curve, tau)
                 elif mode == "vocoder":
                     x = vocode(x, st)
                 else:
                     x = varispeed(x, st)
+
+                # --- experimental transforms
+                if "chop" in ev.params:
+                    x = chop_shuffle(x, float(ev.params["chop"]), int(slot * SR))
+                if "ring" in ev.params:
+                    x = ring_mod(x, float(ev.params["ring"]),
+                                 float(ev.params.get("rwet", 1.0)))
+                if "glow" in ev.params and len(x) >= 2048:
+                    # Hyperpop candy chain. The un-birding move is the HOLD:
+                    # loop the loudest slice of the call to the notated slot.
+                    # Birds cannot sustain a pitch (median FM velocity 11
+                    # st/s, by our own measurement); holding one is the most
+                    # artificial thing this material can do. Then the coating:
+                    # micro-detuned doubles for ensemble shine, a +24 sparkle,
+                    # plastic bitcrush, dense saturation, beat-synced pump.
+                    st_g = float(ev.params["glow"])
+                    if str(ev.params.get("ghold", "0")) not in ("0", "off"):
+                        win = int(0.07 * SR)
+                        if len(x) > 2 * win:
+                            e = np.convolve(np.abs(x), np.ones(win) / win, mode="valid")
+                            piece = x[int(np.argmax(e)):int(np.argmax(e)) + win].copy()
+                            f = int(0.015 * SR)
+                            w = np.ones(win, np.float32)
+                            w[:f] = np.linspace(0, 1, f)
+                            w[-f:] = np.linspace(1, 0, f)
+                            n_out = max(int(slot * SR), win)
+                            held = np.zeros(n_out + win, np.float32)
+                            pos = 0
+                            while pos < n_out:
+                                held[pos:pos + win] += piece * w
+                                pos += win - f
+                            x = held[:n_out]
+                    if "gwarble" in ev.params:
+                        # autotune-artifact trill: square-LFO crossfade between
+                        # the tone and itself a semitone up. Robots only.
+                        wr = float(ev.params["gwarble"])
+                        up = vocode(x, 1.0)
+                        n_w = min(len(x), len(up))
+                        tt = np.arange(n_w, dtype=np.float32) / SR
+                        lfo = ((tt * wr) % 1.0) < 0.5
+                        x = np.where(lfo, x[:n_w], up[:n_w]).astype(np.float32)
+                    # `gharm=0+4+7+12` — the harmonizer glued to the voice:
+                    # every note becomes a parallel chord of itself, weights
+                    # falling 0.85 per layer, root layer micro-detuned.
+                    try:
+                        ivs = [float(t) for t in
+                               str(ev.params.get("gharm", "0")).replace("|", "+").split("+") if t]
+                    except ValueError:
+                        ivs = [0.0]
+                    y = np.zeros(len(x), np.float32)
+                    w = 1.0
+                    for j, iv in enumerate(ivs):
+                        layer = vocode(x, st_g + iv)
+                        if j == 0:
+                            layer = (0.6 * layer
+                                     + 0.2 * vocode(x, st_g + iv + 0.15)
+                                     + 0.2 * vocode(x, st_g + iv - 0.15))
+                        y[:len(layer)] += w * layer[:len(y)]
+                        w *= 0.85
+                    y /= math.sqrt(max(len(ivs), 1))
+                    y = sweep_filter(y, 600.0, 600.0, "high")
+                    y = sweep_filter(y, 7800.0, 7800.0, "low")
+                    y = bitcrush(y, bits=10)
+                    y = np.tanh(y * 2.4) / math.tanh(2.4)
+                    pump = float(ev.params.get("pump", 0.0))
+                    if pump > 0:
+                        tt = np.arange(len(y), dtype=np.float32) / SR
+                        ph = (tt * pump) % 1.0
+                        y *= (0.45 + 0.55 * np.exp(-3.5 * ph)).astype(np.float32)
+                    x = y.astype(np.float32)
 
                 # --- time treatment
                 if ev.params.get("str") == "fit":
@@ -743,6 +1102,11 @@ def render(score_path: Path, out_path: Path, verbose=True):
 
                 p0, p1 = param_pair(ev.params, "pan", voice.pan)
                 L, R = pan_stereo(x, p0, p1)
+                if "haas" in ev.params:
+                    # a few ms of interaural delay: width without a pan move
+                    d = int(float(ev.params["haas"]) * SR / 1000.0)
+                    if 0 < d < len(R):
+                        R = np.concatenate([np.zeros(d, np.float32), R[:-d]])
                 send = float(ev.params.get("send", voice.send))
 
                 if abbr == sc_track:
@@ -781,7 +1145,13 @@ def render(score_path: Path, out_path: Path, verbose=True):
               f"depth {sc_depth} rel {sc_rel}s")
 
     # ---- reverb + master
-    ir = make_ir()
+    # `# reverb: <seconds>` — the size of the room. A motet wants a nave;
+    # a drum piece wants the default 2.6 s.
+    rv_s = 2.6
+    rvm = re.search(r"([\d.]+)", parsed.extra.get("reverb", ""))
+    if rvm:
+        rv_s = max(0.3, min(float(rvm.group(1)), 12.0))
+    ir = make_ir(seconds=rv_s)
     rev = np.stack([sig.oaconvolve(wet[c], ir[c])[:n_total] for c in range(2)])
     out = dry + rev.astype(np.float32)
 
@@ -808,12 +1178,325 @@ def render(score_path: Path, out_path: Path, verbose=True):
     return out
 
 
+# ------------------------------------------------------------------- check
+#
+# `--check` is the effect-free half of this renderer: parse + layout, no
+# sample loading, no DSP, no writes. It emits mus.audio.check-report.v1
+# (schemas/mus-check-report.schema.json — the ratified binary interface
+# between any MUS checker and any host). Diagnostics anchor to semantic
+# coordinates ({bar, track, tokenIndex}), never byte offsets, and a refused
+# score is an outcome, not an error: exit code stays 0, `clean` says false.
+
+RENDERER_VERSION = "mus_audio/0.2.0"
+
+_ERROR_CODES = {"unparseable-token", "unknown-gesture", "synth-needs-pitch",
+                "bad-header-value"}
+
+_CHAIN_ORDER = ["gest", "glayer", "gsrc", "chop", "ring", "glow", "ghold",
+                "gwarble", "gharm", "pump", "str", "stut", "haas"]
+
+RE_SECTION_PROSE = re.compile(
+    r"^#\s*section\s*:\s*(.+?)\s*\[(\d+)-(\d+)\]\s*(?:[—–-]\s*(.*))?$")
+
+
+def _file_digest(path: Path):
+    if not path.exists():
+        return None
+    import hashlib
+    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _midi_to_name(midi: float) -> str:
+    n = int(round(midi))
+    cents = int(round((midi - n) * 100))
+    name = NOTE_NAMES[n % 12] + str(n // 12 - 1)
+    if cents:
+        name += f"{cents:+d}"
+    return name
+
+
+def check_score(score_path: Path, base_dir: Path | None = None) -> dict:
+    """`base_dir` overrides the directory pack/gestures/tape resolve against
+    (default: the score's own directory). It exists for hosts that check a
+    temp copy of a score that lives elsewhere — the Atril route writes the
+    fence's bytes to a tmpdir but resolves assets against the real repo."""
+    base = base_dir if base_dir is not None else score_path.parent
+    text = score_path.read_text()
+    parsed = mus.parse_mus(text)
+    diagnostics = []
+
+    def diag(code, anchor, message):
+        diagnostics.append({
+            "severity": "error" if code in _ERROR_CODES else "warning",
+            "code": code, "anchor": anchor, "message": message,
+        })
+
+    def header_float(key, pattern, default):
+        raw = parsed.extra.get(key)
+        if raw is None:
+            return default
+        m = re.search(pattern, raw)
+        if not m:
+            diag("bad-header-value", {"kind": "header", "key": key},
+                 f"could not read {key!r} from {raw!r}")
+            return default
+        return float(m.group(1))
+
+    a4 = header_float("tuning", r"A\s*=\s*([\d.]+)", 440.0)
+    reverb_s = header_float("reverb", r"([\d.]+)", 2.6)
+    master_rms = header_float("master", r"rms\s*=\s*(-?[\d.]+)", -17.0)
+
+    swing = None
+    swing_unit_ql, swing_r = 0.0, 0.5
+    swm = parsed.extra.get("swing", "").split()
+    if swm:
+        try:
+            unit, pct = (int(swm[0]), float(swm[1])) if len(swm) > 1 else (16, float(swm[0]))
+            swing_unit_ql = 4.0 / unit
+            swing_r = min(0.75, max(0.5, pct / 100.0))
+            swing = {"unit": unit, "percent": pct}
+        except (ValueError, ZeroDivisionError):
+            diag("bad-header-value", {"kind": "header", "key": "swing"},
+                 f"could not read swing from {parsed.extra['swing']!r}")
+
+    def swung(q_pos):
+        if swing_unit_ql <= 0 or swing_r <= 0.5:
+            return q_pos
+        k = int(q_pos / swing_unit_ql + 1e-6)
+        if k % 2 == 1 and abs(q_pos - k * swing_unit_ql) < 1e-6:
+            return q_pos + swing_unit_ql * (2.0 * swing_r - 1.0)
+        return q_pos
+
+    # ---- external artifacts: digests and manifests, never audio ----------
+    pack_ref = parsed.extra.get("pack")
+    pack_path = (base / pack_ref).resolve() if pack_ref else None
+    pack_digest = _file_digest(pack_path) if pack_path else None
+    pack_voices = {}
+    if pack_ref and pack_digest is None:
+        diag("missing-pack", {"kind": "header", "key": "pack"}, f"{pack_ref} not found")
+    elif pack_path and pack_digest:
+        data = json.load(open(pack_path))
+        for vname, v in data.get("voices", {}).items():
+            pack_voices[vname] = [float(s.get("f0_hz") or 0.0) for s in v["samples"]]
+        for nname in data.get("noise", {}):
+            pack_voices[nname] = [0.0]
+
+    gest_ref = parsed.extra.get("gestures")
+    gest_path = (base / gest_ref).resolve() if gest_ref else None
+    gestures_digest = _file_digest(gest_path) if gest_path else None
+    gestures = {}
+    if gest_ref and gestures_digest is None:
+        diag("missing-gestures", {"kind": "header", "key": "gestures"}, f"{gest_ref} not found")
+    elif gest_path and gestures_digest:
+        gestures = load_gestures(gest_path)
+
+    tape_ref = parsed.extra.get("tape")
+    tape_path = (base / tape_ref).resolve() if tape_ref else None
+    tape_digest = _file_digest(tape_path) if tape_path else None
+    if tape_ref and tape_digest is None:
+        diag("missing-tape", {"kind": "header", "key": "tape"}, f"{tape_ref} not found")
+
+    # ---- instruments ------------------------------------------------------
+    instruments = []
+    sources = {}
+    for inst in parsed.instruments:
+        p = inst.params
+        if any(k in p for k in SYNTH_KEYS):
+            source = {"kind": "synth", "patch": {k: p[k] for k in SYNTH_KEYS if k in p}}
+        elif "sample" in p:
+            source = {"kind": "sample", "path": p["sample"]}
+        elif p.get("voice") in pack_voices:
+            f0s = pack_voices[p["voice"]]
+            source = {"kind": "voice", "voice": p["voice"],
+                      "samples": len(f0s), "sampleF0Hz": f0s}
+        else:
+            source = {"kind": "missing"}
+            diag("no-samples-for-track", {"kind": "instrument", "abbrev": inst.abbrev},
+                 f"track '{inst.abbrev}' resolves no samples and declares no synth")
+        defaults = {k: v for k, v in p.items()
+                    if k not in STRUCTURAL_PARAMS and k not in SYNTH_KEYS}
+        chain = [k for k in _CHAIN_ORDER if k in p]
+        sources[inst.abbrev] = source
+        instruments.append({
+            "abbrev": inst.abbrev, "name": inst.name, "clef": inst.clef,
+            "source": source, "defaults": defaults, "transformChain": chain,
+        })
+
+    # ---- bar → seconds map (mirrors render()) -----------------------------
+    tempo_at = {b: v for b, v in parsed.tempo_changes}
+    time_at = {b: v for b, v in parsed.time_changes}
+    for mb in parsed.bars:
+        for c in mb.inline_changes:
+            if "=" not in c:
+                continue
+            k, v = (s.strip() for s in c.split("=", 1))
+            if k.lower() == "tempo":
+                try:
+                    tempo_at[mb.bar_num] = int(v)
+                except ValueError:
+                    pass
+            elif k.lower() == "time":
+                time_at[mb.bar_num] = v
+    n_bars = parsed.bar_count
+    tempo, tsig = tempo_at.get(1, 96), time_at.get(1, "4/4")
+    bar_start, bar_qlen, bar_spq = {}, {}, {}
+    t = 0.0
+    for b in range(1, n_bars + 1):
+        tempo = tempo_at.get(b, tempo)
+        tsig = time_at.get(b, tsig)
+        num, den = (int(x) for x in tsig.split("/"))
+        bar_qlen[b] = num * 4.0 / den
+        bar_spq[b] = 60.0 / tempo
+        bar_start[b] = t
+        t += bar_qlen[b] * bar_spq[b]
+
+    bar_content = {}
+    for mb in parsed.bars:
+        for b in range(mb.bar_num, mb.end_bar + 1):
+            bar_content[b] = mb.track_content
+
+    # ---- events (mirrors render()'s traversal, minus DSP) -----------------
+    events = []
+    used_gestures = {}
+    for inst in parsed.instruments:
+        abbr = inst.abbrev
+        source = sources[abbr]
+        defaults = {k: v for k, v in inst.params.items()
+                    if k not in STRUCTURAL_PARAMS and k not in SYNTH_KEYS}
+        cur_dyn = "mf"
+        for b in range(1, n_bars + 1):
+            content = bar_content.get(b, {}).get(abbr, "")
+            if not content or content.strip() == "-":
+                continue
+            toks = split_attached_dynamics(
+                mus.expand_pattern_repetitions(mus.tokenize_bar_content(content)))
+            q_off = 0.0
+            for ti, tk in enumerate(toks):
+                ev = parse_token(tk)
+                anchor = {"kind": "event", "bar": b, "track": abbr, "tokenIndex": ti}
+                if ev is None:
+                    if tk.strip() not in ("-", ""):
+                        diag("unparseable-token", anchor, tk)
+                    continue
+                if ev.kind == "dynamic":
+                    cur_dyn = ev.dyn
+                    continue
+                if ev.kind == "hairpin":
+                    continue
+                if ev.kind == "rest":
+                    q_off += ev.ql
+                    continue
+                if ev.ql <= 0 and tk.strip() != "R":
+                    diag("zero-duration", anchor, tk)
+                if q_off >= bar_qlen.get(b, 4.0) - 1e-6:
+                    # A long final note ringing past the barline is idiom; an
+                    # event whose ONSET falls outside the bar is arithmetic.
+                    diag("overfull-bar", anchor,
+                         f"onset at {q_off:g} ql in a {bar_qlen.get(b, 4.0):g} ql bar")
+                params = dict(ev.params)
+                eff = {**defaults, **params}
+                quote = None
+                if "gest" in eff:
+                    g = lookup_gesture(gestures, str(eff["gest"]))
+                    layer = eff.get("glayer", "resolved")
+                    if g is None:
+                        diag("unknown-gesture", anchor, f"gest={eff['gest']}")
+                    else:
+                        shift = None
+                        if ev.kind == "note" and ev.midis and g.get("median_hz"):
+                            shift = round(12 * math.log2(
+                                midi_to_hz(ev.midis[0], a4) / g["median_hz"]), 2)
+                        if len(g.get(layer, [])) < 2 and eff.get("gsrc") != "raw":
+                            diag("sparse-gesture-layer", anchor,
+                                 f"gest={eff['gest']} layer {layer}")
+                        if eff.get("gsrc") == "raw" and tape_digest is None:
+                            diag("no-tape-header", anchor,
+                                 "gsrc=raw without a # tape: header")
+                        quote = {"gest": str(eff["gest"]), "layer": layer,
+                                 "gsrc": eff.get("gsrc"),
+                                 "hypothesisId": g.get("id"),
+                                 "t0": g.get("t0"), "t1": g.get("t1"),
+                                 "medianHz": g.get("median_hz"), "shiftSt": shift}
+                        used_gestures[str(eff["gest"])] = g.get("id")
+                if source["kind"] == "synth" and ev.kind == "unpitched" \
+                        and not (quote and quote.get("gsrc") == "raw"):
+                    diag("synth-needs-pitch", anchor, tk)
+                lyr = re.search(r'"([^"]*)"', tk)
+                events.append({
+                    "bar": b, "track": abbr, "tokenIndex": ti, "kind": ev.kind,
+                    "onsetQl": round(q_off, 6),
+                    "onsetSeconds": round(bar_start[b] + q_off * bar_spq[b], 6),
+                    "swungOnsetSeconds": round(bar_start[b] + swung(q_off) * bar_spq[b], 6),
+                    "durationQl": round(ev.ql, 6),
+                    "durationSeconds": round(ev.ql * bar_spq[b], 6),
+                    "pitches": [_midi_to_name(m_) for m_ in ev.midis],
+                    "pitchesHz": [round(midi_to_hz(m_, a4), 3) for m_ in ev.midis],
+                    "glissTargetHz": round(midi_to_hz(ev.gliss_midi, a4), 3)
+                        if ev.gliss_midi is not None else None,
+                    "dynamic": cur_dyn,
+                    "params": params, "effectiveParams": eff,
+                    "flags": sorted(ev.flags),
+                    "sweeps": sorted(k for k, v in eff.items() if "->" in str(v)),
+                    "lyric": lyr.group(1) if lyr else None,
+                    "quote": quote,
+                })
+                q_off += ev.ql
+
+    # ---- sections with prose (tolerant re-scan; parse_mus keeps name only)
+    sections = []
+    for line in text.splitlines():
+        m = RE_SECTION_PROSE.match(line.strip())
+        if m:
+            sections.append({"name": m.group(1).split("—")[0].strip(),
+                             "from": int(m.group(2)), "to": int(m.group(3)),
+                             "prose": (m.group(4) or "").strip() or None})
+    texts = [{"bar": bar, "prose": p}
+             for bar, lines in sorted(parsed.text_at.items()) for p in lines]
+
+    declared = ([{"id": i["abbrev"], "kind": "instrument", "iri": None} for i in instruments]
+                + [{"id": s["name"], "kind": "section", "iri": None} for s in sections]
+                + [{"id": gid, "kind": "gesture", "iri": iri}
+                   for gid, iri in sorted(used_gestures.items())])
+
+    return {
+        "schema": "mus.audio.check-report.v1",
+        "producer": "mus_audio",
+        "rendererVersion": RENDERER_VERSION,
+        "clean": not any(d["severity"] == "error" for d in diagnostics),
+        "sourceDigest": "sha256:" + __import__("hashlib").sha256(text.encode()).hexdigest(),
+        "packDigest": pack_digest,
+        "gesturesDigest": gestures_digest,
+        "tapeDigest": tape_digest,
+        "score": {
+            "title": parsed.title, "summary": parsed.summary,
+            "bars": n_bars, "durationSeconds": round(t, 3), "tuningA": a4,
+            "swing": swing, "reverbSeconds": reverb_s, "masterRmsDb": master_rms,
+            "sidechain": ({"raw": parsed.extra["sidechain"]}
+                          if "sidechain" in parsed.extra else None),
+            "tempoChanges": [[b, float(v)] for b, v in sorted(tempo_at.items())],
+            "timeChanges": [[b, v] for b, v in sorted(time_at.items())],
+            "sections": sections, "texts": texts,
+        },
+        "instruments": instruments,
+        "events": events,
+        "declaredObjects": declared,
+        "diagnostics": diagnostics,
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Render MUS to audio via a sample pack.")
     ap.add_argument("score", help="path to .mus score")
     ap.add_argument("-o", "--output", default=None, help="output .wav")
+    ap.add_argument("--check", action="store_true",
+                    help="effect-free parse+layout verdict as JSON on stdout (no render)")
+    ap.add_argument("--base", default=None,
+                    help="directory pack/gestures/tape resolve against (default: score dir)")
     args = ap.parse_args()
     sp = Path(args.score)
+    if args.check:
+        print(json.dumps(check_score(sp, Path(args.base) if args.base else None), indent=1))
+        return 0
     op = Path(args.output) if args.output else sp.with_suffix(".wav")
     render(sp, op)
     return 0

@@ -1182,7 +1182,11 @@ RE_HEADER_KV = re.compile(r"^\s*(\w+)\s*:\s*(.+?)\s*$")
 # (titles, summaries) that happen to contain a colon intact.
 RE_HEADER_SPLIT = re.compile(r"\s+(?=(?:tempo|time|key|bars)\s*:)", re.IGNORECASE)
 RE_INSTRUMENT = re.compile(r"^\s*(\S+)\s*=\s*(.+?)\s*\(([^)]+)\)\s*$")
-RE_SECTION = re.compile(r"^\s*section\s*:\s*(.+?)\s*\[(\d+)-(\d+)\]\s*$")
+# Trailing prose after the bar range is allowed ("# section: ice [25-38] —
+# resolved frames only…"). It must parse as a section, because a section line
+# that falls through to header parsing can contain words like "tempo:" and
+# silently re-tempo the piece — a real incident (2026-08-09).
+RE_SECTION = re.compile(r"^\s*section\s*:\s*(.+?)\s*\[(\d+)-(\d+)\]\s*(?:[—–-].*)?$")
 RE_TEXT = re.compile(r"^\s*text\s*@b(\d+)\s*:\s*(.+?)\s*$")
 RE_BAR = re.compile(r"^bar\s+(\d+)\s*(?:\[([^\]]+)\])?\s*:\s*(.+)$")
 RE_BARS_RANGE = re.compile(r"^bars\s+(\d+)-(\d+)\s*(?:\[([^\]]+)\])?\s*:\s*(.+)$")
@@ -1255,6 +1259,11 @@ def parse_mus(text: str) -> ParsedMus:
                         transpose=transpose,
                         params=params,
                     ))
+                continue
+
+            # Guard: annotation-shaped comment lines never reach header
+            # parsing, even when malformed — see the RE_SECTION note above.
+            if body.lower().startswith(("section", "text")):
                 continue
 
             for piece in RE_HEADER_SPLIT.split(body):
