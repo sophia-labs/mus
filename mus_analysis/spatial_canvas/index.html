@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>MUS Spatial Canvas</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">MUS · psychoacoustic object scene</p>
+      <h1 id="scene-title">Spatial Canvas</h1>
+    </div>
+    <div class="transport" aria-label="Transport">
+      <button id="play" class="primary">Start audio</button>
+      <button id="stop">Stop</button>
+      <output id="time-label">0:00.000 / 0:00.000</output>
+    </div>
+  </header>
+
+  <div class="timeline-wrap">
+    <input id="timeline" type="range" min="0" max="1" step="0.001" value="0" aria-label="Scene time">
+    <div class="master-controls">
+      <label>Master <input id="master-gain" type="range" min="-30" max="6" step="0.5" value="0"><output id="master-gain-value">0 dB</output></label>
+      <label>Room <input id="room-wet" type="range" min="0" max="1" step="0.01" value="0.16"><output id="room-wet-value">16%</output></label>
+      <label>Head yaw <input id="listener-yaw" type="range" min="-180" max="180" step="1" value="0"><output id="listener-yaw-value">0°</output></label>
+      <button id="save">Save scene</button>
+    </div>
+  </div>
+
+  <main class="workspace">
+    <aside class="object-browser panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Objects</p>
+          <h2>Sound material</h2>
+        </div>
+        <button id="clear-solo" title="Clear all solos">All</button>
+      </div>
+      <section id="import-toolbar" class="import-toolbar" hidden aria-label="Add sound">
+        <input id="audio-file" type="file" accept="audio/*,.wav,.flac,.ogg,.mp3,.m4a,.aac,.aif,.aiff" multiple hidden>
+        <button id="add-sound" class="primary">Add sound</button>
+        <label>
+          <span>Objectize</span>
+          <select id="import-mode">
+            <option value="whole">Whole sound</option>
+            <option value="events">Event objects</option>
+            <option value="hybrid" selected>Events + texture</option>
+            <option value="nmf">Texture components</option>
+            <option value="bands">Auditory frequency layers</option>
+            <option value="hpss">Harmonic + percussive</option>
+          </select>
+        </label>
+        <label class="component-option">
+          <span>Parts / bands</span>
+          <input id="import-components" type="number" min="1" max="16" step="1" value="4">
+        </label>
+        <label class="inline-check"><input id="import-at-playhead" type="checkbox" checked> Place at playhead</label>
+        <progress id="import-progress" max="1" value="0" hidden></progress>
+        <p id="import-status" class="quiet" aria-live="polite"></p>
+      </section>
+      <div id="object-list" class="object-list"></div>
+      <p class="quiet doctrine">Components are canvas material and acoustic hypotheses, not recovered historical positions.</p>
+    </aside>
+
+    <section class="stage-panel panel">
+      <div class="panel-heading stage-heading">
+        <div>
+          <p class="eyebrow">Top-down stage</p>
+          <h2>Drag sounds around the listener</h2>
+        </div>
+        <div class="legend"><span class="point-dot"></span> compact <span class="field-dot"></span> field</div>
+      </div>
+      <canvas id="stage" tabindex="0" aria-label="Top-down spatial object canvas"></canvas>
+      <div class="stage-footer">
+        <span>Front</span>
+        <span id="renderer-state">Web Audio HRTF audition · scene JSON is authority</span>
+        <span>Back</span>
+      </div>
+    </section>
+
+    <aside class="inspector panel">
+      <div id="empty-inspector" class="empty-state">
+        <p class="eyebrow">Inspector</p>
+        <h2>Select a sound</h2>
+        <p>Its position, psychoacoustic report, and cue-targeted interventions will appear here.</p>
+      </div>
+      <div id="inspector-content" hidden>
+        <div class="panel-heading">
+          <div>
+            <p id="object-kind" class="eyebrow"></p>
+            <h2 id="object-label"></h2>
+          </div>
+          <button id="audition-object">Audition</button>
+        </div>
+
+        <section class="inspector-section">
+          <h3>Position and field</h3>
+          <div class="control-grid">
+            <label>X <input data-property="position.x" type="range" min="-20" max="20" step="0.1"><output></output></label>
+            <label>Height <input data-property="position.y" type="range" min="-10" max="15" step="0.1"><output></output></label>
+            <label>Depth <input data-property="position.z" type="range" min="-20" max="20" step="0.1"><output></output></label>
+            <label>Spread <input data-property="spread" type="range" min="0" max="1" step="0.01"><output></output></label>
+            <label>Object gain <input data-property="gainDb" type="range" min="-30" max="18" step="0.5"><output></output></label>
+            <label>Room send <input data-property="reverbSend" type="range" min="0" max="1" step="0.01"><output></output></label>
+          </div>
+        </section>
+
+        <section class="inspector-section">
+          <div class="section-heading">
+            <h3>Psychoacoustic interventions</h3>
+            <button id="reset-controls">Reset</button>
+          </div>
+          <p class="quiet">These manipulate acoustic cues associated with experience. They do not set qualia or standardized units directly.</p>
+          <div class="control-grid">
+            <label>Brightness shelf <input data-property="controls.brightnessDb" type="range" min="-18" max="18" step="0.5"><output></output></label>
+            <label>Shelf corner <input data-property="controls.brightnessHz" type="range" min="250" max="10000" step="50"><output></output></label>
+            <label>Roughness cue <input data-property="controls.roughnessDepth" type="range" min="0" max="1" step="0.01"><output></output></label>
+            <label>Roughness rate <input data-property="controls.roughnessRateHz" type="range" min="20" max="300" step="1"><output></output></label>
+            <label>Fluctuation cue <input data-property="controls.fluctuationDepth" type="range" min="0" max="1" step="0.01"><output></output></label>
+            <label>Fluctuation rate <input data-property="controls.fluctuationRateHz" type="range" min="0.25" max="20" step="0.25"><output></output></label>
+            <label>Attack <input data-property="controls.attackSeconds" data-nullable="true" type="range" min="0" max="2" step="0.01"><output></output></label>
+            <label>Pitch <input data-property="controls.pitchSemitones" type="range" min="-36" max="36" step="0.1"><output></output></label>
+            <label title="Applied by the deterministic offline renderer; Web Audio audition does not run HPSS.">Tonal focus · offline <input data-property="controls.tonalFocus" type="range" min="-1" max="1" step="0.01"><output></output></label>
+          </div>
+        </section>
+
+        <section class="inspector-section">
+          <div class="section-heading">
+            <h3>Analysis</h3>
+            <span id="calibration-state" class="badge"></span>
+          </div>
+          <div class="analysis-actions">
+            <button id="reanalyze">Analyze current intervention</button>
+            <button id="derive-object" title="Render the current controls into a new analyzed object">Commit variation</button>
+            <button id="clear-analysis-preview" hidden>Original report</button>
+          </div>
+          <div id="metric-list" class="metric-list"></div>
+          <div id="trajectory-panel" class="trajectory-panel">
+            <label>Time-varying evidence
+              <select id="trajectory-select" aria-label="Psychoacoustic trajectory"></select>
+            </label>
+            <canvas id="trajectory-chart" aria-label="Selected analysis trajectory"></canvas>
+            <output id="trajectory-range"></output>
+          </div>
+        </section>
+
+        <details class="inspector-section">
+          <summary>Provenance and source</summary>
+          <pre id="provenance"></pre>
+        </details>
+      </div>
+    </aside>
+  </main>
+
+  <div id="notice" class="notice" role="status" aria-live="polite"></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

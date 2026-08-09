@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sophia-mus-analysis"
-version = "0.1.0"
-description = "Immutable scientific-computing and ontology substrate for MUS audio projects"
+version = "0.2.0"
+description = "Immutable audio analysis, psychoacoustic manipulation, and spatial object scenes for MUS"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Sophia Labs" }]
@@ -13,13 +13,34 @@ dependencies = []
 
 [project.optional-dependencies]
 audio = ["numpy>=2", "scipy>=1.14", "librosa>=0.11", "soundfile>=0.13"]
-test = ["jsonschema>=4.20"]
+spatial = [
+  "numpy>=2",
+  "scipy>=1.14",
+  "librosa>=0.11",
+  "soundfile>=0.13",
+  "scikit-learn>=1.5",
+  "pyloudnorm>=0.1.1,<1",
+]
+psychoacoustics = [
+  "numpy>=2",
+  "scipy>=1.14",
+  "librosa>=0.11",
+  "soundfile>=0.13",
+  "pyloudnorm>=0.1.1,<1",
+  "mosqito>=1.2.1,<2",
+]
+test = ["jsonschema>=4.20", "rdflib>=7"]
 
 [project.scripts]
 mus-analysis = "mus_analysis.cli:main"
+mus-spatial = "mus_analysis.spatial_cli:main"
 
 [tool.setuptools]
 packages = ["mus_analysis"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+mus_analysis = ["spatial_canvas/*.html", "spatial_canvas/*.css", "spatial_canvas/*.js"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

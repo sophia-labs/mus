@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia-labs.ai/schemas/mus-psychoacoustic-manipulation/1",
+  "title": "MUS psychoacoustic manipulation receipt",
+  "description": "A causal intervention receipt. Control values describe signal operations intended to move perceptual cues; they are not measurements of listener experience.",
+  "type": "object",
+  "required": [
+    "schema",
+    "controls",
+    "operations",
+    "input_peak",
+    "output_peak",
+    "safety_gain_db"
+  ],
+  "properties": {
+    "schema": {
+      "const": "https://sophia-labs.ai/schemas/mus-psychoacoustic-manipulation/1"
+    },
+    "controls": {
+      "$ref": "#/$defs/controls"
+    },
+    "operations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/operation"
+      }
+    },
+    "input_peak": {
+      "type": "number",
+      "minimum": 0
+    },
+    "output_peak": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "safety_gain_db": {
+      "type": "number",
+      "maximum": 0
+    }
+  },
+  "$defs": {
+    "nullableNumber": {
+      "type": ["number", "null"]
+    },
+    "controls": {
+      "type": "object",
+      "required": [
+        "gain_db",
+        "target_lufs",
+        "brightness_db",
+        "brightness_hz",
+        "roughness_depth",
+        "roughness_rate_hz",
+        "fluctuation_depth",
+        "fluctuation_rate_hz",
+        "attack_seconds",
+        "pitch_semitones",
+        "tonal_focus",
+        "safety_peak"
+      ],
+      "properties": {
+        "gain_db": {"type": "number"},
+        "target_lufs": {"$ref": "#/$defs/nullableNumber"},
+        "brightness_db": {"type": "number"},
+        "brightness_hz": {"type": "number", "exclusiveMinimum": 0},
+        "roughness_depth": {"type": "number", "minimum": 0, "maximum": 1},
+        "roughness_rate_hz": {"type": "number", "exclusiveMinimum": 0},
+        "fluctuation_depth": {"type": "number", "minimum": 0, "maximum": 1},
+        "fluctuation_rate_hz": {"type": "number", "exclusiveMinimum": 0},
+        "attack_seconds": {
+          "type": ["number", "null"],
+          "minimum": 0
+        },
+        "pitch_semitones": {"type": "number"},
+        "tonal_focus": {"type": "number", "minimum": -1, "maximum": 1},
+        "safety_peak": {"type": "number", "exclusiveMinimum": 0, "maximum": 1}
+      },
+      "additionalProperties": false
+    },
+    "operation": {
+      "type": "object",
+      "required": ["operator", "targetCue", "parameters"],
+      "properties": {
+        "operator": {"type": "string", "minLength": 1},
+        "targetCue": {"type": "string", "minLength": 1},
+        "parameters": {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["number", "string", "boolean", "null"]
+          }
+        },
+        "claim": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

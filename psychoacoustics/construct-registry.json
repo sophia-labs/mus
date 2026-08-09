@@ -1,0 +1,248 @@
+{
+  "schema": "https://sophia-labs.ai/schemas/mus-perceptual-construct-registry/1",
+  "version": 1,
+  "doctrine": [
+    "Physical descriptors, auditory-model states, psychophysical estimates, population predictors, and human reports are distinct evidence kinds.",
+    "Cue-targeted manipulations are interventions on signals, not inverse setters for experience.",
+    "Standardized pressure-domain metrics require an explicit calibration; digital full scale is never silently treated as pascals."
+  ],
+  "constructs": [
+    {
+      "id": "PsychoacousticLoudness",
+      "evidenceGrade": "A",
+      "analysis": [
+        "psychoacoustic.loudness-zwicker",
+        "psychoacoustic.loudness-ecma-hms",
+        "programme.integrated-loudness",
+        "digital.rms-dbfs"
+      ],
+      "standardUnit": "sone",
+      "control": [
+        "gainDb",
+        "targetLufs"
+      ],
+      "nonEquivalences": [
+        "Programme loudness is not ISO psychoacoustic loudness",
+        "RMS is not loudness"
+      ],
+      "requirements": [
+        "pressure calibration for sones/phons",
+        "declared free or diffuse field"
+      ]
+    },
+    {
+      "id": "PsychoacousticSharpness",
+      "evidenceGrade": "A/B",
+      "analysis": [
+        "psychoacoustic.sharpness-din",
+        "auditory.relative-sharpness",
+        "spectrum.centroid-hz",
+        "spectrum.slope-db-per-octave"
+      ],
+      "standardUnit": "acum",
+      "control": [
+        "brightnessDb",
+        "brightnessHz"
+      ],
+      "nonEquivalences": [
+        "Sharpness is not timbral brightness",
+        "Spectral centroid is not sharpness"
+      ],
+      "requirements": [
+        "pressure calibration for DIN sharpness"
+      ]
+    },
+    {
+      "id": "TimbralBrightness",
+      "evidenceGrade": "B/C",
+      "analysis": [
+        "spectrum.centroid-hz",
+        "spectrum.slope-db-per-octave",
+        "auditory.relative-sharpness"
+      ],
+      "standardUnit": null,
+      "control": [
+        "brightnessDb",
+        "brightnessHz"
+      ],
+      "nonEquivalences": [
+        "Brightness is not spectral centroid",
+        "Brightness is listener-, task-, and stimulus-domain conditioned"
+      ],
+      "requirements": [
+        "human brightness judgments for a calibrated predictor"
+      ]
+    },
+    {
+      "id": "PsychoacousticRoughness",
+      "evidenceGrade": "A",
+      "analysis": [
+        "psychoacoustic.roughness-daniel-weber",
+        "psychoacoustic.roughness-ecma-hms",
+        "auditory.roughness-proxy",
+        "auditory.modulation-peak-hz"
+      ],
+      "standardUnit": "asper",
+      "control": [
+        "roughnessDepth",
+        "roughnessRateHz"
+      ],
+      "nonEquivalences": [
+        "Global envelope periodicity is not critical-band roughness",
+        "Semantic roughness is not psychoacoustic roughness"
+      ],
+      "requirements": [
+        "pressure calibration for a standardized absolute estimate"
+      ]
+    },
+    {
+      "id": "SemanticRoughness",
+      "evidenceGrade": "C/D",
+      "analysis": [
+        "auditory.roughness-proxy",
+        "spectrum.flatness",
+        "auditory.harmonic-energy-ratio",
+        "spectrum.flux"
+      ],
+      "standardUnit": null,
+      "control": [
+        "roughnessDepth",
+        "brightnessDb",
+        "tonalFocus"
+      ],
+      "nonEquivalences": [
+        "A free-language roughness report may reflect noise, distortion, inharmonicity, or texture"
+      ],
+      "requirements": [
+        "anchored listener task and vocabulary"
+      ]
+    },
+    {
+      "id": "FluctuationStrength",
+      "evidenceGrade": "A/B",
+      "analysis": [
+        "auditory.fluctuation-proxy",
+        "auditory.modulation-peak-hz"
+      ],
+      "standardUnit": "vacil when a verified calibrated operator is added",
+      "control": [
+        "fluctuationDepth",
+        "fluctuationRateHz"
+      ],
+      "nonEquivalences": [
+        "Slow modulation does not by itself establish beat, groove, or meter"
+      ]
+    },
+    {
+      "id": "PitchSalience",
+      "evidenceGrade": "B/C",
+      "analysis": [
+        "auditory.pitch-salience-proxy",
+        "auditory.harmonic-energy-ratio"
+      ],
+      "standardUnit": null,
+      "control": [
+        "pitchSemitones",
+        "tonalFocus"
+      ],
+      "nonEquivalences": [
+        "An f0 candidate is not a perceived pitch",
+        "pYIN voiced probability is estimator-specific"
+      ],
+      "requirements": [
+        "source-domain validation and preferably pitchability judgments"
+      ]
+    },
+    {
+      "id": "Harmonicity",
+      "evidenceGrade": "B/C",
+      "analysis": [
+        "auditory.harmonic-energy-ratio",
+        "spectrum.flatness",
+        "tonality.prominence-ratio-ecma",
+        "tonality.tone-to-noise-ratio-ecma"
+      ],
+      "standardUnit": null,
+      "control": [
+        "tonalFocus"
+      ],
+      "nonEquivalences": [
+        "HPSS energy ratio is not a universal perceptual harmonicity metric"
+      ]
+    },
+    {
+      "id": "AttackImpulsiveness",
+      "evidenceGrade": "B",
+      "analysis": [
+        "temporal.attack-10-90-seconds",
+        "digital.crest-factor-db",
+        "temporal.centroid-seconds"
+      ],
+      "standardUnit": null,
+      "control": [
+        "attackSeconds"
+      ],
+      "nonEquivalences": [
+        "Waveform attack and auditory-band onset need not coincide"
+      ]
+    },
+    {
+      "id": "TimbreDissimilarity",
+      "evidenceGrade": "B/C",
+      "analysis": [
+        "spectrum.centroid-hz",
+        "temporal.attack-10-90-seconds",
+        "spectrum.flux",
+        "auditory.roughness-proxy",
+        "auditory.harmonic-energy-ratio"
+      ],
+      "standardUnit": null,
+      "control": [
+        "all cue controls"
+      ],
+      "requirements": [
+        "stimulus set, listener population, task, and learned distance model"
+      ]
+    },
+    {
+      "id": "SpatialExperience",
+      "evidenceGrade": "C/D",
+      "analysis": [
+        "authored position",
+        "spread",
+        "distance",
+        "room send"
+      ],
+      "standardUnit": null,
+      "control": [
+        "position",
+        "spread",
+        "reverbSend"
+      ],
+      "nonEquivalences": [
+        "Authored object position is not a recovered historical location",
+        "Stereo imbalance is not complete localization"
+      ]
+    },
+    {
+      "id": "TransformationQuality",
+      "evidenceGrade": "C/D",
+      "analysis": [
+        "render receipt",
+        "signal difference",
+        "identity retention study"
+      ],
+      "standardUnit": null,
+      "control": [
+        "all cue controls"
+      ],
+      "requirements": [
+        "reference or task-specific listening protocol"
+      ],
+      "nonEquivalences": [
+        "Perceptual similarity is not quality",
+        "Musical usefulness is not naturalness"
+      ]
+    }
+  ]
+}

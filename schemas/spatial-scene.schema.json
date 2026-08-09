@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia-labs.ai/schemas/mus-spatial-scene/1",
+  "title": "MUS spatial object scene",
+  "type": "object",
+  "required": ["schema", "sceneId", "title", "sampleRate", "durationSeconds", "objects", "listener", "room", "coordinateSystem"],
+  "$defs": {
+    "position": {
+      "type": "object",
+      "required": ["x", "y", "z"],
+      "properties": {"x": {"type": "number"}, "y": {"type": "number"}, "z": {"type": "number"}},
+      "additionalProperties": false
+    },
+    "controls": {
+      "type": "object",
+      "required": ["gainDb", "brightnessDb", "brightnessHz", "roughnessDepth", "roughnessRateHz", "fluctuationDepth", "fluctuationRateHz", "pitchSemitones", "tonalFocus", "safetyPeak"],
+      "properties": {
+        "gainDb": {"type": "number"},
+        "targetLufs": {"type": ["number", "null"]},
+        "brightnessDb": {"type": "number"},
+        "brightnessHz": {"type": "number", "exclusiveMinimum": 0},
+        "roughnessDepth": {"type": "number", "minimum": 0, "maximum": 1},
+        "roughnessRateHz": {"type": "number", "exclusiveMinimum": 0},
+        "fluctuationDepth": {"type": "number", "minimum": 0, "maximum": 1},
+        "fluctuationRateHz": {"type": "number", "exclusiveMinimum": 0},
+        "attackSeconds": {"type": ["number", "null"], "minimum": 0},
+        "pitchSemitones": {"type": "number"},
+        "tonalFocus": {"type": "number", "minimum": -1, "maximum": 1},
+        "safetyPeak": {"type": "number", "exclusiveMinimum": 0, "maximum": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "schema": {"const": "https://sophia-labs.ai/schemas/mus-spatial-scene/1"},
+    "sceneId": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1},
+    "sampleRate": {"type": "integer", "minimum": 8000},
+    "durationSeconds": {"type": "number", "exclusiveMinimum": 0},
+    "coordinateSystem": {"type": "string", "minLength": 1},
+    "listener": {
+      "type": "object",
+      "required": ["position", "forward", "up"],
+      "properties": {"position": {"$ref": "#/$defs/position"}, "forward": {"$ref": "#/$defs/position"}, "up": {"$ref": "#/$defs/position"}},
+      "additionalProperties": false
+    },
+    "room": {
+      "type": "object",
+      "required": ["enabled", "decaySeconds", "wet", "damping", "seed"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "decaySeconds": {"type": "number", "exclusiveMinimum": 0},
+        "wet": {"type": "number", "minimum": 0, "maximum": 1},
+        "damping": {"type": "number", "minimum": 0, "maximum": 1},
+        "seed": {"type": "integer"}
+      },
+      "additionalProperties": false
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["objectId", "label", "audio", "startSeconds", "kind", "position", "gainDb", "spread", "reverbSend", "controls", "placementProvenance"],
+        "properties": {
+          "objectId": {"type": "string", "minLength": 1},
+          "label": {"type": "string", "minLength": 1},
+          "audio": {"type": "string", "minLength": 1},
+          "startSeconds": {"type": "number", "minimum": 0},
+          "durationSeconds": {"type": ["number", "null"], "exclusiveMinimum": 0},
+          "kind": {"enum": ["point", "extended", "diffuse", "ambient"]},
+          "position": {"$ref": "#/$defs/position"},
+          "trajectory": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["timeSeconds", "position"],
+              "properties": {"timeSeconds": {"type": "number", "minimum": 0}, "position": {"$ref": "#/$defs/position"}},
+              "additionalProperties": false
+            }
+          },
+          "gainDb": {"type": "number"},
+          "spread": {"type": "number", "minimum": 0, "maximum": 1},
+          "reverbSend": {"type": "number", "minimum": 0, "maximum": 1},
+          "loop": {"type": "boolean"},
+          "muted": {"type": "boolean"},
+          "controls": {"$ref": "#/$defs/controls"},
+          "analysis": {"type": "object"},
+          "sourceRegion": {"type": ["object", "null"]},
+          "placementProvenance": {"type": "string", "minLength": 1},
+          "metadata": {"type": "object"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "metadata": {"type": "object"}
+  },
+  "additionalProperties": false
+}

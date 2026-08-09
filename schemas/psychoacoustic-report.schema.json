@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia-labs.ai/schemas/mus-psychoacoustic-report/1",
+  "title": "MUS psychoacoustic report",
+  "type": "object",
+  "required": [
+    "schema",
+    "source_id",
+    "sample_rate",
+    "duration_seconds",
+    "calibration",
+    "metrics",
+    "trajectories",
+    "manipulation_axes"
+  ],
+  "properties": {
+    "schema": {
+      "const": "https://sophia-labs.ai/schemas/mus-psychoacoustic-report/1"
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sample_rate": {
+      "type": "integer",
+      "minimum": 8000
+    },
+    "duration_seconds": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "calibration": {
+      "type": "object",
+      "required": [
+        "kind",
+        "field_type"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "relative",
+            "pascal-per-digital-unit",
+            "reference-rms"
+          ]
+        },
+        "pascal_per_digital_unit": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "reference_rms_dbfs": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "reference_spl_db": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "reference_pressure_pa": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "field_type": {
+          "enum": [
+            "free",
+            "diffuse"
+          ]
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "metric_id",
+          "label",
+          "status",
+          "evidence_kind",
+          "operator"
+        ],
+        "properties": {
+          "metric_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "value": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "enum": [
+              "available",
+              "proxy",
+              "refused",
+              "unavailable",
+              "invalid",
+              "failed"
+            ]
+          },
+          "evidence_kind": {
+            "type": "string",
+            "minLength": 1
+          },
+          "operator": {
+            "type": "string",
+            "minLength": 1
+          },
+          "construct": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summary": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "caveats": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "score_semantics": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "trajectories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "trajectory_id",
+          "label",
+          "times_seconds",
+          "values",
+          "operator",
+          "evidence_kind"
+        ],
+        "properties": {
+          "trajectory_id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "times_seconds": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "operator": {
+            "type": "string"
+          },
+          "evidence_kind": {
+            "type": "string"
+          },
+          "construct": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "manipulation_axes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "implementation": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

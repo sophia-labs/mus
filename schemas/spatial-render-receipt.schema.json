@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia-labs.ai/schemas/mus-spatial-render-receipt/1",
+  "title": "MUS spatial render receipt",
+  "type": "object",
+  "required": ["schema", "scene_id", "target", "sample_rate", "channels", "duration_seconds", "peak_before_safety", "safety_gain_db", "output_peak", "channel_order", "renderer", "object_receipts", "metadata"],
+  "properties": {
+    "schema": {"const": "https://sophia-labs.ai/schemas/mus-spatial-render-receipt/1"},
+    "scene_id": {"type": "string"}, "target": {"type": "string"}, "sample_rate": {"type": "integer", "minimum": 8000},
+    "channels": {"type": "integer", "minimum": 1}, "duration_seconds": {"type": "number", "exclusiveMinimum": 0},
+    "peak_before_safety": {"type": "number", "minimum": 0}, "safety_gain_db": {"type": "number"}, "output_peak": {"type": "number", "minimum": 0},
+    "channel_order": {"type": "array", "items": {"type": "string"}}, "renderer": {"type": "string"},
+    "object_receipts": {"type": "array", "items": {"type": "object"}}, "metadata": {"type": "object"},
+    "outputFile": {"type": "string"}, "outputSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "additionalProperties": false
+}

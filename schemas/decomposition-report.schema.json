@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia-labs.ai/schemas/mus-decomposition-report/1",
+  "title": "MUS additive decomposition report",
+  "type": "object",
+  "required": ["schema", "method", "sourceSampleRate", "sourceLengthSamples", "parameters", "closure", "stems", "residual"],
+  "properties": {
+    "schema": {"const": "https://sophia-labs.ai/schemas/mus-decomposition-report/1"},
+    "method": {"type": "string", "minLength": 1},
+    "sourceSampleRate": {"type": "integer", "minimum": 8000},
+    "sourceLengthSamples": {"type": "integer", "minimum": 1},
+    "parameters": {"type": "object"},
+    "closure": {
+      "type": "object",
+      "required": ["rmsError", "peakError", "claim"],
+      "properties": {"rmsError": {"type": "number", "minimum": 0}, "peakError": {"type": "number", "minimum": 0}, "claim": {"type": "string"}},
+      "additionalProperties": false
+    },
+    "stems": {"type": "array", "items": {"$ref": "#/$defs/stem"}},
+    "residual": {"$ref": "#/$defs/stem"}
+  },
+  "$defs": {
+    "stem": {
+      "type": "object",
+      "required": ["stemId", "label", "audio", "startSeconds", "durationSeconds", "kind", "metadata"],
+      "properties": {
+        "stemId": {"type": "string"}, "label": {"type": "string"}, "audio": {"type": ["string", "null"]},
+        "startSeconds": {"type": "number", "minimum": 0}, "durationSeconds": {"type": "number", "exclusiveMinimum": 0},
+        "kind": {"type": "string"}, "sourceRegion": {"type": ["object", "null"]}, "metadata": {"type": "object"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

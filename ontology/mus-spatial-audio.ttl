@@ -1,0 +1,183 @@
+@prefix musp: <https://sophia-labs.ai/ontology/mus-spatial-audio#> .
+@prefix musa: <https://sophia-labs.ai/ontology/mus-audio#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix sosa: <http://www.w3.org/ns/sosa/> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://sophia-labs.ai/ontology/mus-spatial-audio>
+    a owl:Ontology ;
+    dct:title "MUS psychoacoustic and spatial audio ontology" ;
+    dct:description "Object-scene, additive decomposition, psychoacoustic analysis and cue-targeted manipulation contracts for MUS." ;
+    owl:versionInfo "0.2.0" .
+
+# Material and decomposition -------------------------------------------------
+
+musp:AudioMixture a owl:Class ; rdfs:subClassOf prov:Entity .
+musp:AcousticComponent a owl:Class ; rdfs:subClassOf prov:Entity ;
+    rdfs:comment "A model-produced additive component. It is not automatically one physical source." .
+musp:SeparatedStem a owl:Class ; rdfs:subClassOf musp:AcousticComponent .
+musp:ResidualStem a owl:Class ; rdfs:subClassOf musp:AcousticComponent ;
+    rdfs:comment "Explicit energy not assigned to the other components." .
+musp:EventComponent a owl:Class ; rdfs:subClassOf musp:SeparatedStem .
+musp:TextureComponent a owl:Class ; rdfs:subClassOf musp:SeparatedStem .
+musp:PhysicalSource a owl:Class ; rdfs:subClassOf prov:Entity .
+musp:SemanticSourceHypothesis a owl:Class ; rdfs:subClassOf prov:Entity .
+
+musp:AcousticComponent owl:disjointWith musp:PhysicalSource .
+musp:ResidualStem owl:disjointWith musp:PhysicalSource .
+
+musp:DecompositionRun a owl:Class ; rdfs:subClassOf prov:Activity .
+musp:MixtureClosureObservation a owl:Class ; rdfs:subClassOf sosa:Observation .
+musp:TimeFrequencyMask a owl:Class ; rdfs:subClassOf prov:Entity .
+
+musp:decomposedFrom a owl:ObjectProperty ; rdfs:domain musp:AcousticComponent ; rdfs:range musp:AudioMixture ; rdfs:subPropertyOf prov:wasDerivedFrom .
+musp:hasComponent a owl:ObjectProperty ; rdfs:domain musp:AudioMixture ; rdfs:range musp:AcousticComponent .
+musp:hasResidual a owl:ObjectProperty ; rdfs:domain musp:DecompositionRun ; rdfs:range musp:ResidualStem .
+musp:usesMask a owl:ObjectProperty ; rdfs:domain musp:DecompositionRun ; rdfs:range musp:TimeFrequencyMask .
+musp:closureRmsError a owl:DatatypeProperty ; rdfs:range xsd:double .
+musp:closurePeakError a owl:DatatypeProperty ; rdfs:range xsd:double .
+musp:interpretedAsSource a owl:ObjectProperty ; rdfs:domain musp:AcousticComponent ; rdfs:range musp:SemanticSourceHypothesis .
+
+# Psychoacoustic knowledge ---------------------------------------------------
+
+musp:PsychoacousticReport a owl:Class ; rdfs:subClassOf prov:Entity .
+musp:PerceptualConstruct a owl:Class .
+musp:PhysicalDescriptorObservation a owl:Class ; rdfs:subClassOf sosa:Observation .
+musp:AuditoryModelEstimate a owl:Class ; rdfs:subClassOf sosa:Observation .
+musp:PsychoacousticProxy a owl:Class ; rdfs:subClassOf musp:AuditoryModelEstimate .
+musp:StandardizedPsychoacousticEstimate a owl:Class ; rdfs:subClassOf musp:AuditoryModelEstimate .
+musp:PerceptualPredictorEstimate a owl:Class ; rdfs:subClassOf sosa:Observation .
+musp:HumanPerceptualReport a owl:Class ; rdfs:subClassOf sosa:Observation, prov:Entity .
+musp:PressureCalibration a owl:Class ; rdfs:subClassOf prov:Entity .
+musp:RelativeSignalCalibration a owl:Class ; rdfs:subClassOf musp:PressureCalibration .
+musp:AbsolutePressureCalibration a owl:Class ; rdfs:subClassOf musp:PressureCalibration .
+musp:AnalysisOperator a owl:Class ; rdfs:subClassOf sosa:Procedure .
+
+musp:PhysicalDescriptorObservation owl:disjointWith musp:HumanPerceptualReport .
+musp:PsychoacousticProxy owl:disjointWith musp:StandardizedPsychoacousticEstimate .
+
+musp:reportsConstruct a owl:ObjectProperty ; rdfs:domain sosa:Observation ; rdfs:range musp:PerceptualConstruct .
+musp:hasCalibration a owl:ObjectProperty ; rdfs:domain musp:PsychoacousticReport ; rdfs:range musp:PressureCalibration .
+musp:hasMetric a owl:ObjectProperty ; rdfs:domain musp:PsychoacousticReport ; rdfs:range sosa:Observation .
+musp:hasTrajectory a owl:ObjectProperty ; rdfs:domain musp:PsychoacousticReport ; rdfs:range prov:Entity .
+musp:scoreSemantics a owl:DatatypeProperty ; rdfs:range xsd:string .
+musp:metricStatus a owl:DatatypeProperty ; rdfs:range xsd:string .
+musp:requiresPressureCalibration a owl:DatatypeProperty ; rdfs:range xsd:boolean .
+musp:notEquivalentTo a owl:ObjectProperty ; a owl:SymmetricProperty .
+
+musp:Loudness a musp:PerceptualConstruct ; rdfs:label "psychoacoustic loudness" .
+musp:ProgrammeLoudness a musp:PerceptualConstruct ; rdfs:label "programme loudness" .
+musp:Sharpness a musp:PerceptualConstruct ; rdfs:label "psychoacoustic sharpness" .
+musp:TimbralBrightness a musp:PerceptualConstruct ; rdfs:label "timbral brightness" .
+musp:PsychoacousticRoughness a musp:PerceptualConstruct ; rdfs:label "psychoacoustic roughness" .
+musp:SemanticRoughness a musp:PerceptualConstruct ; rdfs:label "semantic texture roughness" .
+musp:FluctuationStrength a musp:PerceptualConstruct ; rdfs:label "fluctuation strength" .
+musp:PitchSalience a musp:PerceptualConstruct ; rdfs:label "pitch salience" .
+musp:Harmonicity a musp:PerceptualConstruct ; rdfs:label "harmonicity" .
+musp:AttackImpulsiveness a musp:PerceptualConstruct ; rdfs:label "attack and impulsiveness" .
+musp:TimbreDissimilarity a musp:PerceptualConstruct ; rdfs:label "timbre dissimilarity" .
+musp:TransformationQuality a musp:PerceptualConstruct ; rdfs:label "transformation quality" .
+
+musp:ProgrammeLoudness musp:notEquivalentTo musp:Loudness .
+musp:Sharpness musp:notEquivalentTo musp:TimbralBrightness .
+musp:PsychoacousticRoughness musp:notEquivalentTo musp:SemanticRoughness .
+
+# Cue-targeted intervention --------------------------------------------------
+
+musp:PsychoacousticManipulation a owl:Class ; rdfs:subClassOf prov:Activity ;
+    rdfs:comment "An intervention on a signal cue associated with experience; not an inverse qualia setter." .
+musp:ManipulationReceipt a owl:Class ; rdfs:subClassOf prov:Entity .
+musp:DerivedPsychoacousticVariation a owl:Class ; rdfs:subClassOf musp:SpatialAudioObject ;
+    rdfs:comment "A new audio object materialized from explicit cue-targeted controls, retaining parent object and manipulation receipt." .
+musp:BrightnessShelfIntervention a owl:Class ; rdfs:subClassOf musp:PsychoacousticManipulation .
+musp:RoughnessModulationIntervention a owl:Class ; rdfs:subClassOf musp:PsychoacousticManipulation .
+musp:FluctuationModulationIntervention a owl:Class ; rdfs:subClassOf musp:PsychoacousticManipulation .
+musp:AttackEnvelopeIntervention a owl:Class ; rdfs:subClassOf musp:PsychoacousticManipulation .
+musp:PitchShiftIntervention a owl:Class ; rdfs:subClassOf musp:PsychoacousticManipulation .
+musp:TonalFocusIntervention a owl:Class ; rdfs:subClassOf musp:PsychoacousticManipulation .
+
+musp:targetsCue a owl:ObjectProperty ; rdfs:domain musp:PsychoacousticManipulation ; rdfs:range musp:PerceptualConstruct .
+musp:hasManipulation a owl:ObjectProperty ; rdfs:domain musp:SpatialAudioObject ; rdfs:range musp:PsychoacousticManipulation .
+musp:hasManipulationReceipt a owl:ObjectProperty ; rdfs:domain musp:DerivedPsychoacousticVariation ; rdfs:range musp:ManipulationReceipt .
+musp:derivedFromObject a owl:ObjectProperty ; rdfs:domain musp:DerivedPsychoacousticVariation ; rdfs:range musp:SpatialAudioObject ; rdfs:subPropertyOf prov:wasDerivedFrom .
+musp:brightnessShelfDb a owl:DatatypeProperty ; rdfs:range xsd:double .
+musp:roughnessModulationDepth a owl:DatatypeProperty ; rdfs:range xsd:double .
+musp:roughnessModulationRateHz a owl:DatatypeProperty ; rdfs:range xsd:double .
+musp:fluctuationModulationDepth a owl:DatatypeProperty ; rdfs:range xsd:double .
+musp:fluctuationModulationRateHz a owl:DatatypeProperty ; rdfs:range xsd:double .
+musp:pitchShiftSemitones a owl:DatatypeProperty ; rdfs:range xsd:double .
+
+# Object scenes --------------------------------------------------------------
+
+musp:SpatialScene a owl:Class ; rdfs:subClassOf prov:Entity .
+musp:AudioIngestRun a owl:Class ; rdfs:subClassOf prov:Activity .
+musp:SpatialAudioObject a owl:Class ; rdfs:subClassOf prov:Entity ;
+    rdfs:comment "An authored render object. It need not correspond one-to-one with a physical source or acoustic component." .
+musp:PointObject a owl:Class ; rdfs:subClassOf musp:SpatialAudioObject .
+musp:ExtendedObject a owl:Class ; rdfs:subClassOf musp:SpatialAudioObject .
+musp:DiffuseField a owl:Class ; rdfs:subClassOf musp:SpatialAudioObject .
+musp:AmbientField a owl:Class ; rdfs:subClassOf musp:DiffuseField .
+musp:SpatialPosition a owl:Class .
+musp:PositionKeyframe a owl:Class .
+musp:ListenerPose a owl:Class .
+musp:RoomModel a owl:Class .
+musp:SpatialPlacementProvenance a owl:Class .
+musp:CompositionAuthoredPlacement a owl:Class ; rdfs:subClassOf musp:SpatialPlacementProvenance .
+musp:AnalysisMappedPlacement a owl:Class ; rdfs:subClassOf musp:SpatialPlacementProvenance .
+musp:GeneratedPlacement a owl:Class ; rdfs:subClassOf musp:SpatialPlacementProvenance .
+musp:MeasuredHistoricalPlacement a owl:Class ; rdfs:subClassOf musp:SpatialPlacementProvenance .
+
+musp:SpatialAudioObject owl:disjointWith musp:MeasuredHistoricalPlacement .
+
+musp:hasObject a owl:ObjectProperty ; rdfs:domain musp:SpatialScene ; rdfs:range musp:SpatialAudioObject .
+musp:usesAudioComponent a owl:ObjectProperty ; rdfs:domain musp:SpatialAudioObject ; rdfs:range musp:AcousticComponent .
+musp:hasPosition a owl:ObjectProperty ; rdfs:domain musp:SpatialAudioObject ; rdfs:range musp:SpatialPosition .
+musp:hasPositionKeyframe a owl:ObjectProperty ; rdfs:domain musp:SpatialAudioObject ; rdfs:range musp:PositionKeyframe .
+musp:hasListenerPose a owl:ObjectProperty ; rdfs:domain musp:SpatialScene ; rdfs:range musp:ListenerPose .
+musp:usesRoomModel a owl:ObjectProperty ; rdfs:domain musp:SpatialScene ; rdfs:range musp:RoomModel .
+musp:placedBy a owl:ObjectProperty ; rdfs:domain musp:SpatialAudioObject ; rdfs:range musp:SpatialPlacementProvenance .
+musp:positionX a owl:DatatypeProperty ; rdfs:range xsd:double .
+musp:positionY a owl:DatatypeProperty ; rdfs:range xsd:double .
+musp:positionZ a owl:DatatypeProperty ; rdfs:range xsd:double .
+musp:spread a owl:DatatypeProperty ; rdfs:range xsd:double .
+musp:reverbSend a owl:DatatypeProperty ; rdfs:range xsd:double .
+musp:objectGainDb a owl:DatatypeProperty ; rdfs:range xsd:double .
+
+# Render targets -------------------------------------------------------------
+
+musp:SpatialRenderRun a owl:Class ; rdfs:subClassOf prov:Activity .
+musp:SpatialRenderReceipt a owl:Class ; rdfs:subClassOf prov:Entity .
+musp:WebAudioHrtfAudition a owl:Class ; rdfs:subClassOf musp:SpatialRenderRun .
+musp:StereoProductionRender a owl:Class ; rdfs:subClassOf musp:SpatialRenderRun .
+musp:FoaAmbixRender a owl:Class ; rdfs:subClassOf musp:SpatialRenderRun .
+musp:BinauralRender a owl:Class ; rdfs:subClassOf musp:SpatialRenderRun .
+musp:SofaHrtfSet a owl:Class ; rdfs:subClassOf prov:Entity .
+
+musp:rendersScene a owl:ObjectProperty ; rdfs:domain musp:SpatialRenderRun ; rdfs:range musp:SpatialScene .
+musp:usesHrtf a owl:ObjectProperty ; rdfs:domain musp:BinauralRender ; rdfs:range musp:SofaHrtfSet .
+musp:channelOrder a owl:DatatypeProperty ; rdfs:range xsd:string .
+musp:rendererIdentity a owl:DatatypeProperty ; rdfs:range xsd:string .
+
+# Reference operator identities ---------------------------------------------
+
+musp:DigitalDescriptorOperator a musp:AnalysisOperator ; rdfs:label "MUS digital and spectral descriptor pack" .
+musp:BarkModulationProxyOperator a musp:AnalysisOperator ; rdfs:label "MUS Bark modulation proxy" .
+musp:Iso532ZwickerOperator a musp:AnalysisOperator ; rdfs:label "MoSQITo ISO 532-1 time-varying loudness" ; musp:requiresPressureCalibration true .
+musp:DinSharpnessOperator a musp:AnalysisOperator ; rdfs:label "MoSQITo DIN 45692 sharpness" ; musp:requiresPressureCalibration true .
+musp:DanielWeberRoughnessOperator a musp:AnalysisOperator ; rdfs:label "MoSQITo Daniel–Weber roughness" ; musp:requiresPressureCalibration true .
+musp:EcmaHmsLoudnessOperator a musp:AnalysisOperator ; rdfs:label "MoSQITo ECMA 418-2 hearing-model loudness" ; musp:requiresPressureCalibration true .
+musp:EcmaHmsRoughnessOperator a musp:AnalysisOperator ; rdfs:label "MoSQITo ECMA 418-2 hearing-model roughness" ; musp:requiresPressureCalibration true .
+musp:EcmaProminenceRatioOperator a musp:AnalysisOperator ; rdfs:label "MoSQITo ECMA 418-1 prominence ratio" ; musp:requiresPressureCalibration true .
+musp:EcmaToneNoiseRatioOperator a musp:AnalysisOperator ; rdfs:label "MoSQITo ECMA 418-1 tone-to-noise ratio" ; musp:requiresPressureCalibration true .
+musp:EventSoftMaskOperator a musp:AnalysisOperator ; rdfs:label "MUS event soft-mask decomposition" .
+musp:NmfTextureOperator a musp:AnalysisOperator ; rdfs:label "MUS NMF texture decomposition" .
+musp:AuditoryBandLayerOperator a musp:AnalysisOperator ;
+    rdfs:label "MUS smooth ERB-rate spectral-layer decomposition" ;
+    rdfs:comment "A reversible production partition inspired by auditory frequency spacing; not a standardized cochlear filterbank." .
+musp:HpssLayerOperator a musp:AnalysisOperator ;
+    rdfs:label "MUS harmonic/percussive morphology decomposition" ;
+    rdfs:comment "Creates harmonic-like and percussive-like layers without asserting physical source identity or universal perceptual harmonicity." .
