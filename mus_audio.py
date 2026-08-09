@@ -547,6 +547,19 @@ def render(score_path: Path, out_path: Path, verbose=True):
 
     n_total = int(total_s * SR)
     wet = np.zeros((2, n_total), np.float32)
+    dry = np.zeros((2, n_total), np.float32)
+
+    def mix_one(start, L, R, send, g, duck_env=None):
+        end = start + len(L)
+        dl, dr = L * g, R * g
+        if duck_env is not None:
+            d = duck_env[start:end]
+            dl, dr = dl * d, dr * d
+        dry[0, start:end] += dl
+        dry[1, start:end] += dr
+        if send > 0:
+            wet[0, start:end] += dl * send
+            wet[1, start:end] += dr * send
 
     # `# sidechain: <track> depth=0.75 rel=0.16` — the pump. Derived from the
     # trigger track's notated onsets, not detected from the audio.
@@ -567,6 +580,11 @@ def render(score_path: Path, out_path: Path, verbose=True):
                     pass
     sc_onsets = []
     placed = []          # (track, start, L, R, send, db) — mixed after all tracks
+    # A sidechain needs every trigger onset before anything can be ducked, so
+    # note audio must be held until the end. Without one there is no such
+    # dependency, and holding it is what makes a 15-minute score run out of
+    # memory — so flush to the bus at every bar line instead.
+    eager = sc_track is None
 
     bar_content = {}
     for mb in parsed.bars:
@@ -732,6 +750,11 @@ def render(score_path: Path, out_path: Path, verbose=True):
                 pending.append([(start, L, R, send), db])
                 stats["notes"] += 1
 
+            if eager and hairpin is None and pending:
+                for (st_, L_, R_, sd_), db_ in pending:
+                    mix_one(st_, L_, R_, sd_, 10 ** (db_ / 20.0))
+                pending = []
+
         if hairpin:
             i0, d = hairpin
             span = pending[i0:]
@@ -742,30 +765,24 @@ def render(score_path: Path, out_path: Path, verbose=True):
             str(next((i.params.get("duck", "1") for i in parsed.instruments
                       if i.abbrev == abbr), "1")) not in ("0", "no", "off")
         for (start, L, R, send), db in pending:
-            placed.append((abbr, ducks, start, L, R, send, 10 ** (db / 20.0)))
+            if eager:
+                mix_one(start, L, R, send, 10 ** (db / 20.0))
+            else:
+                placed.append((abbr, ducks, start, L, R, send, 10 ** (db / 20.0)))
 
-    # ---- mixdown, with the pump applied to ducking tracks
-    dry = np.zeros((2, n_total), np.float32)
+    # ---- deferred mixdown, with the pump applied to ducking tracks
     duck = (duck_envelope(sc_onsets, n_total, sc_depth, sc_rel)
             if sc_track and sc_onsets else None)
     for abbr, ducks, start, L, R, send, g in placed:
-        end = start + len(L)
-        dl, dr = L * g, R * g
-        if duck is not None and ducks and abbr != sc_track:
-            d = duck[start:end]
-            dl, dr = dl * d, dr * d
-        dry[0, start:end] += dl
-        dry[1, start:end] += dr
-        if send > 0:
-            wet[0, start:end] += dl * send
-            wet[1, start:end] += dr * send
+        mix_one(start, L, R, send, g,
+                duck if (duck is not None and ducks and abbr != sc_track) else None)
     if duck is not None:
         print(f"  sidechain: {len(sc_onsets)} hits from '{sc_track}' "
               f"depth {sc_depth} rel {sc_rel}s")
 
     # ---- reverb + master
     ir = make_ir()
-    rev = np.stack([sig.fftconvolve(wet[c], ir[c])[:n_total] for c in range(2)])
+    rev = np.stack([sig.oaconvolve(wet[c], ir[c])[:n_total] for c in range(2)])
     out = dry + rev.astype(np.float32)
 
     sos = sig.butter(2, 28 / (SR / 2), btype="high", output="sos")
