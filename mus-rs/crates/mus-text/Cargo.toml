@@ -1,0 +1,15 @@
+[package]
+name = "mus-text"
+version = "0.1.0"
+description = "MUS text-face parser and proposal model"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+mus-graph = { path = "../mus-graph" }
+mus-notation = { path = "../mus-notation" }
+mus-oplog = { path = "../mus-oplog" }
+regex = "1"
+serde = { version = "1", features = ["derive"] }
+

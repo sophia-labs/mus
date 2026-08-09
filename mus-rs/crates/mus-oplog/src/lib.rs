@@ -60,7 +60,10 @@ impl Frac {
         let sign = if den < 0 { -1 } else { 1 };
         let (num, den) = (num * sign, den * sign);
         let g = gcd(num.abs(), den).max(1);
-        Frac { num: num / g, den: den / g }
+        Frac {
+            num: num / g,
+            den: den / g,
+        }
     }
 
     pub fn zero() -> Self {
@@ -68,7 +71,10 @@ impl Frac {
     }
 
     pub fn add(self, other: Frac) -> Frac {
-        Frac::new(self.num * other.den + other.num * self.den, self.den * other.den)
+        Frac::new(
+            self.num * other.den + other.num * self.den,
+            self.den * other.den,
+        )
     }
 
     pub fn as_f64(self) -> f64 {
@@ -227,7 +233,12 @@ struct OpPreimage<'a> {
 
 impl Op {
     pub fn compute_id(actor: &str, seq: u64, lamport: u64, body: &OpBody) -> OpId {
-        let pre = OpPreimage { actor, seq, lamport, body };
+        let pre = OpPreimage {
+            actor,
+            seq,
+            lamport,
+            body,
+        };
         OpId(sha256_hex(canonical_json(&pre).as_bytes()))
     }
 }
@@ -254,7 +265,13 @@ impl OpLog {
     pub fn append(&mut self, actor: &str, seq: u64, body: OpBody) -> OpId {
         let lamport = self.max_lamport() + 1;
         let id = Op::compute_id(actor, seq, lamport, &body);
-        let op = Op { id: id.clone(), actor: actor.to_string(), seq, lamport, body };
+        let op = Op {
+            id: id.clone(),
+            actor: actor.to_string(),
+            seq,
+            lamport,
+            body,
+        };
         self.ops.insert(id.clone(), op);
         id
     }
@@ -335,8 +352,20 @@ mod tests {
         base.append("vera", 1, OpBody::ScoreInit { title: "t".into() });
         let mut a = base.clone();
         let mut b = base.clone();
-        a.append("agent-a", 1, OpBody::AddEvent { state: state("gl", 1, 0, 8100) });
-        b.append("agent-b", 1, OpBody::AddEvent { state: state("gl", 1, 1, 8300) });
+        a.append(
+            "agent-a",
+            1,
+            OpBody::AddEvent {
+                state: state("gl", 1, 0, 8100),
+            },
+        );
+        b.append(
+            "agent-b",
+            1,
+            OpBody::AddEvent {
+                state: state("gl", 1, 1, 8300),
+            },
+        );
         let mut ab = a.clone();
         ab.merge(&b);
         let mut ba = b.clone();

@@ -65,6 +65,11 @@ pub struct ScoreGraph {
     pub title: String,
     pub headers: BTreeMap<String, String>,
     pub performance: BTreeMap<String, String>,
+    /// Inline bar changes belong to the text face rather than an event, but
+    /// are retained by the graph-shaped proposal so reduction can reproduce
+    /// tempo/meter changes exactly.
+    pub inline_changes: BTreeMap<u32, Vec<String>>,
+    pub texts: BTreeMap<u32, Vec<String>>,
     pub instruments: Vec<InstrumentDecl>,
     pub sections: Vec<Section>,
     pub lineages: BTreeMap<LineageId, Lineage>,
@@ -78,15 +83,19 @@ impl Lineage {
         // The SAME total order as log projection: (lamport, actor, seq, id).
         // "Causally latest" = latest in the one order every replica already
         // agrees on — deterministic and explainable, never hash-arbitrary.
-        self.heads
-            .iter()
-            .max_by(|a, b| (a.lamport, &a.actor, a.seq, &a.op).cmp(&(b.lamport, &b.actor, b.seq, &b.op)))
+        self.heads.iter().max_by(|a, b| {
+            (a.lamport, &a.actor, a.seq, &a.op).cmp(&(b.lamport, &b.actor, b.seq, &b.op))
+        })
     }
 }
 
 impl ScoreGraph {
     pub fn contested_lineages(&self) -> Vec<&LineageId> {
-        self.lineages.iter().filter(|(_, l)| l.contested).map(|(id, _)| id).collect()
+        self.lineages
+            .iter()
+            .filter(|(_, l)| l.contested)
+            .map(|(id, _)| id)
+            .collect()
     }
 
     /// Current sounding events: chosen head per lineage, retractions absent.
@@ -95,11 +104,17 @@ impl ScoreGraph {
             .lineages
             .iter()
             .filter_map(|(id, l)| {
-                l.chosen_head().and_then(|h| h.state.as_ref().map(|s| (id, s, h)))
+                l.chosen_head()
+                    .and_then(|h| h.state.as_ref().map(|s| (id, s, h)))
             })
             .collect();
         out.sort_by(|a, b| {
-            (a.1.bar, &a.1.track, a.1.onset_ql, &a.0).cmp(&(b.1.bar, &b.1.track, b.1.onset_ql, &b.0))
+            (a.1.bar, &a.1.track, a.1.onset_ql, &a.0).cmp(&(
+                b.1.bar,
+                &b.1.track,
+                b.1.onset_ql,
+                &b.0,
+            ))
         });
         out
     }
@@ -124,7 +139,12 @@ fn fold_op(g: &mut ScoreGraph, op: &Op) {
         OpBody::AnnotatePerformance { key, value } => {
             g.performance.insert(key.clone(), value.clone());
         }
-        OpBody::DeclareInstrument { abbrev, name, clef, params } => {
+        OpBody::DeclareInstrument {
+            abbrev,
+            name,
+            clef,
+            params,
+        } => {
             g.instruments.push(InstrumentDecl {
                 abbrev: abbrev.clone(),
                 name: name.clone(),
@@ -133,7 +153,12 @@ fn fold_op(g: &mut ScoreGraph, op: &Op) {
                 declared_by: op.id.clone(),
             });
         }
-        OpBody::AddSection { name, from_bar, to_bar, prose } => {
+        OpBody::AddSection {
+            name,
+            from_bar,
+            to_bar,
+            prose,
+        } => {
             g.sections.push(Section {
                 name: name.clone(),
                 from_bar: *from_bar,
@@ -151,9 +176,19 @@ fn fold_op(g: &mut ScoreGraph, op: &Op) {
                 actor: op.actor.clone(),
                 seq: op.seq,
             };
-            g.lineages.insert(lineage, Lineage { heads: vec![rec], contested: false });
+            g.lineages.insert(
+                lineage,
+                Lineage {
+                    heads: vec![rec],
+                    contested: false,
+                },
+            );
         }
-        OpBody::SupersedeEvent { lineage, basis, state } => {
+        OpBody::SupersedeEvent {
+            lineage,
+            basis,
+            state,
+        } => {
             supersede(g, op, lineage, basis, Some(state.clone()));
         }
         OpBody::RetractEvent { lineage, basis } => {
@@ -162,10 +197,19 @@ fn fold_op(g: &mut ScoreGraph, op: &Op) {
     }
 }
 
-fn supersede(g: &mut ScoreGraph, op: &Op, lineage: &LineageId, basis: &VersionId, state: Option<EventState>) {
+fn supersede(
+    g: &mut ScoreGraph,
+    op: &Op,
+    lineage: &LineageId,
+    basis: &VersionId,
+    state: Option<EventState>,
+) {
     let entry = g.lineages.entry(lineage.clone()).or_default();
     let rec = VersionRec {
-        version: state.as_ref().map(|s| s.version_id()).unwrap_or_else(|| VersionId(format!("retracted:{}", op.id.0))),
+        version: state
+            .as_ref()
+            .map(|s| s.version_id())
+            .unwrap_or_else(|| VersionId(format!("retracted:{}", op.id.0))),
         state,
         op: op.id.clone(),
         lamport: op.lamport,
@@ -187,8 +231,19 @@ fn supersede(g: &mut ScoreGraph, op: &Op, lineage: &LineageId, basis: &VersionId
 
 /// Canonical header emission order; extras follow alphabetically.
 const HEADER_ORDER: &[&str] = &[
-    "summary", "tempo", "time", "key", "bars", "tuning", "pack", "gestures", "tape",
-    "swing", "reverb", "master", "sidechain",
+    "summary",
+    "tempo",
+    "time",
+    "key",
+    "bars",
+    "tuning",
+    "pack",
+    "gestures",
+    "tape",
+    "swing",
+    "reverb",
+    "master",
+    "sidechain",
 ];
 
 #[derive(Debug)]
@@ -222,58 +277,125 @@ pub fn reduce_to_text(g: &ScoreGraph) -> Result<String, ReduceError> {
             for (k, v) in &inst.params {
                 items.push(format!("{k}={v}"));
             }
-            out.push_str(&format!("#   {} = {} ({})\n", inst.abbrev, inst.name, items.join(", ")));
+            out.push_str(&format!(
+                "#   {} = {} ({})\n",
+                inst.abbrev,
+                inst.name,
+                items.join(", ")
+            ));
         }
     }
     for s in &g.sections {
-        let prose = s.prose.as_deref().map(|p| format!(" — {p}")).unwrap_or_default();
-        out.push_str(&format!("\n# section: {} [{}-{}]{}\n", s.name, s.from_bar, s.to_bar, prose));
+        let prose = s
+            .prose
+            .as_deref()
+            .map(|p| format!(" — {p}"))
+            .unwrap_or_default();
+        out.push_str(&format!(
+            "\n# section: {} [{}-{}]{}\n",
+            s.name, s.from_bar, s.to_bar, prose
+        ));
+    }
+    for (bar, texts) in &g.texts {
+        for prose in texts {
+            out.push_str(&format!("# text @b{bar}: {prose}\n"));
+        }
     }
 
     let bars: u32 = g
         .headers
         .get("bars")
         .and_then(|b| b.parse().ok())
-        .unwrap_or_else(|| g.current_events().iter().map(|(_, s, _)| s.bar).max().unwrap_or(0));
-    let bar_qlen = Frac::new(4, 1); // v0: 4/4 only; meter map is W-B.
+        .unwrap_or_else(|| {
+            g.current_events()
+                .iter()
+                .map(|(_, s, _)| s.bar)
+                .max()
+                .unwrap_or(0)
+        });
+
+    let meter = meter_map(g);
+    let mut bar_lengths = BTreeMap::new();
+    let mut current_meter = Frac::new(4, 1);
+    for bar in 1..=bars {
+        if let Some(value) = meter.get(&bar) {
+            current_meter = *value;
+        }
+        bar_lengths.insert(bar, current_meter);
+    }
+
+    let mut by_track: BTreeMap<String, BTreeMap<u32, Vec<&EventState>>> = BTreeMap::new();
+    for (_, state, _) in g.current_events() {
+        by_track
+            .entry(state.track.clone())
+            .or_default()
+            .entry(state.bar)
+            .or_default()
+            .push(state);
+    }
+    let mut cells_by_bar: BTreeMap<u32, Vec<(usize, String)>> = BTreeMap::new();
+    for (idx, instrument) in g.instruments.iter().enumerate() {
+        let Some(events_by_bar) = by_track.get(&instrument.abbrev) else {
+            continue;
+        };
+        let mut dynamic = "mf".to_string();
+        for bar in 1..=bars {
+            let Some(events) = events_by_bar.get(&bar) else {
+                continue;
+            };
+            let content = format_track_bar(
+                events,
+                *bar_lengths.get(&bar).unwrap_or(&Frac::new(4, 1)),
+                &mut dynamic,
+            )?;
+            cells_by_bar.entry(bar).or_default().push((idx, content));
+        }
+    }
 
     out.push('\n');
     for bar in 1..=bars {
-        let mut per_track: BTreeMap<usize, Vec<&EventState>> = BTreeMap::new();
-        for (_, state, _) in g.current_events() {
-            if state.bar != bar {
-                continue;
-            }
-            let idx = g
-                .instruments
-                .iter()
-                .position(|i| i.abbrev == state.track)
-                .ok_or_else(|| ReduceError::Unformattable(format!("event on undeclared track {}", state.track)))?;
-            per_track.entry(idx).or_default().push(state);
-        }
-        if per_track.is_empty() {
-            out.push_str(&format!("bar {bar}: tacet\n"));
+        let Some(cells) = cells_by_bar.get(&bar) else {
+            let changes = format_bar_changes(g.inline_changes.get(&bar));
+            out.push_str(&format!("bar {bar}{changes}: tacet\n"));
             continue;
-        }
-        let mut cells: Vec<String> = Vec::new();
-        for (idx, events) in &per_track {
-            let abbrev = &g.instruments[*idx].abbrev;
-            cells.push(format!("{}={}", abbrev, format_track_bar(events, bar_qlen)?));
-        }
-        out.push_str(&format!("bar {bar}: {}\n", cells.join("  ")));
+        };
+        let cells = cells
+            .iter()
+            .map(|(idx, content)| format!("{}={content}", g.instruments[*idx].abbrev))
+            .collect::<Vec<_>>();
+        let changes = format_bar_changes(g.inline_changes.get(&bar));
+        out.push_str(&format!("bar {bar}{changes}: {}\n", cells.join("  ")));
     }
     Ok(out)
 }
 
-fn format_track_bar(events: &[&EventState], bar_qlen: Frac) -> Result<String, ReduceError> {
+fn format_bar_changes(changes: Option<&Vec<String>>) -> String {
+    changes
+        .map(|items| format!(" [{}]", items.join(", ")))
+        .unwrap_or_default()
+}
+
+fn format_track_bar(
+    events: &[&EventState],
+    bar_qlen: Frac,
+    dynamic: &mut String,
+) -> Result<String, ReduceError> {
     let mut toks: Vec<String> = Vec::new();
     let mut cursor = Frac::zero();
     for ev in events {
         if ev.onset_ql < cursor {
-            return Err(ReduceError::Unformattable("overlapping events in one track-bar".into()));
+            return Err(ReduceError::Unformattable(
+                "overlapping events in one track-bar".into(),
+            ));
         }
         if ev.onset_ql > cursor {
             toks.push(format!("R{}", duration_code(sub(ev.onset_ql, cursor))?));
+        }
+        if let Some(value) = &ev.dynamic {
+            if value != dynamic {
+                toks.push(format!("{{{value}}}"));
+                *dynamic = value.clone();
+            }
         }
         toks.push(event_token(ev)?);
         cursor = ev.onset_ql.add(ev.dur_ql);
@@ -291,10 +413,18 @@ fn sub(a: Frac, b: Frac) -> Frac {
 fn event_token(ev: &EventState) -> Result<String, ReduceError> {
     let head = match ev.kind {
         EventKind::Unpitched => "X".to_string(),
-        EventKind::Note => pitch_name(ev.pitches_midi_cents[0]),
+        EventKind::Note => pitch_name(
+            *ev.pitches_midi_cents
+                .first()
+                .ok_or_else(|| ReduceError::Unformattable("note has no pitch".into()))?,
+        ),
         EventKind::Chord => format!(
             "<{}>",
-            ev.pitches_midi_cents.iter().map(|p| pitch_name(*p)).collect::<Vec<_>>().join(" ")
+            ev.pitches_midi_cents
+                .iter()
+                .map(|p| pitch_name(*p))
+                .collect::<Vec<_>>()
+                .join(" ")
         ),
     };
     let mut tok = format!("{head}{}", duration_code(ev.dur_ql)?);
@@ -326,14 +456,19 @@ fn event_token(ev: &EventState) -> Result<String, ReduceError> {
     Ok(tok)
 }
 
-const NOTE_NAMES: [&str; 12] =
-    ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const NOTE_NAMES: [&str; 12] = [
+    "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
+];
 
 fn pitch_name(midi_cents: i32) -> String {
     let midi = midi_cents.div_euclid(100);
     let cents = midi_cents.rem_euclid(100);
     // Canonical form keeps cents in [-49, +50] around the nearest semitone.
-    let (midi, cents) = if cents > 50 { (midi + 1, cents - 100) } else { (midi, cents) };
+    let (midi, cents) = if cents > 50 {
+        (midi + 1, cents - 100)
+    } else {
+        (midi, cents)
+    };
     let name = NOTE_NAMES[(midi.rem_euclid(12)) as usize];
     let octave = midi.div_euclid(12) - 1;
     if cents == 0 {
@@ -345,9 +480,24 @@ fn pitch_name(midi_cents: i32) -> String {
 
 fn duration_code(ql: Frac) -> Result<String, ReduceError> {
     let table: &[(i64, i64, &str)] = &[
-        (8, 1, "ww"), (6, 1, "w."), (4, 1, "w"), (3, 1, "h."), (2, 1, "h"),
-        (3, 2, "q."), (1, 1, "q"), (3, 4, "e."), (1, 2, "e"), (3, 8, "s."),
-        (1, 4, "s"), (1, 8, "t"),
+        (8, 1, "ww"),
+        (6, 1, "w."),
+        (4, 1, "w"),
+        (3, 1, "h."),
+        (2, 1, "h"),
+        (3, 2, "q."),
+        (1, 1, "q"),
+        (3, 4, "e."),
+        (1, 2, "e"),
+        (3, 8, "s."),
+        (1, 4, "s"),
+        (1, 8, "t"),
+        (4, 3, "h3"),
+        (2, 3, "q3"),
+        (1, 3, "e3"),
+        (1, 6, "s3"),
+        (1, 12, "t3"),
+        (1, 24, "x3"),
     ];
     for (n, d, code) in table {
         if ql == Frac::new(*n, *d) {
@@ -364,7 +514,54 @@ fn duration_code(ql: Frac) -> Result<String, ReduceError> {
             }
         }
     }
-    Err(ReduceError::Unformattable(format!("duration {}/{} ql", ql.num, ql.den)))
+    Err(ReduceError::Unformattable(format!(
+        "duration {}/{} ql",
+        ql.num, ql.den
+    )))
+}
+
+/// Read the score's time-signature change list and inline time changes. The
+/// old reducer's fixed 4/4 assumption was a silent semantic loss; an absent
+/// map still has the reference default of 4/4.
+fn meter_map(g: &ScoreGraph) -> BTreeMap<u32, Frac> {
+    let mut out = BTreeMap::new();
+    if let Some(raw) = g.headers.get("time") {
+        for piece in raw.split('→') {
+            let value = piece.split('(').next().unwrap_or(piece).trim();
+            if let Some(meter) = parse_meter(value) {
+                let bar = piece
+                    .find("(b")
+                    .and_then(|i| piece[i + 2..].split(')').next())
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(1);
+                out.insert(bar, meter);
+            }
+        }
+    }
+    for (bar, changes) in &g.inline_changes {
+        for change in changes {
+            if let Some(value) = change
+                .strip_prefix("time=")
+                .or_else(|| change.strip_prefix("time ="))
+            {
+                if let Some(meter) = parse_meter(value.trim()) {
+                    out.insert(*bar, meter);
+                }
+            }
+        }
+    }
+    out
+}
+
+fn parse_meter(value: &str) -> Option<Frac> {
+    let (num, den) = value.trim().split_once('/')?;
+    let num: i64 = num.trim().parse().ok()?;
+    let den: i64 = den.trim().parse().ok()?;
+    if num > 0 && den > 0 {
+        Some(Frac::new(num * 4, den))
+    } else {
+        None
+    }
 }
 
 #[cfg(test)]
@@ -392,19 +589,71 @@ mod tests {
 
     fn smoke_log() -> (OpLog, OpId) {
         let mut log = OpLog::new();
-        log.append("vera", 1, OpBody::ScoreInit { title: "smoke".into() });
-        log.append("vera", 2, OpBody::SetHeader { key: "tempo".into(), value: "60".into() });
-        log.append("vera", 3, OpBody::SetHeader { key: "time".into(), value: "4/4".into() });
-        log.append("vera", 4, OpBody::SetHeader { key: "bars".into(), value: "2".into() });
+        log.append(
+            "vera",
+            1,
+            OpBody::ScoreInit {
+                title: "smoke".into(),
+            },
+        );
+        log.append(
+            "vera",
+            2,
+            OpBody::SetHeader {
+                key: "tempo".into(),
+                value: "60".into(),
+            },
+        );
+        log.append(
+            "vera",
+            3,
+            OpBody::SetHeader {
+                key: "time".into(),
+                value: "4/4".into(),
+            },
+        );
+        log.append(
+            "vera",
+            4,
+            OpBody::SetHeader {
+                key: "bars".into(),
+                value: "2".into(),
+            },
+        );
         let mut params = BTreeMap::new();
         params.insert("voice".into(), "glide".into());
-        log.append("vera", 5, OpBody::DeclareInstrument {
-            abbrev: "gl".into(), name: "glide".into(), clef: "treble".into(), params,
-        });
+        log.append(
+            "vera",
+            5,
+            OpBody::DeclareInstrument {
+                abbrev: "gl".into(),
+                name: "glide".into(),
+                clef: "treble".into(),
+                params,
+            },
+        );
         // A5 = midi 81, B5 = 83, D6+22 = 86.22
-        let a = log.append("vera", 6, OpBody::AddEvent { state: ev("gl", 1, (0, 1), (1, 1), 8100) });
-        log.append("vera", 7, OpBody::AddEvent { state: ev("gl", 1, (1, 1), (1, 1), 8300) });
-        log.append("vera", 8, OpBody::AddEvent { state: ev("gl", 2, (0, 1), (2, 1), 8622) });
+        let a = log.append(
+            "vera",
+            6,
+            OpBody::AddEvent {
+                state: ev("gl", 1, (0, 1), (1, 1), 8100),
+            },
+        );
+        log.append(
+            "vera",
+            7,
+            OpBody::AddEvent {
+                state: ev("gl", 1, (1, 1), (1, 1), 8300),
+            },
+        );
+        log.append(
+            "vera",
+            8,
+            OpBody::AddEvent {
+                state: ev("gl", 2, (0, 1), (2, 1), 8622),
+            },
+        );
         (log, a)
     }
 
@@ -436,11 +685,15 @@ bar 2: gl=D6+22h Rh
         let (mut log, lineage_op) = smoke_log();
         let lineage = LineageId(lineage_op.0.clone());
         let basis = ev("gl", 1, (0, 1), (1, 1), 8100).version_id();
-        log.append("vera", 9, OpBody::SupersedeEvent {
-            lineage: lineage.clone(),
-            basis,
-            state: ev("gl", 1, (0, 1), (1, 1), 8600), // A5 → G#5? no: 8600 = midi 86 = D6
-        });
+        log.append(
+            "vera",
+            9,
+            OpBody::SupersedeEvent {
+                lineage: lineage.clone(),
+                basis,
+                state: ev("gl", 1, (0, 1), (1, 1), 8600), // A5 → G#5? no: 8600 = midi 86 = D6
+            },
+        );
         let g = project(&log);
         assert!(!g.lineages[&lineage].contested);
         assert_eq!(g.lineages[&lineage].heads.len(), 1);
@@ -455,14 +708,24 @@ bar 2: gl=D6+22h Rh
         let basis = ev("gl", 1, (0, 1), (1, 1), 8100).version_id();
         let mut a = base.clone();
         let mut b = base.clone();
-        a.append("agent-a", 1, OpBody::SupersedeEvent {
-            lineage: lineage.clone(), basis: basis.clone(),
-            state: ev("gl", 1, (0, 1), (1, 1), 8500),
-        });
-        b.append("agent-b", 1, OpBody::SupersedeEvent {
-            lineage: lineage.clone(), basis,
-            state: ev("gl", 1, (0, 1), (1, 1), 8700),
-        });
+        a.append(
+            "agent-a",
+            1,
+            OpBody::SupersedeEvent {
+                lineage: lineage.clone(),
+                basis: basis.clone(),
+                state: ev("gl", 1, (0, 1), (1, 1), 8500),
+            },
+        );
+        b.append(
+            "agent-b",
+            1,
+            OpBody::SupersedeEvent {
+                lineage: lineage.clone(),
+                basis,
+                state: ev("gl", 1, (0, 1), (1, 1), 8700),
+            },
+        );
         a.merge(&b);
         let g = project(&a);
         let l = &g.lineages[&lineage];
@@ -475,16 +738,24 @@ bar 2: gl=D6+22h Rh
         // Merge order must not matter (projection inherits convergence).
         let mut b2 = base.clone();
         let mut a2 = base.clone();
-        b2.append("agent-b", 1, OpBody::SupersedeEvent {
-            lineage: lineage.clone(),
-            basis: ev("gl", 1, (0, 1), (1, 1), 8100).version_id(),
-            state: ev("gl", 1, (0, 1), (1, 1), 8700),
-        });
-        a2.append("agent-a", 1, OpBody::SupersedeEvent {
-            lineage: lineage.clone(),
-            basis: ev("gl", 1, (0, 1), (1, 1), 8100).version_id(),
-            state: ev("gl", 1, (0, 1), (1, 1), 8500),
-        });
+        b2.append(
+            "agent-b",
+            1,
+            OpBody::SupersedeEvent {
+                lineage: lineage.clone(),
+                basis: ev("gl", 1, (0, 1), (1, 1), 8100).version_id(),
+                state: ev("gl", 1, (0, 1), (1, 1), 8700),
+            },
+        );
+        a2.append(
+            "agent-a",
+            1,
+            OpBody::SupersedeEvent {
+                lineage: lineage.clone(),
+                basis: ev("gl", 1, (0, 1), (1, 1), 8100).version_id(),
+                state: ev("gl", 1, (0, 1), (1, 1), 8500),
+            },
+        );
         b2.merge(&a2);
         assert_eq!(project(&b2), g);
     }
@@ -494,7 +765,14 @@ bar 2: gl=D6+22h Rh
         let (mut log, lineage_op) = smoke_log();
         let lineage = LineageId(lineage_op.0.clone());
         let basis = ev("gl", 1, (0, 1), (1, 1), 8100).version_id();
-        log.append("vera", 9, OpBody::RetractEvent { lineage: lineage.clone(), basis });
+        log.append(
+            "vera",
+            9,
+            OpBody::RetractEvent {
+                lineage: lineage.clone(),
+                basis,
+            },
+        );
         let g = project(&log);
         assert_eq!(g.current_events().len(), 2);
         let text = reduce_to_text(&g).unwrap();
@@ -505,11 +783,24 @@ bar 2: gl=D6+22h Rh
     fn quotes_and_ties_reduce_canonically() {
         let mut log = OpLog::new();
         log.append("vera", 1, OpBody::ScoreInit { title: "q".into() });
-        log.append("vera", 2, OpBody::SetHeader { key: "bars".into(), value: "1".into() });
-        log.append("vera", 3, OpBody::DeclareInstrument {
-            abbrev: "te".into(), name: "tenor".into(), clef: "treble".into(),
-            params: BTreeMap::new(),
-        });
+        log.append(
+            "vera",
+            2,
+            OpBody::SetHeader {
+                key: "bars".into(),
+                value: "1".into(),
+            },
+        );
+        log.append(
+            "vera",
+            3,
+            OpBody::DeclareInstrument {
+                abbrev: "te".into(),
+                name: "tenor".into(),
+                clef: "treble".into(),
+                params: BTreeMap::new(),
+            },
+        );
         let mut st = ev("te", 1, (0, 1), (5, 2), 7900); // 2.5 ql → h~e
         st.quote = Some(mus_oplog::Quote {
             target_iri: Some("urn:sophia:mus:segment:sha256:abc".into()),
@@ -519,6 +810,63 @@ bar 2: gl=D6+22h Rh
         });
         log.append("vera", 4, OpBody::AddEvent { state: st });
         let text = reduce_to_text(&project(&log)).unwrap();
-        assert!(text.contains("te=G5h~e[gest=h67,gsrc=raw] Rq."), "got: {text}");
+        assert!(
+            text.contains("te=G5h~e[gest=h67,gsrc=raw] Rq."),
+            "got: {text}"
+        );
+    }
+
+    #[test]
+    fn reduction_uses_meter_changes_dynamic_state_and_cross_bar_events() {
+        let mut log = OpLog::new();
+        log.append(
+            "vera",
+            1,
+            OpBody::ScoreInit {
+                title: "meter".into(),
+            },
+        );
+        log.append(
+            "vera",
+            2,
+            OpBody::SetHeader {
+                key: "bars".into(),
+                value: "2".into(),
+            },
+        );
+        log.append(
+            "vera",
+            3,
+            OpBody::SetHeader {
+                key: "time".into(),
+                value: "3/4".into(),
+            },
+        );
+        log.append(
+            "vera",
+            4,
+            OpBody::DeclareInstrument {
+                abbrev: "v".into(),
+                name: "voice".into(),
+                clef: "treble".into(),
+                params: BTreeMap::new(),
+            },
+        );
+        let mut first = ev("v", 1, (0, 1), (5, 1), 6000);
+        first.dynamic = Some("p".into());
+        first.gliss_target_midi_cents = Some(6200);
+        first.lyric = Some("hold".into());
+        log.append("vera", 5, OpBody::AddEvent { state: first });
+        let mut second = ev("v", 2, (0, 1), (3, 1), 6200);
+        second.dynamic = Some("f".into());
+        log.append("vera", 6, OpBody::AddEvent { state: second });
+        let mut graph = project(&log);
+        graph.inline_changes.insert(2, vec!["time=2/4".into()]);
+        let text = reduce_to_text(&graph).unwrap();
+        assert!(
+            text.contains("bar 1: v={p} C4w~q->D4\"hold\""),
+            "got: {text}"
+        );
+        assert!(text.contains("bar 2 [time=2/4]: v={f} D4h."), "got: {text}");
     }
 }

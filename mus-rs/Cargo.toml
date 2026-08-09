@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/mus-notation", "crates/mus-oplog", "crates/mus-graph"]
+members = ["crates/mus-notation", "crates/mus-oplog", "crates/mus-graph", "crates/mus-text"]
 
 [workspace.package]
 edition = "2021"
