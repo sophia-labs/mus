@@ -122,14 +122,26 @@ def pitch_ramp(x, st0, st1, curve="lin", tau=0.045):
         return x
     if abs(st0 - st1) < 1e-3:
         return varispeed(x, st0)
-    est = int(n_in / (2.0 ** (min(st0, st1) / 12.0))) + 16
-    t = np.arange(est) / SR
-    if curve == "exp":
-        st = st1 + (st0 - st1) * np.exp(-t / max(tau, 1e-4))
-    else:
-        st = np.linspace(st0, st1, est)
-    pos = np.cumsum(2.0 ** (st / 12.0))
-    pos = pos[pos < (n_in - 1)]
+
+    def ramp(n):
+        if curve == "exp":
+            return st1 + (st0 - st1) * np.exp(-(np.arange(n) / SR) / max(tau, 1e-4))
+        return np.linspace(st0, st1, n)
+
+    # Solve for the output length whose integrated read rate consumes exactly
+    # the sample. Laying the ramp over a fixed estimate and then dropping the
+    # samples that overrun truncates the glide partway: a notated +12 st
+    # delivered +6.1, a +24 delivered +8.4. Two rescalings converge, and the
+    # iteration handles the exponential curve as well as the linear one.
+    n_out = max(16, int(n_in / (2.0 ** (min(st0, st1) / 12.0))))
+    for _ in range(3):
+        total = float(np.sum(2.0 ** (ramp(n_out) / 12.0)))
+        if total <= 1e-9:
+            break
+        n_out = max(16, int(n_out * (n_in - 1) / total))
+
+    pos = np.cumsum(2.0 ** (ramp(n_out) / 12.0))
+    pos = np.clip(pos, 0.0, n_in - 1.0)
     if len(pos) < 8:
         return varispeed(x, st1)
     return np.interp(pos, np.arange(n_in), x).astype(np.float32)
@@ -420,6 +432,29 @@ def parse_token(tok: str):
     return Note("note", [midi], ql, params, flags, gliss_midi=gliss)
 
 
+RE_TRAILING_DYN = re.compile(r"\{([^}]*)\}$")
+
+
+def split_attached_dynamics(tokens):
+    """Detach a dynamic written onto a note into its own preceding token.
+
+    SPEC.md writes dynamics attached to notes — `D2q{mp} D2q D2q D2q{<}`.
+    Left joined, the whole thing fails to parse as a duration and the note is
+    dropped: every riser in the gecs score was silent for exactly this reason.
+    The tuplet form `q{5:6}` also ends in a brace group, so exclude it.
+    """
+    out = []
+    for t in tokens:
+        if not t.startswith("{") and not t.startswith("("):
+            m = RE_TRAILING_DYN.search(t)
+            if m and m.start() > 0 and not re.fullmatch(r"\d+:\d+", m.group(1)):
+                out.append("{" + m.group(1).strip() + "}")
+                out.append(t[:m.start()])
+                continue
+        out.append(t)
+    return out
+
+
 def param_pair(params, key, default):
     """A param may be a scalar or a 'a->b' sweep. Always returns (start, end)."""
     if key not in params:
@@ -549,7 +584,8 @@ def render(score_path: Path, out_path: Path, verbose=True):
             content = bar_content.get(b, {}).get(abbr, "")
             if not content or content.strip() == "-":
                 continue
-            toks = mus.expand_pattern_repetitions(mus.tokenize_bar_content(content))
+            toks = split_attached_dynamics(
+                    mus.expand_pattern_repetitions(mus.tokenize_bar_content(content)))
             q_off = 0.0
             for tk in toks:
                 ev = parse_token(tk)

@@ -1,0 +1,85 @@
+# score: Aigua — Sheet (glissando hocket)
+# summary: 44 bars / 8 voices / ~1.4 min
+# tempo: 208 (b1) → 232 (b17) → 208 (b37)
+# time: 4/4
+# key: A
+# bars: 44
+# tuning: A=445.6
+# pack: instrument.json
+# master: rms=-15
+
+# text @b1: no static pitches. every note is a glissando, because the median
+# text @b1: call in the source spans 18.7 semitones — these were never notes.
+# text @b2: hocket, not chorale. six voices interlock an eighth apart and each
+# text @b2: rests while the others move, so a single sweep is audible at speed.
+# text @b3: the first version had all six sounding at once with heavy sends and
+# text @b3: it collapsed into a wall. at this tempo a glissando needs air.
+# text @b4: str=fit is load-bearing: a glide's natural length follows its
+# text @b4: transposition, so without it the sweep gets cut off mid-flight.
+
+# instruments:
+#   bs = bass (bass, voice=buzz, str=fit, atk=0.02, rel=0.10, lpf=600, send=0.10, gain=-5)
+#   g6 = voice 6 (bass, voice=buzz, str=fit, atk=0.010, rel=0.045, send=0.12, gain=-8)
+#   g5 = voice 5 (treble, voice=mid, str=fit, atk=0.008, rel=0.040, send=0.13, gain=-9)
+#   g4 = voice 4 (treble, voice=call, str=fit, atk=0.008, rel=0.040, send=0.14, gain=-9)
+#   g3 = voice 3 (treble, voice=bright, str=fit, atk=0.007, rel=0.035, send=0.15, gain=-10)
+#   g2 = voice 2 (treble, voice=glide, str=fit, atk=0.006, rel=0.035, send=0.16, gain=-12)
+#   g1 = voice 1 (treble, voice=glide, s=2, str=fit, atk=0.006, rel=0.030, send=0.18, gain=-13)
+#   pc = accent (perc, voice=tick, hpf=3600, rel=0.010, send=0.10, gain=-21)
+
+# section: interlock [1-8] — A. one sweep per eighth, passed between voices
+
+bar 1: bs=A1w->A1  g1={mf} E7e->A6 Rq Re E7e->C#7 Rq  g2=Re A6e->E6 Rq Re A6e->E7 Re  g3=Rq E6e->A5 Rq Re E6e->A6  g4=Rq Re A5e->E5 Rq Re A5e->C#6  pc=A7q Rq Rq Rq
+bar 2: bs=A1w->C#2  g5=E5e->A4 Rq Re E5e->A5 Rq  g6=Re A4e->E4 Rq Re A4e->C#5 Re  g1=Rq C#7e->G#6 Rq Re C#7e->E7  g2=Rq Re E6e->C#6 Rq Re E6e->A6
+bar 3: bs=C#2w->F#1  g3=G#6e->C#6 Rq Re G#6e->C#7 Rq  g4=Re C#6e->G#5 Rq Re C#6e->E6 Re  g5=Rq A5e->E5 Rq Re A5e->C#6  g6=Rq Re C#5e->F#4 Rq Re C#5e->A4  pc=A7q Rq Rq Rq
+bar 4: bs=F#1w->A1  g1=E7e->A7 Rq Re A7e->C#7 Rq  g2=Re A6e->C#7 Rq Re C#7e->E6 Re  g3=Rq C#7e->F#6 Rq Re F#6e->A6  g4=Rq Re E6e->A5 Rq Re A5e->E6
+
+bar 5: bs=A1w->A1  g1=E7e->A6 Rq Re E7e->C#7 Rq  g2=Re A6e->E6 Rq Re A6e->E7 Re  g3=Rq E6e->A5 Rq Re E6e->A6  g4=Rq Re A5e->E5 Rq Re A5e->C#6  g6=Rh Re A4e->E4 Rq  pc=A7q Rq A7q Rq
+bar 6: bs=A1w->E2  g5=E5e->A4 Rq Re E5e->A5 Rq  g6=Re A4e->E4 Rq Re A4e->E5 Re  g1=Rq B6e->E6 Rq Re B6e->E7  g2=Rq Re G#6e->B5 Rq Re B5e->G#6
+bar 7: bs=E2w->B1  g3=B6e->E6 Rq Re E6e->B6 Rq  g4=Re E6e->B5 Rq Re B5e->G#6 Re  g5=Rq B5e->E5 Rq Re E5e->B5  g6=Rq Re E5e->B4 Rq Re B4e->E5  pc=A7q Rq A7q Rq
+bar 8: bs=B1w->A1  g1=E7e->A7 Rh Re A7e->E7  g2=Re E6e->A6 Rh A6e->E6 Re  g3=Rq A5e->E6 Rq E6e->A5 Rq  g4=Rq Re E5e->A5 Rq A5e->E5 Re
+
+# section: crossing [9-16] — the lines cut through each other's registers
+
+bar 9:  bs=A1w->A1  g1={f} E7e->E5 Rq Re E5e->E7 Rq  g6=Re A4e->A6 Rq Re A6e->A4 Re  g3=Rq C#6e->C#7 Rq Re C#7e->C#6  g4=Rq Re A5e->A4 Rq Re A4e->A5  pc=A7q Rq A7q Rq
+bar 10: bs=A1w->F#1  g2=A6e->A4 Rq Re A4e->A6 Rq  g5=Re E5e->E7 Rq Re E7e->E5 Re  g1=Rq G#7e->G#5 Rq Re G#5e->G#7  g6=Rq Re F#4e->F#6 Rq Re F#6e->F#4
+bar 11: bs=F#1w->D2  g3=F#6e->D5 Rq Re D5e->F#6 Rq  g4=Re D6e->F#4 Rq Re F#4e->D6 Re  g5=Rq A5e->D5 Rq Re D5e->A5  g6=Rq Re D4e->A5 Rq Re A5e->D4  pc=A7q Rq A7q Rq
+bar 12: bs=D2w->E2  g1=E7e->B5 Rq Re B5e->E7 Rq  g2=Re B6e->E5 Rq Re E5e->B6 Re  g3=Rq G#6e->B5 Rq Re B5e->G#6  g4=Rq Re E6e->G#5 Rq Re G#5e->E6
+
+bars 13-14: bs=E2w->A1  g1=E7e->E5 Re E5e->E7 Re E7e->A6 Re A6e->E7 Re  g4=Re A5e->A7 Re A7e->A5 Re A5e->C#6 Re C#6e->A5 Re  g6=Rq A4e->A6 Rq A6e->A4 Rh  pc=A7q A7q A7q A7q
+bar 15: bs=A1w->C#2  g2=A6e->C#5 Rq Re C#5e->A6 Rq  g3=Re E6e->C#7 Rq Re C#7e->E6 Re  g5=Rq C#6e->E5 Rq Re E5e->C#6  g6=Rq Re A4e->C#6 Rq Re C#6e->A4  pc=A7q Rq A7q Rq
+bar 16: bs=C#2w->A1  g1=C#8e->A6 Rh A6e->C#8 Re Re  g2=Re A6e->A5 Rh A5e->A6 Rq  g3=Rq E6e->E7 Rq E7e->E6 Rq  g4=Rq Re A5e->A6 Rq A6e->A5 Re
+
+# text @b17: fastest. the sweeps get wider as the tempo gets higher, which is
+# text @b17: the opposite of what is comfortable and the point of the section.
+# section: sheet [17-36]
+
+bar 17 [tempo=232]: bs=A1w->A1  g1={ff} E7e->A8 Re A8e->E7 Re E7e->A8 Re A8e->E7 Re  g6=Re A4e->E3 Re E3e->A4 Re A4e->E3 Re E3e->A4  pc=A7q A7q A7q A7q
+bar 18: bs=A1w->A1  g2=A6e->D5 Re D5e->A6 Re A6e->D5 Re D5e->A6 Re  g5=Re E5e->A6 Re A6e->E5 Re E5e->A6 Re A6e->E5  g4=Rq A5e->D4 Rq D4e->A5 Rq
+bar 19: bs=A1w->C#2  g3=E6e->A7 Re A7e->E6 Re E6e->A7 Re A7e->E6 Re  g1=Re C#7e->C#5 Re C#5e->C#7 Re C#7e->C#5 Re C#5e->C#7  pc=A7q A7q A7q A7q
+bar 20: bs=C#2w->A1  g4=A5e->C#4 Re C#4e->A5 Re A5e->C#4 Re C#4e->A5 Re  g6=Re C#5e->C#7 Re C#7e->C#5 Re C#5e->C#7 Re C#7e->C#5  g2=Rq A6e->A4 Rq A4e->A6 Rq
+
+bars 21-24: bs=A1w->A1  g1=E7e->A8 Re A8e->E7 Re E7e->A8 Re A8e->E7 Re  g3=Re E6e->A7 Re A7e->E6 Re E6e->A7 Re A7e->E6  g5=Rq E5e->A6 Rq A6e->E5 Rq  g6=Rq. A4e->E3 Rq E3e->A4 Rq.  pc=A7q A7q A7q A7q
+
+bar 25: bs=A1w->F#1  g1=A8e->D6 Re D6e->A8 Re A8e->D6 Re D6e->A8 Re  g2=Re F#6e->F#4 Re F#4e->F#6 Re F#6e->F#4 Re F#4e->F#6  g4=Rq D6e->D4 Rq D4e->D6 Rq  pc=A7q A7q A7q A7q
+bar 26: bs=F#1w->D2  g3=D6e->A7 Re A7e->D6 Re D6e->A7 Re A7e->D6 Re  g5=Re A5e->D4 Re D4e->A5 Re A5e->D4 Re D4e->A5  g6=Rq F#4e->F#6 Rq F#6e->F#4 Rq
+bar 27: bs=D2w->E2  g1=E7e->B8 Re B8e->E7 Re E7e->B8 Re B8e->E7 Re  g2=Re B6e->E5 Re E5e->B6 Re B6e->E5 Re E5e->B6  g3=Rq G#6e->B7 Rq B7e->G#6 Rq  pc=A7q A7q A7q A7q
+bar 28: bs=E2w->A1  g4=E6e->B4 Re B4e->E6 Re E6e->B4 Re B4e->E6 Re  g5=Re B5e->E7 Re E7e->B5 Re B5e->E7 Re E7e->B5  g6=Rq E5e->E3 Rq E3e->E5 Rq
+
+bars 29-32: bs=A1w->A1  g1=E7e->A8 Re A8e->E7 Re E7e->A8 Re A8e->E7 Re  g2=Re A6e->D5 Re D5e->A6 Re A6e->D5 Re D5e->A6  g3=Rq E6e->A7 Rq A7e->E6 Rq  g4=Rq. A5e->D4 Rq D4e->A5 Rq.  g6=Rh A4e->E3 Re E3e->A4 Re  pc=A7q A7q A7q A7q
+
+bar 33: bs=A1w->C#2  g1=A8e->C#6 Re C#6e->A8 Re A8e->C#6 Re C#6e->A8 Re  g3=Re G#6e->C#8 Re C#8e->G#6 Re G#6e->C#8 Re C#8e->G#6  g5=Rq C#6e->C#4 Rq C#4e->C#6 Rq  pc=A7q A7q A7q A7q
+bar 34: bs=C#2w->E2  g2=C#7e->E5 Re E5e->C#7 Re C#7e->E5 Re E5e->C#7 Re  g4=Re E6e->B4 Re B4e->E6 Re E6e->B4 Re B4e->E6  g6=Rq C#5e->C#7 Rq C#7e->C#5 Rq
+bar 35: bs=E2w->A1  g1=E7e->A8 Re A8e->E7 Re E7e->A8 Re A8e->E7 Re  g2=Re B6e->E5 Re E5e->B6 Re B6e->E5 Re E5e->B6  g3=Rq E6e->A7 Rq A7e->E6 Rq  g4=Rq. A5e->D4 Rq D4e->A5 Rq.  pc=A7q A7q A7q A7q
+bar 36: bs=A1w->A1  g1=A8e->E7 Rq. A8e->E7 Rq.  g2=Re A6e->E6 Rq A6e->E6 Rq Re  g3=Rq E6e->A6 Re E6e->A6 Rq Re  g4=Rq. A5e->E5 A5e->E5 Rq Re  g5=Rh E5e->A5 Re Re  g6=Rh Re A4e->E4 Re  pc=A7q A7q A7q A7q
+
+# text @b37: funnel. every voice sweeps to A from a different distance and
+# text @b37: they stop being six.
+# section: funnel [37-44]
+
+bar 37 [tempo=208]: bs={f} A1w->A1  g1={f} A8h->A7 A7h->A6  g2=E7h->A6 A6h->A6  g3=E6h->A6 A6h->A5  g4=A5h->A5 A5h->A5  g5=E5h->A5 A5h->A4  g6=A4h->A4 A4h->A4  pc=A7q Rq Rh
+bar 38: bs=A1w->A1  g1=A6h->A7 A7h->A6  g3=A5h->A6 A6h->A5  g5=A4h->A5 A5h->A4  pc=A7q Rq Rh
+bar 39: bs=A1w->A1  g2=A6w->A6  g4=A5w->A5  g6=A4w->A4  pc=A7q Rq Rh
+bar 40: bs=A1w->A1  g1={mf} A7w->A7  g3=A6w->A6  g5=A5w->A5
+bars 41-42: bs={mp} A1w->A1  g2={mp} A6w->A6  g4=A5w->A5
+bars 43-44: bs={p} A1w->A1  g4={pp} A5w->A5
