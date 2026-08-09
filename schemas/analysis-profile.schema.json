@@ -1,21 +1,19 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sophia-labs.ai/schemas/mus-analysis/analysis-profile/1",
-  "title": "MUS audio analysis profile",
+  "title": "MUS analysis profile",
   "type": "object",
-  "additionalProperties": false,
-  "required": ["profileId", "version", "question", "status", "operators", "outputs", "refusalConditions"],
+  "additionalProperties": true,
+  "required": ["profileId", "version", "status", "question", "outputs"],
   "properties": {
-    "profileId": {"type": "string", "minLength": 1},
+    "profileId": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]+$"},
     "version": {"type": "string", "minLength": 1},
+    "status": {
+      "enum": ["specified", "foundation-implemented", "historically-imported", "validated", "deprecated"]
+    },
     "question": {"type": "string", "minLength": 1},
-    "status": {"enum": ["historically-imported", "foundation-implemented", "specified", "experimental"]},
-    "acceptedInputs": {"type": "array", "items": {"type": "string"}},
-    "signalViews": {"type": "array", "items": {"type": "string"}},
-    "operators": {"type": "array", "items": {"type": "string"}, "minItems": 1},
-    "outputs": {"type": "array", "items": {"type": "string"}, "minItems": 1},
-    "validationRequirements": {"type": "array", "items": {"type": "string"}},
-    "knownFailureModes": {"type": "array", "items": {"type": "string"}},
-    "refusalConditions": {"type": "array", "items": {"type": "string"}}
+    "operators": {"type": "array", "items": {"type": "string"}},
+    "outputs": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "refusals": {"type": "array", "items": {"type": "string"}}
   }
 }
