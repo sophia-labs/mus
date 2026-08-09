@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia-labs.ai/schemas/mus-check-report/1",
+  "title": "mus.audio.check-report.v1",
+  "description": "Effect-free parse+layout verdict for one MUS score. This schema is the binary interface between any MUS checker implementation (Python today, Rust later) and any host (Atril, agents, CI). Field names are ratified; additions are allowed, renames are not.",
+  "type": "object",
+  "required": [
+    "schema", "producer", "rendererVersion", "clean", "sourceDigest",
+    "packDigest", "gesturesDigest", "tapeDigest", "score", "instruments",
+    "events", "declaredObjects", "diagnostics"
+  ],
+  "properties": {
+    "schema": { "const": "mus.audio.check-report.v1" },
+    "producer": { "type": "string" },
+    "rendererVersion": { "type": "string" },
+    "clean": { "type": "boolean" },
+    "sourceDigest": { "$ref": "#/$defs/digest" },
+    "packDigest": { "$ref": "#/$defs/digestOrNull" },
+    "gesturesDigest": { "$ref": "#/$defs/digestOrNull" },
+    "tapeDigest": { "$ref": "#/$defs/digestOrNull" },
+    "score": {
+      "type": "object",
+      "required": ["title", "bars", "durationSeconds", "tuningA", "tempoChanges", "timeChanges", "sections", "texts"],
+      "properties": {
+        "title": { "type": "string" },
+        "summary": { "type": ["string", "null"] },
+        "bars": { "type": "integer", "minimum": 0 },
+        "durationSeconds": { "type": "number", "minimum": 0 },
+        "tuningA": { "type": "number", "exclusiveMinimum": 0 },
+        "swing": {
+          "type": ["object", "null"],
+          "required": ["unit", "percent"],
+          "properties": {
+            "unit": { "type": "integer", "enum": [8, 16, 32] },
+            "percent": { "type": "number", "minimum": 50, "maximum": 75 }
+          }
+        },
+        "reverbSeconds": { "type": "number" },
+        "masterRmsDb": { "type": "number" },
+        "sidechain": { "type": ["object", "null"] },
+        "tempoChanges": { "type": "array", "items": { "type": "array", "prefixItems": [{ "type": "integer" }, { "type": "number" }] } },
+        "timeChanges": { "type": "array", "items": { "type": "array", "prefixItems": [{ "type": "integer" }, { "type": "string" }] } },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "from", "to"],
+            "properties": {
+              "name": { "type": "string" },
+              "from": { "type": "integer" },
+              "to": { "type": "integer" },
+              "prose": { "type": ["string", "null"] }
+            }
+          }
+        },
+        "texts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["bar", "prose"],
+            "properties": { "bar": { "type": "integer" }, "prose": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "instruments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["abbrev", "name", "clef", "source", "defaults", "transformChain"],
+        "properties": {
+          "abbrev": { "type": "string" },
+          "name": { "type": "string" },
+          "clef": { "type": "string" },
+          "source": {
+            "type": "object",
+            "required": ["kind"],
+            "oneOf": [
+              {
+                "properties": {
+                  "kind": { "const": "voice" },
+                  "voice": { "type": "string" },
+                  "samples": { "type": "integer" },
+                  "sampleF0Hz": { "type": "array", "items": { "type": "number" } }
+                },
+                "required": ["kind", "voice"]
+              },
+              {
+                "properties": { "kind": { "const": "sample" }, "path": { "type": "string" } },
+                "required": ["kind", "path"]
+              },
+              {
+                "properties": { "kind": { "const": "synth" }, "patch": { "type": "object" } },
+                "required": ["kind", "patch"]
+              },
+              {
+                "properties": { "kind": { "const": "missing" } },
+                "required": ["kind"]
+              }
+            ]
+          },
+          "defaults": { "type": "object" },
+          "transformChain": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["bar", "track", "tokenIndex", "kind", "onsetQl", "onsetSeconds", "swungOnsetSeconds", "durationQl"],
+        "properties": {
+          "bar": { "type": "integer", "minimum": 1 },
+          "track": { "type": "string" },
+          "tokenIndex": { "type": "integer", "minimum": 0 },
+          "kind": { "enum": ["note", "chord", "unpitched"] },
+          "onsetQl": { "type": "number" },
+          "onsetSeconds": { "type": "number" },
+          "swungOnsetSeconds": { "type": "number" },
+          "durationQl": { "type": "number" },
+          "durationSeconds": { "type": "number" },
+          "pitches": { "type": "array", "items": { "type": "string" } },
+          "pitchesHz": { "type": "array", "items": { "type": "number" } },
+          "glissTargetHz": { "type": ["number", "null"] },
+          "dynamic": { "type": ["string", "null"] },
+          "params": { "type": "object" },
+          "effectiveParams": { "type": "object" },
+          "flags": { "type": "array", "items": { "type": "string" } },
+          "sweeps": { "type": "array", "items": { "type": "string" } },
+          "lyric": { "type": ["string", "null"] },
+          "quote": {
+            "type": ["object", "null"],
+            "required": ["gest"],
+            "properties": {
+              "gest": { "type": "string" },
+              "layer": { "enum": ["resolved", "octave"] },
+              "gsrc": { "type": ["string", "null"] },
+              "hypothesisId": { "type": ["string", "null"] },
+              "t0": { "type": ["number", "null"] },
+              "t1": { "type": ["number", "null"] },
+              "medianHz": { "type": ["number", "null"] },
+              "shiftSt": { "type": ["number", "null"] }
+            }
+          }
+        }
+      }
+    },
+    "declaredObjects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind"],
+        "properties": {
+          "id": { "type": "string" },
+          "kind": { "enum": ["instrument", "section", "gesture"] },
+          "iri": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["severity", "code", "anchor", "message"],
+        "properties": {
+          "severity": { "enum": ["error", "warning"] },
+          "code": {
+            "enum": [
+              "unparseable-token", "zero-duration", "unknown-gesture",
+              "sparse-gesture-layer", "no-tape-header", "no-samples-for-track",
+              "synth-needs-pitch", "bad-header-value", "overfull-bar",
+              "missing-pack", "missing-gestures", "missing-tape",
+              "shadowed-header-key"
+            ]
+          },
+          "anchor": {
+            "type": "object",
+            "required": ["kind"],
+            "oneOf": [
+              { "properties": { "kind": { "const": "header" }, "key": { "type": "string" } }, "required": ["kind", "key"] },
+              { "properties": { "kind": { "const": "instrument" }, "abbrev": { "type": "string" } }, "required": ["kind", "abbrev"] },
+              {
+                "properties": {
+                  "kind": { "const": "event" },
+                  "bar": { "type": "integer" },
+                  "track": { "type": "string" },
+                  "tokenIndex": { "type": ["integer", "null"] }
+                },
+                "required": ["kind", "bar", "track"]
+              }
+            ]
+          },
+          "message": { "type": "string" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "digestOrNull": { "anyOf": [{ "$ref": "#/$defs/digest" }, { "type": "null" }] }
+  }
+}
