@@ -1,0 +1,47 @@
+name: Apply spatial psychoacoustic payload
+
+on:
+  push:
+    branches:
+      - agent/aigua-analysis-foundation
+    paths:
+      - .github/workflows/apply-spatial-payload.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/aigua-analysis-foundation
+          fetch-depth: 0
+
+      - name: Decode and apply payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -d .github/spatial-payload ]]; then
+            echo "No staged spatial payload remains."
+            exit 0
+          fi
+          cat .github/spatial-payload/part-* | base64 --decode > /tmp/spatial-payload.tar.gz
+          tar -xzf /tmp/spatial-payload.tar.gz
+          rm -rf .github/spatial-payload
+
+      - name: Commit implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "Sophia Labs Automation"
+          git config user.email "noreply@sophia-labs.ai"
+          git add -A
+          git commit -m "Build the spatial psychoacoustic canvas"
+          git push origin HEAD:agent/aigua-analysis-foundation
