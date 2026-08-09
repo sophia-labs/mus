@@ -1,0 +1,77 @@
+name: Scientific audio CI
+
+on:
+  push:
+    branches:
+      - main
+      - aigua-concrete
+      - agent/aigua-analysis-foundation
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install analysis runtime
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install pytest
+          python -m pip install -e ".[spatial,test]"
+
+      - name: Run tests
+        run: python -m pytest -q
+
+      - name: Compile Python and check browser JavaScript
+        run: |
+          python -m compileall -q mus_analysis examples tests
+          node --check mus_analysis/spatial_canvas/app.js
+
+      - name: Validate JSON Schemas and RDF ontologies
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          import jsonschema
+          from rdflib import Graph
+
+          schemas = sorted(Path("schemas").glob("*.json"))
+          for path in schemas:
+              with path.open("r", encoding="utf-8") as handle:
+                  jsonschema.Draft202012Validator.check_schema(json.load(handle))
+
+          ontologies = sorted(Path("ontology").glob("*.ttl"))
+          triple_counts = {}
+          for path in ontologies:
+              graph = Graph()
+              graph.parse(path, format="turtle")
+              triple_counts[path.name] = len(graph)
+
+          print(f"validated {len(schemas)} schemas")
+          for name, count in triple_counts.items():
+              print(f"{name}: {count} triples")
+          PY
+
+      - name: Exercise CLI and render a spatial scene
+        run: |
+          mus-analysis --help >/dev/null
+          mus-spatial --help >/dev/null
+          python examples/make_spatial_canvas_demo.py \
+            --output-dir /tmp/mus-spatial-demo \
+            --render
+          test -s /tmp/mus-spatial-demo/scene.json
+          test -s /tmp/mus-spatial-demo/demo-stereo.wav
