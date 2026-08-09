@@ -1,0 +1,142 @@
+{
+  "schema": "aigua-analysis-profile-registry/1",
+  "project": "urn:sophia:mus:aigua:2026-08-08",
+  "profiles": [
+    {
+      "profileId": "aigua.capture-integrity",
+      "version": "1",
+      "status": "specified",
+      "question": "What exact signal do later claims target, and what information was lost before analysis?",
+      "outputs": ["CanonicalPcmAsset", "EncodingObservation", "EffectiveBandwidthObservation", "ClippingObservation"],
+      "refusals": ["No calibrated SPL claim without a calibration chain"]
+    },
+    {
+      "profileId": "aigua.signal-view-lattice",
+      "version": "1",
+      "status": "specified",
+      "question": "Which findings survive preprocessing choices?",
+      "outputs": ["SignalView", "SignalTransformRun", "RepresentationSensitivityObservation"],
+      "refusals": ["No derived stem or denoised view is promoted to source truth"]
+    },
+    {
+      "profileId": "aigua.segmentation-v1",
+      "version": "1",
+      "status": "historically-imported",
+      "question": "Which regions did the original local-floor hysteresis detector propose?",
+      "outputs": ["EventHypothesis"],
+      "refusals": ["Detector output is not ground truth"]
+    },
+    {
+      "profileId": "aigua.segmentation-lattice",
+      "version": "1",
+      "status": "foundation-implemented",
+      "question": "How do several detector and reviewer interval proposals correspond, split, merge, or disagree?",
+      "operators": ["mus_analysis.segmentation.reconcile_segmentations"],
+      "outputs": ["ReconciledEventHypothesis", "SegmentRelation"],
+      "refusals": ["Median reconciled boundaries remain hypotheses until review"]
+    },
+    {
+      "profileId": "aigua.event-observations-v1",
+      "version": "1",
+      "status": "historically-imported",
+      "question": "What did the original event-level DSP compute or estimate?",
+      "outputs": ["Observation"],
+      "semanticCorrections": {
+        "am_depth": "envelopeAutocorrelationPeakStrength",
+        "f0_conf": "shsPeakToMeanScore",
+        "shape": "ContourClassEstimate"
+      }
+    },
+    {
+      "profileId": "aigua.vocal-gesture",
+      "version": "1",
+      "status": "specified",
+      "question": "What is the time-varying organization of pitch, partials, envelope, modulation, and spectrum within each vocalization?",
+      "outputs": ["PitchTrajectoryEstimate", "PartialTrackEstimate", "SpectralEnvelopeTrajectory", "GesturePrototype"]
+    },
+    {
+      "profileId": "aigua.pitch-consensus",
+      "version": "1",
+      "status": "foundation-implemented",
+      "question": "Which pitch trajectory frames are supported across estimators?",
+      "operators": ["mus_analysis.pitch.build_pitch_consensus"],
+      "outputs": ["ConsensusPitchFrame", "PitchConsensusSummary"],
+      "refusals": ["Octave conflicts and non-octave disagreements do not silently produce a consensus frequency"]
+    },
+    {
+      "profileId": "aigua.repertoire-geometry",
+      "version": "1",
+      "status": "specified",
+      "question": "Which neighborhood relations survive interpretable, dynamic, auditory, and learned representations?",
+      "outputs": ["RepresentationSpace", "DistanceObservation", "NeighborhoodAgreementObservation"]
+    },
+    {
+      "profileId": "aigua.ward-k7-v1",
+      "version": "1",
+      "status": "historically-imported",
+      "question": "What forced seven-way partition did the original weighted Ward model produce?",
+      "outputs": ["ClusterModel", "MembershipEstimate"],
+      "refusals": ["Membership is not call type, taxon, individual, curatorial family, or instrument voice"]
+    },
+    {
+      "profileId": "aigua.cluster-stability",
+      "version": "1",
+      "status": "foundation-implemented",
+      "question": "Which event pairings survive bootstrap, model, boundary, and representation perturbations?",
+      "operators": ["mus_analysis.clustering.coassignment_matrix", "mus_analysis.clustering.variation_of_information"],
+      "outputs": ["CoassignmentMatrix", "ItemStability", "ConsensusComponents"],
+      "refusals": ["Noise or missing assignments are not treated as evidence of separation"]
+    },
+    {
+      "profileId": "aigua.sequence",
+      "version": "1",
+      "status": "specified",
+      "question": "Are event transitions and bouts structured beyond finite-sample null expectations?",
+      "outputs": ["BoutHypothesis", "TransitionObservation", "SequenceModel", "EvidenceSufficiencyAssessment"]
+    },
+    {
+      "profileId": "aigua.taxonomy-hypotheses",
+      "version": "1",
+      "status": "specified",
+      "question": "What taxonomic or individual identities are suggested by models, references, context, and expert review?",
+      "outputs": ["TaxonomicHypothesis", "IndividualIdentityHypothesis", "ReviewDecision"],
+      "refusals": ["Model scores are not identities or calibrated probabilities by default"]
+    },
+    {
+      "profileId": "aigua.soundscape",
+      "version": "1",
+      "status": "specified",
+      "question": "How does acoustic activity vary across time, frequency, source hypotheses, and disturbances?",
+      "outputs": ["AcousticStateObservation", "MaskingEstimate", "BeforeDuringAfterComparison"],
+      "refusals": ["Ecoacoustic indices are not promoted to biodiversity observations"]
+    },
+    {
+      "profileId": "aigua.instrumentability",
+      "version": "1",
+      "status": "specified",
+      "question": "Which samples remain useful and recognizable under declared musical transformations?",
+      "outputs": ["SampleSuitabilityProfile", "TransformationEnvelope", "SampleSelectionDecision"]
+    },
+    {
+      "profileId": "aigua.analysis-resynthesis",
+      "version": "1",
+      "status": "specified",
+      "question": "Does the representation preserve perceptually important structure under reconstruction and controlled counterfactuals?",
+      "outputs": ["Resynthesis", "CounterfactualStimulus", "IdentityRetentionObservation"]
+    },
+    {
+      "profileId": "aigua.perception",
+      "version": "1",
+      "status": "specified",
+      "question": "Which distinctions are heard, and how do listener groups describe them?",
+      "outputs": ["ListeningStudy", "PerceptualReport", "PerceptualSpace", "LatentListenerClass"]
+    },
+    {
+      "profileId": "aigua.render-conformance",
+      "version": "1",
+      "status": "specified",
+      "question": "What did a MUS renderer actually realize relative to the score request?",
+      "outputs": ["RenderReceipt", "RealizationObservation", "ConformanceDiagnostic"]
+    }
+  ]
+}

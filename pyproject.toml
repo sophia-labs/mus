@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sophia-mus-analysis"
+version = "0.1.0"
+description = "Immutable scientific-computing and ontology substrate for MUS audio projects"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Sophia Labs" }]
+dependencies = []
+
+[project.optional-dependencies]
+audio = ["numpy>=2", "scipy>=1.14", "librosa>=0.11", "soundfile>=0.13"]
+test = ["jsonschema>=4.20"]
+
+[project.scripts]
+mus-analysis = "mus_analysis.cli:main"
+
+[tool.setuptools]
+packages = ["mus_analysis"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

@@ -1,0 +1,369 @@
+@prefix musa: <https://sophia-labs.ai/ontology/mus-audio#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix sosa: <http://www.w3.org/ns/sosa/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+
+<https://sophia-labs.ai/ontology/mus-audio>
+    a owl:Ontology ;
+    owl:versionIRI <https://sophia-labs.ai/ontology/mus-audio/0.1.0> ;
+    dct:title "MUS Audio Analysis Ontology" ;
+    dct:description "A provenance-first ontology for audio assets, signal views, analysis runs, observations, uncertain hypotheses, model memberships, human curation, perceptual reports, and compositional interpretation." ;
+    dct:creator "Sophia Labs" .
+
+# --- material identity -------------------------------------------------------
+
+musa:ResearchProjection a owl:Class ;
+    rdfs:label "research projection" ;
+    rdfs:comment "A graph projection over a content-addressed MUS research object." .
+
+musa:Artifact a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "artifact" .
+
+musa:AudioAsset a owl:Class ;
+    rdfs:subClassOf musa:Artifact ;
+    rdfs:label "audio asset" .
+
+musa:CanonicalPcmAsset a owl:Class ;
+    rdfs:subClassOf musa:AudioAsset ;
+    rdfs:label "canonical PCM asset" .
+
+musa:SignalView a owl:Class ;
+    rdfs:subClassOf musa:AudioAsset ;
+    rdfs:label "signal view" ;
+    rdfs:comment "A declared derivative representation such as a band-pass, denoised view, PCEN representation, or model-separated component. It is not source truth." .
+
+musa:MediaRegion a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "media region" .
+
+musa:CaptureSession a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "capture session" .
+
+musa:CalibrationRecord a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "calibration record" .
+
+# --- processes and methods --------------------------------------------------
+
+musa:AnalysisRun a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "analysis run" .
+
+musa:SignalTransformRun a owl:Class ;
+    rdfs:subClassOf musa:AnalysisRun ;
+    rdfs:label "signal transform run" .
+
+musa:SegmentationRun a owl:Class ;
+    rdfs:subClassOf musa:AnalysisRun ;
+    rdfs:label "segmentation run" .
+
+musa:RepresentationRun a owl:Class ;
+    rdfs:subClassOf musa:AnalysisRun ;
+    rdfs:label "representation run" .
+
+musa:ClusteringRun a owl:Class ;
+    rdfs:subClassOf musa:AnalysisRun ;
+    rdfs:label "clustering run" .
+
+musa:ListeningStudy a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "listening study" .
+
+musa:ReviewActivity a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "review activity" .
+
+musa:CurationActivity a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "curation activity" .
+
+musa:AnalysisProfile a owl:Class ;
+    rdfs:subClassOf prov:Plan ;
+    rdfs:label "analysis profile" ;
+    rdfs:comment "A versioned scientific question, operator graph, result contract, validation posture, and refusal policy." .
+
+musa:OperatorDefinition a owl:Class ;
+    rdfs:subClassOf prov:Plan ;
+    rdfs:label "operator definition" .
+
+musa:OperatorBinding a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "operator binding" ;
+    rdfs:comment "A concrete implementation/version/digest bound to an operator definition." .
+
+musa:DescriptorDefinition a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "descriptor definition" .
+
+# --- observation, estimate, and hypothesis ---------------------------------
+
+musa:Observation a owl:Class ;
+    rdfs:subClassOf sosa:Observation ;
+    rdfs:label "audio observation" .
+
+musa:ScalarObservation a owl:Class ;
+    rdfs:subClassOf musa:Observation ;
+    rdfs:label "scalar observation" .
+
+musa:TrajectoryObservation a owl:Class ;
+    rdfs:subClassOf musa:Observation ;
+    rdfs:label "trajectory observation" .
+
+musa:DistributionObservation a owl:Class ;
+    rdfs:subClassOf musa:Observation ;
+    rdfs:label "distribution observation" .
+
+musa:TimeFrequencyObservation a owl:Class ;
+    rdfs:subClassOf musa:Observation ;
+    rdfs:label "time-frequency observation" .
+
+musa:Estimate a owl:Class ;
+    rdfs:subClassOf musa:Observation ;
+    rdfs:label "estimate" .
+
+musa:EventHypothesis a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "event hypothesis" ;
+    rdfs:comment "A proposed temporal unit emitted by a detector or reviewer, not canonical ground truth." .
+
+musa:ReconciledEventHypothesis a owl:Class ;
+    rdfs:subClassOf musa:EventHypothesis ;
+    rdfs:label "reconciled event hypothesis" .
+
+musa:PitchTrajectoryEstimate a owl:Class ;
+    rdfs:subClassOf musa:TrajectoryObservation, musa:Estimate ;
+    rdfs:label "pitch trajectory estimate" .
+
+musa:PartialTrackEstimate a owl:Class ;
+    rdfs:subClassOf musa:TrajectoryObservation, musa:Estimate ;
+    rdfs:label "partial-track estimate" .
+
+musa:ContourClassEstimate a owl:Class ;
+    rdfs:subClassOf musa:Estimate ;
+    rdfs:label "contour-class estimate" .
+
+musa:TaxonomicHypothesis a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "taxonomic hypothesis" .
+
+musa:IndividualIdentityHypothesis a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "individual-identity hypothesis" .
+
+musa:BehavioralResponseHypothesis a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "behavioral-response hypothesis" .
+
+# --- representation, models, and categories --------------------------------
+
+musa:RepresentationSpace a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "representation space" .
+
+musa:Embedding a owl:Class ;
+    rdfs:subClassOf musa:Artifact ;
+    rdfs:label "embedding" .
+
+musa:DistanceObservation a owl:Class ;
+    rdfs:subClassOf musa:Observation ;
+    rdfs:label "distance observation" .
+
+musa:ClusterModel a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "cluster model" .
+
+musa:MembershipEstimate a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "membership estimate" ;
+    rdfs:comment "A model-relative assignment. It is not a call type, taxon, individual, curatorial family, or instrument voice." .
+
+musa:SequenceModel a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "sequence model" .
+
+musa:CoassignmentMatrix a owl:Class ;
+    rdfs:subClassOf musa:Artifact ;
+    rdfs:label "co-assignment matrix" .
+
+musa:CallTypeHypothesis a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "call-type hypothesis" .
+
+musa:CuratorialFamily a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "curatorial family" .
+
+musa:GesturePrototype a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "gesture prototype" .
+
+musa:InstrumentVoice a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "instrument voice" .
+
+musa:TransformationEnvelope a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "transformation envelope" .
+
+# --- human evidence and claims ---------------------------------------------
+
+musa:Interpretation a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "interpretation" .
+
+musa:Annotation a owl:Class ;
+    rdfs:subClassOf musa:Interpretation ;
+    rdfs:label "annotation" .
+
+musa:PerceptualConstruct a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "perceptual construct" .
+
+musa:PerceptualReport a owl:Class ;
+    rdfs:subClassOf musa:Interpretation ;
+    rdfs:label "perceptual report" ;
+    rdfs:comment "An attributed report about a stimulus under a protocol, not direct storage of subjective experience itself." .
+
+musa:Stimulus a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "stimulus" .
+
+musa:Trial a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "listening trial" .
+
+musa:Listener a owl:Class ;
+    rdfs:subClassOf prov:Agent ;
+    rdfs:label "listener" .
+
+musa:ListenerCohort a owl:Class ;
+    rdfs:subClassOf prov:Agent ;
+    rdfs:label "listener cohort" .
+
+musa:Claim a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "claim" .
+
+musa:EvidenceKind a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "evidence kind" .
+
+# --- top-level projection relations ----------------------------------------
+
+musa:hasArtifact a owl:ObjectProperty ; rdfs:domain musa:ResearchProjection ; rdfs:range musa:Artifact .
+musa:hasRun a owl:ObjectProperty ; rdfs:domain musa:ResearchProjection ; rdfs:range musa:AnalysisRun .
+musa:hasEventHypothesis a owl:ObjectProperty ; rdfs:domain musa:ResearchProjection ; rdfs:range musa:EventHypothesis .
+musa:hasObservation a owl:ObjectProperty ; rdfs:domain musa:ResearchProjection ; rdfs:range musa:Observation .
+musa:hasMembershipEstimate a owl:ObjectProperty ; rdfs:domain musa:ResearchProjection ; rdfs:range musa:MembershipEstimate .
+musa:hasInterpretation a owl:ObjectProperty ; rdfs:domain musa:ResearchProjection ; rdfs:range musa:Interpretation .
+musa:hasClaim a owl:ObjectProperty ; rdfs:domain musa:ResearchProjection ; rdfs:range musa:Claim .
+
+# --- material and provenance relations -------------------------------------
+
+musa:targetsAsset a owl:ObjectProperty ; rdfs:range musa:AudioAsset .
+musa:targetsRegion a owl:ObjectProperty ; rdfs:range musa:MediaRegion .
+musa:computedOnSignalView a owl:ObjectProperty ; rdfs:range musa:SignalView .
+musa:usesProfile a owl:ObjectProperty ; rdfs:domain musa:AnalysisRun ; rdfs:range musa:AnalysisProfile .
+musa:usedOperator a owl:ObjectProperty ; rdfs:domain musa:AnalysisRun ; rdfs:range musa:OperatorBinding .
+musa:evidenceKind a owl:ObjectProperty ; rdfs:range musa:EvidenceKind .
+musa:forTarget a owl:ObjectProperty .
+musa:forClusterModel a owl:ObjectProperty ; rdfs:range musa:ClusterModel .
+musa:memberOfModelCluster a owl:ObjectProperty .
+musa:curatedAsFamily a owl:ObjectProperty ; rdfs:range musa:CuratorialFamily .
+musa:realizesGesture a owl:ObjectProperty ; rdfs:range musa:GesturePrototype .
+musa:hasTaxonomicHypothesis a owl:ObjectProperty ; rdfs:range musa:TaxonomicHypothesis .
+musa:hasIndividualHypothesis a owl:ObjectProperty ; rdfs:range musa:IndividualIdentityHypothesis .
+musa:supportedBy a owl:ObjectProperty .
+musa:contradictedBy a owl:ObjectProperty .
+
+# --- scalar fields used by the foundation projector ------------------------
+
+musa:sha256 a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:mediaType a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:byteLength a owl:DatatypeProperty ; rdfs:range xsd:integer .
+musa:artifactRole a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:startSeconds a owl:DatatypeProperty ; rdfs:range xsd:double .
+musa:endSeconds a owl:DatatypeProperty ; rdfs:range xsd:double .
+musa:revision a owl:DatatypeProperty ; rdfs:range xsd:integer .
+musa:hypothesisStatus a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:provisionalLabel a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:runType a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:runStatus a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:profileId a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:profileVersion a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:producer a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:operatorId a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:operatorVersion a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:implementationDigest a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:observedPropertyId a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:procedureId a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:procedureVersion a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:unitId a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:scoreValue a owl:DatatypeProperty ; rdfs:range xsd:double .
+musa:scoreSemantics a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:scoreUnit a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:validity a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:interpretivePredicate a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:interpretiveValueJson a owl:DatatypeProperty .
+musa:claimText a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:claimStatus a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:claimScope a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:dependsOnAssumption a owl:DatatypeProperty ; rdfs:range xsd:string .
+musa:parametersJson a owl:DatatypeProperty .
+musa:environmentJson a owl:DatatypeProperty .
+musa:metadataJson a owl:DatatypeProperty .
+musa:resultJson a owl:DatatypeProperty .
+
+# --- evidence-kind controlled vocabulary -----------------------------------
+
+musa:EvidenceKind-DirectlyMeasured a musa:EvidenceKind ; skos:prefLabel "directly measured" .
+musa:EvidenceKind-DeterministicallyComputed a musa:EvidenceKind ; skos:prefLabel "deterministically computed" .
+musa:EvidenceKind-StatisticallyEstimated a musa:EvidenceKind ; skos:prefLabel "statistically estimated" .
+musa:EvidenceKind-ModelInferred a musa:EvidenceKind ; skos:prefLabel "model inferred" .
+musa:EvidenceKind-HumanAnnotated a musa:EvidenceKind ; skos:prefLabel "human annotated" .
+musa:EvidenceKind-HumanCurated a musa:EvidenceKind ; skos:prefLabel "human curated" .
+musa:EvidenceKind-PerceptuallyReported a musa:EvidenceKind ; skos:prefLabel "perceptually reported" .
+musa:EvidenceKind-CompositionalInterpretation a musa:EvidenceKind ; skos:prefLabel "compositional interpretation" .
+musa:EvidenceKind-Unresolved a musa:EvidenceKind ; skos:prefLabel "unresolved" .
+
+# --- Aigua v1 descriptor definitions with corrected semantics --------------
+
+musa:EventDurationSeconds a musa:DescriptorDefinition ;
+    musa:observedPropertyId "eventDurationSeconds" ;
+    skos:prefLabel "detector-region duration" ;
+    skos:definition "Difference between a segmentation hypothesis's proposed end and start boundaries." .
+
+musa:BandLimitedDenoisedRmsDbfs a musa:DescriptorDefinition ;
+    musa:observedPropertyId "bandLimitedDenoisedRmsDbfs" ;
+    skos:prefLabel "band-limited denoised RMS in dBFS" .
+
+musa:MeanMagnitudeSpectralCentroidHz a musa:DescriptorDefinition ;
+    musa:observedPropertyId "meanMagnitudeSpectralCentroidHz" ;
+    skos:prefLabel "centroid of the event mean-magnitude spectrum" ;
+    skos:note "This is not identical to perceived brightness." .
+
+musa:ShsMedianFrequencyHz a musa:DescriptorDefinition ;
+    musa:observedPropertyId "shsMedianFrequencyHz" ;
+    skos:prefLabel "median retained SHS frequency estimate" ;
+    skos:note "This is estimator-relative and is not an intrinsic stable note." .
+
+musa:ShsPeakToMeanScore a musa:DescriptorDefinition ;
+    musa:observedPropertyId "shsPeakToMeanScore" ;
+    skos:prefLabel "SHS peak-to-mean score" ;
+    skos:note "This score is not a calibrated probability." .
+
+musa:EnvelopeAutocorrelationPeakStrength a musa:DescriptorDefinition ;
+    musa:observedPropertyId "envelopeAutocorrelationPeakStrength" ;
+    skos:prefLabel "selected envelope-autocorrelation peak strength" ;
+    skos:note "The historical Aigua table called this am_depth, but the implementation did not compute conventional modulation depth." .
+
+musa:ContourClassEstimateDefinition a musa:DescriptorDefinition ;
+    musa:observedPropertyId "contourClassEstimate" ;
+    skos:prefLabel "Aigua thirds-threshold contour-class estimate" .

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia-labs.ai/schemas/mus-analysis/analysis-profile/1",
+  "title": "MUS audio analysis profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profileId", "version", "question", "status", "operators", "outputs", "refusalConditions"],
+  "properties": {
+    "profileId": {"type": "string", "minLength": 1},
+    "version": {"type": "string", "minLength": 1},
+    "question": {"type": "string", "minLength": 1},
+    "status": {"enum": ["historically-imported", "foundation-implemented", "specified", "experimental"]},
+    "acceptedInputs": {"type": "array", "items": {"type": "string"}},
+    "signalViews": {"type": "array", "items": {"type": "string"}},
+    "operators": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "outputs": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "validationRequirements": {"type": "array", "items": {"type": "string"}},
+    "knownFailureModes": {"type": "array", "items": {"type": "string"}},
+    "refusalConditions": {"type": "array", "items": {"type": "string"}}
+  }
+}

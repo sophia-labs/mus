@@ -1,0 +1,13 @@
+{
+  "schema": "aigua-v1-import-config/1",
+  "sourceCandidates": [
+    "aigua/source/aigua-birds-2026-08-08.m4a",
+    "aigua/source/New Recording 22.m4a",
+    "source/aigua-birds-2026-08-08.m4a"
+  ],
+  "eventsPath": "aigua/events.json",
+  "eventsCsvPath": "aigua/events.csv",
+  "instrumentPath": "aigua/instrument.json",
+  "vehicleEventIds": [14],
+  "historicalProducer": "sophia-labs/mus@aigua-concrete"
+}

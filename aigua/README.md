@@ -100,3 +100,36 @@ one header line.
   isolation, pitch confidence), which is a heuristic, not a criterion.
 - Every mix judgement in both pieces was made by reading spectrograms and
   stereo-correlation traces. No one has listened to them critically.
+
+## Aigua Analysis v2
+
+The scripts above are now treated as the historical v1 analysis rather than a
+mutable source of universal facts. [`ANALYSIS-V2.md`](ANALYSIS-V2.md) describes
+and implements the next scientific layer:
+
+- content-addressed artifacts and write-once run receipts;
+- separate event hypotheses, observations, model memberships, human curation,
+  claims, and compositional interpretations;
+- corrected descriptor semantics (`am_depth` is preserved as an envelope
+  autocorrelation peak, not falsely promoted to modulation depth);
+- a MUS audio ontology plus SHACL shapes;
+- independent historical-style and PCEN segmentation lanes with explicit
+  split/merge reconciliation;
+- SHS, pYIN, and dominant-ridge pitch trajectories with consensus refusal for
+  octave conflicts and estimator disagreement;
+- continuous gesture bundles with spectral, FM, AM, envelope, and consensus
+  pitch trajectories;
+- cluster co-assignment and stability tools for testing the seven-family
+  hypothesis.
+
+Preserve the current outputs as an immutable research object:
+
+```bash
+python import_research_object.py \
+  --config research/aigua-v1-import.json
+
+python -m mus_analysis verify --store research-object
+```
+
+The generated `research-object/` directory is local and reproducible. Its
+`projections/aigua-v1.nt` file is the first `gardend`-ready RDF face of Aigua.

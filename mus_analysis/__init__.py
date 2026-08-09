@@ -1,0 +1,68 @@
+"""Scientific-computing substrate for MUS audio projects."""
+
+from .arrays import DenseArrayRef, put_array, read_array
+from .canonical import CANONICALIZATION_ID, canonical_bytes, canonical_text, content_digest, content_urn
+from .audio_gesture import GestureObservationBundle, GestureSummary, ModulationSummary, PersistedGestureBundle, TrajectorySeries, analyze_gesture, persist_gesture_bundle
+from .audio_segmentation import SegmentationConfig, SegmentationResult, aigua_hysteresis_segmentation, pcen_segmentation
+from .audio_pitch import PitchExtractionConfig, dominant_ridge_trajectory, extract_reference_ensemble, pyin_trajectory, shs_trajectory
+from .model import (
+    ArtifactRef,
+    Claim,
+    ClaimStatus,
+    Diagnostic,
+    EvidenceKind,
+    EventHypothesis,
+    Interpretation,
+    MediaRegion,
+    MembershipEstimate,
+    Observation,
+    OperatorRef,
+    ProfileRef,
+    ResearchProjection,
+    RunReceipt,
+    RunStatus,
+    Score,
+)
+
+__all__ = [
+    "CANONICALIZATION_ID",
+    "DenseArrayRef",
+    "put_array",
+    "read_array",
+    "GestureObservationBundle",
+    "GestureSummary",
+    "ModulationSummary",
+    "PersistedGestureBundle",
+    "TrajectorySeries",
+    "analyze_gesture",
+    "persist_gesture_bundle",
+    "SegmentationConfig",
+    "SegmentationResult",
+    "aigua_hysteresis_segmentation",
+    "pcen_segmentation",
+    "PitchExtractionConfig",
+    "dominant_ridge_trajectory",
+    "extract_reference_ensemble",
+    "pyin_trajectory",
+    "shs_trajectory",
+    "ArtifactRef",
+    "Claim",
+    "ClaimStatus",
+    "Diagnostic",
+    "EvidenceKind",
+    "EventHypothesis",
+    "Interpretation",
+    "MediaRegion",
+    "MembershipEstimate",
+    "Observation",
+    "OperatorRef",
+    "ProfileRef",
+    "ResearchProjection",
+    "RunReceipt",
+    "RunStatus",
+    "Score",
+    "canonical_bytes",
+    "canonical_text",
+    "content_digest",
+    "content_urn",
+]

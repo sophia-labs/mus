@@ -23,3 +23,11 @@ _make_test_*.py
 aigua/*.wav
 aigua/recon_cache.npy
 aigua/render/*.wav
+
+# The research object is an immutable local materialization regenerated from
+# committed source artifacts and authored contracts. Large v2 experiment
+# outputs remain local until the Garden array-artifact policy is ratified.
+aigua/research-object/
+aigua/v2/*.json
+aigua/v2/*.npy
+aigua/v2/*.npz

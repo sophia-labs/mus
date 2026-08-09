@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia-labs.ai/schemas/mus-analysis/observation/1",
+  "title": "MUS audio observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "observation_id",
+    "target_id",
+    "observed_property",
+    "evidence_kind",
+    "procedure",
+    "run_id",
+    "value"
+  ],
+  "properties": {
+    "observation_id": {"type": "string", "minLength": 1},
+    "target_id": {"type": "string", "minLength": 1},
+    "observed_property": {"type": "string", "minLength": 1},
+    "evidence_kind": {
+      "enum": [
+        "directly-measured",
+        "deterministically-computed",
+        "statistically-estimated",
+        "model-inferred",
+        "human-annotated",
+        "human-curated",
+        "perceptually-reported",
+        "compositional-interpretation",
+        "unresolved"
+      ]
+    },
+    "procedure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operator_id", "version"],
+      "properties": {
+        "operator_id": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "implementation_digest": {"type": ["string", "null"]},
+        "literature": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "run_id": {"type": "string", "minLength": 1},
+    "value": {},
+    "unit": {"type": ["string", "null"]},
+    "score": {"$ref": "#/$defs/scoreOrNull"},
+    "signal_view_uri": {"type": ["string", "null"]},
+    "metadata": {"type": "object"}
+  },
+  "$defs": {
+    "scoreOrNull": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "semantics"],
+          "properties": {
+            "value": {"type": "number"},
+            "semantics": {"type": "string", "minLength": 1},
+            "unit": {"type": ["string", "null"]},
+            "calibration": {"type": ["string", "null"]}
+          }
+        }
+      ]
+    }
+  }
+}

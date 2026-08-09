@@ -1,0 +1,130 @@
+{
+  "schema": "mus-audio-descriptor-registry/1",
+  "namespace": "https://sophia-labs.ai/ontology/mus-audio#",
+  "descriptors": [
+    {
+      "descriptorId": "eventDurationSeconds",
+      "kind": "boundary-derived",
+      "unit": "s",
+      "definition": "Difference between a segmentation hypothesis's proposed end and start boundaries.",
+      "notEquivalentTo": ["physical call duration independent of the detector"]
+    },
+    {
+      "descriptorId": "bandLimitedDenoisedRmsDbfs",
+      "kind": "deterministically-computed",
+      "unit": "dBFS",
+      "definition": "RMS over the Aigua bird-band spectrally gated signal view.",
+      "requires": ["signal view identity", "region identity"]
+    },
+    {
+      "descriptorId": "meanMagnitudePeakFrequencyHz",
+      "kind": "deterministically-computed",
+      "unit": "Hz",
+      "definition": "Peak bin of the event's time-mean magnitude spectrum."
+    },
+    {
+      "descriptorId": "meanMagnitudeQuantile05FrequencyHz",
+      "kind": "deterministically-computed",
+      "unit": "Hz",
+      "definition": "Frequency at 5 percent of cumulative time-mean magnitude, not calibrated power."
+    },
+    {
+      "descriptorId": "meanMagnitudeQuantile95FrequencyHz",
+      "kind": "deterministically-computed",
+      "unit": "Hz",
+      "definition": "Frequency at 95 percent of cumulative time-mean magnitude, not calibrated power."
+    },
+    {
+      "descriptorId": "meanMagnitudeSpectralCentroidHz",
+      "kind": "deterministically-computed",
+      "unit": "Hz",
+      "definition": "Centroid of the event time-mean magnitude spectrum.",
+      "notEquivalentTo": ["perceived brightness"]
+    },
+    {
+      "descriptorId": "meanMagnitudeSpectralBandwidthHz",
+      "kind": "deterministically-computed",
+      "unit": "Hz",
+      "definition": "Magnitude-weighted standard deviation around meanMagnitudeSpectralCentroidHz."
+    },
+    {
+      "descriptorId": "meanFrameSpectralFlatness",
+      "kind": "deterministically-computed",
+      "unit": "ratio",
+      "definition": "Mean of framewise geometric-to-arithmetic spectral magnitude ratios."
+    },
+    {
+      "descriptorId": "shsMedianFrequencyHz",
+      "kind": "statistically-estimated",
+      "unit": "Hz",
+      "definition": "Median retained frequency from the historical Aigua subharmonic-summation estimator.",
+      "scoreSemantics": "aigua-shs-peak-to-mean-score",
+      "notEquivalentTo": ["intrinsic pitch", "stable musical note"]
+    },
+    {
+      "descriptorId": "shsMinimumFrequencyHz",
+      "kind": "statistically-estimated",
+      "unit": "Hz",
+      "definition": "Minimum retained historical SHS frequency; lower-search-bound hits require review."
+    },
+    {
+      "descriptorId": "shsMaximumFrequencyHz",
+      "kind": "statistically-estimated",
+      "unit": "Hz",
+      "definition": "Maximum retained historical SHS frequency."
+    },
+    {
+      "descriptorId": "shsStartEndSweepSemitones",
+      "kind": "statistically-estimated",
+      "unit": "semitone",
+      "definition": "Difference between historical start and end trajectory summaries."
+    },
+    {
+      "descriptorId": "shsRangeSemitones",
+      "kind": "statistically-estimated",
+      "unit": "semitone",
+      "definition": "Maximum-to-minimum range of retained historical SHS frames.",
+      "caveats": ["sensitive to octave errors", "sensitive to lower-bound hits", "not estimator-independent"]
+    },
+    {
+      "descriptorId": "shsPeakToMeanScore",
+      "kind": "deterministically-computed",
+      "unit": "ratio",
+      "definition": "Peak SHS candidate score divided by mean candidate score.",
+      "notEquivalentTo": ["probability", "calibrated confidence"]
+    },
+    {
+      "descriptorId": "contourClassEstimate",
+      "kind": "model-inferred",
+      "unit": null,
+      "definition": "Historical thirds-threshold class: flat, rise, fall, arch, v, complex, or none."
+    },
+    {
+      "descriptorId": "envelopePeriodicityRateHz",
+      "kind": "statistically-estimated",
+      "unit": "Hz",
+      "definition": "Rate associated with the selected envelope-autocorrelation peak in the declared search range."
+    },
+    {
+      "descriptorId": "envelopeAutocorrelationPeakStrength",
+      "kind": "deterministically-computed",
+      "unit": "normalized-autocorrelation",
+      "definition": "Value of the selected normalized envelope-autocorrelation peak.",
+      "legacyField": "am_depth",
+      "notEquivalentTo": ["conventional amplitude-modulation depth"]
+    },
+    {
+      "descriptorId": "consensusPitchHz",
+      "kind": "statistically-estimated",
+      "unit": "Hz",
+      "definition": "Frequency emitted only where at least the configured number of estimators agree within the configured cents tolerance.",
+      "refusalStates": ["octave-conflict", "disagreement", "insufficient-support"]
+    },
+    {
+      "descriptorId": "robustEnvelopeModulationIndex",
+      "kind": "deterministically-computed",
+      "unit": "ratio",
+      "definition": "(95th percentile envelope - 5th percentile envelope) divided by their sum; a declared robust index, not a universal psychoacoustic modulation depth."
+    }
+  ]
+}
