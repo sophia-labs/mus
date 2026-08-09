@@ -1,0 +1,100 @@
+# score: 1547
+# summary: 52 bars / 9 voices / 2:00 — low-volume funk; the title is the bird's median call in Hz, which is why the key is G
+# tempo: 104
+# time: 4/4
+# key: G
+# bars: 52
+# pack: instrument.json
+# gestures: v2/sweep-events.json
+# tape: aigua_raw.wav
+# swing: 16 56
+# reverb: 0.6
+# master: rms=-14
+
+# The persistent bird's median call is 1547 Hz — G6, 23 cents flat of the
+# 12-TET grid this track deliberately lives on. The motet met the bird in
+# its own tuning; this one hands it a click track and a dry room, and the
+# bird turns out to be a competent session vocalist. Ad-libs are gest=
+# quotes: measured consensus contours from the research object, riffing
+# over a ii-V. No pitch outside G major except whatever the bird does
+# inside its quoted gestures, which is its business.
+
+# instruments:
+#   kk = kick (perc, voice=buzz, st=-30->-46, curve=exp, tau=0.045, lpf=2800, rel=0.09, send=0.02, gain=1)
+#   sn = snare (perc, voice=car, off=1150, hpf=180, lpf=5200, rel=0.05, send=0.06, gain=1)
+#   hh = hats (perc, voice=tick, hpf=6200, rel=0.007, send=0.03, gain=-8, pan=0.22)
+#   sh = shaker (perc, voice=tick, s=3, hpf=7500, rel=0.006, send=0.03, gain=-16, pan=-0.3)
+#   cp = clap (perc, voice=chup, hpf=520, rel=0.05, send=0.12, gain=-5, pan=-0.12)
+#   bs = bass (bass, voice=buzz, lpf=1600, rel=0.04, send=0.02, gain=0)
+#   ky = keys (treble, voice=mid, mode=vocoder, lpf=5200, rel=0.08, send=0.07, gain=-9, pan=-0.25)
+#   gt = guitar (treble, voice=bright, hpf=650, rel=0.04, send=0.05, gain=-12, pan=0.35)
+#   vx = vocal (treble, voice=call, hpf=280, rel=0.09, send=0.10, gain=-4)
+
+
+# section: intro [1-4] — rhythm section only, as is right
+bar 1: kk=Xq[gate] Rq Xq[gate] Rq  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  bs=G2e[gate] Rs G2s Re G3s[gate] Rs G2e[gate] Rs G2s Rs D3s E3s F#3s
+bar 2: kk=Xq[gate] Rq Xq[gate] Rq  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  bs=C3e[gate] Rs C3s Re G2s Rs E3e[gate] Rs C3s Rs C3s B2s A2s
+bar 3: kk=Xq[gate] Rq Xq[gate] Rq  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  bs=G2e[gate] Rs G2s Re G3s[gate] Rs G2e[gate] Rs G2s Rs D3s E3s F#3s
+bar 4: kk=Xq[gate] Rq Xq[gate] Rq  sn=Rq Xq[gate] Rs Xs[gain=-18] Rs Xs[gain=-16] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  bs=C3e[gate] Rs C3s Re G2s Rs E3e[gate] Rs G3s[gate] Rs F#3s E3s D3s
+
+# section: verse A [5-12] — keys chick on the off-twos; everything leaves room for the bass
+bar 5: kk=Xq[gate] Rq Xq[gate] Rq  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  bs=G2e[gate] Rs G2s Re G3s[gate] Rs G2e[gate] Rs G2s Rs D3s E3s F#3s  ky=Rq Re <G4 B4 D5 F#5>e[gate,rel=0.07] Rq Re <G4 B4 D5>s[gate] Rs
+bar 6: kk=Xq[gate] Rq Xq[gate] Rq  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  bs=C3e[gate] Rs C3s Re G2s Rs E3e[gate] Rs C3s Rs C3s B2s A2s  ky=Rq Re <G4 C5 E5 B5>e[gate,rel=0.07] Rq Re <G4 C5 E5>s[gate] Rs
+bar 7: kk=Xq[gate] Rq Xq[gate] Rq  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  bs=G2e[gate] Rs G2s Re G3s[gate] Rs G2e[gate] Re B2s Rs D3s Rs  ky=Rq Re <G4 B4 D5 F#5>e[gate,rel=0.07] Rq Re <G4 B4 D5>s[gate] Rs
+bar 8: kk=Xq[gate] Rq Xq[gate] Rq  sn=Rq Xq[gate] Rs Xs[gain=-18] Rs Xs[gain=-16] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  bs=C3e[gate] Rs C3s Re G2s Rs E3e[gate] Rs C3s Rs C3s B2s A2s  ky=Rq Re <G4 C5 E5 B5>e[gate,rel=0.07] Rq Re <G4 C5 E5>s[gate] Rs
+bar 9: kk=Xq[gate] Rq Xq[gate] Rq  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  bs=G2e[gate] Rs G2s Re G3s[gate] Rs G2e[gate] Rs G2s Rs D3s E3s F#3s  ky=Rq Re <G4 B4 D5 F#5>e[gate,rel=0.07] Rq Re <G4 B4 D5>s[gate] Rs
+bar 10: kk=Xq[gate] Rq Xq[gate] Rq  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  bs=C3e[gate] Rs C3s Re G2s Rs E3e[gate] Rs G3s[gate] Rs F#3s E3s D3s  ky=Rq Re <G4 C5 E5 B5>e[gate,rel=0.07] Rq Re <G4 C5 E5>s[gate] Rs
+bar 11: kk=Xq[gate] Rq Xq[gate] Rq  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  bs=G2e[gate] Rs G2s Re G3s[gate] Rs G2e[gate] Re B2s Rs D3s Rs  ky=Rq Re <G4 B4 D5 F#5>e[gate,rel=0.07] Rq Re <G4 B4 D5>s[gate] Rs
+bar 12: kk=Xq[gate] Rq Xq[gate] Rq  sn=Rq Xq[gate] Rs Xs[gain=-18] Rs Xs[gain=-16] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  bs=C3e[gate] Rs C3s Re G2s Rs E3e[gate] Rs C3s Rs C3s B2s A2s  ky=Rq Re <G4 C5 E5 B5>e[gate,rel=0.07] Rq Re <G4 C5 E5>s[gate] Rs
+
+# section: chorus B [13-20] — ii-V-I-vi; the birds take the melody, claps arrive
+bar 13: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  cp=Rq Xq Rq Xq  bs=A2e[gate] Rs A2s Re A3s[gate] Rs A2e[gate] Rs G2s Rs A2s B2s C#3s  ky=Rq Re <G4 C5 E5>e[gate,rel=0.07] Rq Re <A4 C5 E5>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=Rq Re B5e D6q E6e Re
+bar 14: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  cp=Rq Xq Rq Xq  bs=D3e[gate] Rs D3s Re D2s Rs D3e[gate] Rs C3s Rs B2s A2s F#2s  ky=Rq Re <F#4 A4 C5 E5>e[gate,rel=0.07] Rq Re <F#4 A4 C5>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=G6q Re E6e D6q Rq
+bar 15: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  cp=Rq Xq Rq Xq  bs=G2e[gate] Rs G2s Re G3s[gate] Rs B2e[gate] Rs D3s Rs G3s Rs Rs  ky=Rq Re <G4 B4 D5 F#5>e[gate,rel=0.07] Rq Re <G4 B4 D5>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=Rq Re D6e E6e G6e A6q
+bar 16: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Rs Xs[gain=-18] Rs Xs[gain=-16] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  cp=Rq Xq Rq Xq  bs=E3e[gate] Rs E3s Re E2s Rs G2e[gate] Rs A2s Rs B2s D3s E3s  ky=Rq Re <E4 G4 B4 D5>e[gate,rel=0.07] Rq Re <E4 G4 B4>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=B5q[gest=h70] Rq Rh
+bar 17: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  cp=Rq Xq Rq Xq  bs=A2e[gate] Rs A2s Re A3s[gate] Rs A2e[gate] Rs G2s Rs A2s B2s C#3s  ky=Rq Re <G4 C5 E5>e[gate,rel=0.07] Rq Re <A4 C5 E5>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=Rq Re D6e B5q G5e Re
+bar 18: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  cp=Rq Xq Rq Xq  bs=D3e[gate] Rs D3s Re D2s Rs D3e[gate] Rs C3s Rs B2s A2s F#2s  ky=Rq Re <F#4 A4 C5 E5>e[gate,rel=0.07] Rq Re <F#4 A4 C5>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=A5q Re B5e D6h
+bar 19: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  cp=Rq Xq Rq Xq  bs=G2e[gate] Rs G2s Re G3s[gate] Rs B2e[gate] Rs D3s Rs G3s Rs Rs  ky=Rq Re <G4 B4 D5 F#5>e[gate,rel=0.07] Rq Re <G4 B4 D5>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=Re E6e D6e B5e G6e E6e D6q
+bar 20: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Rs Xs[gain=-18] Rs Xs[gain=-16] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  cp=Rq Xq Rq Xq  bs=E3e[gate] Rs E3s Re E2s Rs G2e[gate] Rs A2s Rs B2s D3s E3s  ky=Rq Re <E4 G4 B4 D5>e[gate,rel=0.07] Rq Re <E4 G4 B4>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=G6q[gest=h72] Rq Rh
+
+# section: verse A2 [21-28] — the ad-libs are measured contours; bird and bass trade bars
+bar 21: kk=Xq[gate] Rq Xq[gate] Rq  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  bs=G2e[gate] Rs G2s Re G3s[gate] Rs G2e[gate] Rs G2s Rs D3s E3s F#3s  ky=Rq Re <G4 B4 D5 F#5>e[gate,rel=0.07] Rq Re <G4 B4 D5>s[gate] Rs  vx=Rh Re D6e[gest=h70] Rq
+bar 22: kk=Xq[gate] Rq Xq[gate] Rq  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  bs=C3e[gate] Rs C3s Re G2s Rs E3e[gate] Rs C3s Rs C3s B2s A2s  ky=Rq Re <G4 C5 E5 B5>e[gate,rel=0.07] Rq Re <G4 C5 E5>s[gate] Rs
+bar 23: kk=Xq[gate] Rq Xq[gate] Rq  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  bs=G2e[gate] Rs G2s Re G3s[gate] Rs G2e[gate] Re B2s Rs D3s Rs  ky=Rq Re <G4 B4 D5 F#5>e[gate,rel=0.07] Rq Re <G4 B4 D5>s[gate] Rs  vx=Rq G6e[gest=h52] Re Rh
+bar 24: kk=Xq[gate] Rq Xq[gate] Rq  sn=Rq Xq[gate] Rs Xs[gain=-18] Rs Xs[gain=-16] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  bs=G2s A2s B2s D3s E3s D3s B2s A2s G2e[gate] Rs G3s[gate] Re Re  ky=Rq Re <G4 C5 E5 B5>e[gate,rel=0.07] Rq Re <G4 C5 E5>s[gate] Rs
+bar 25: kk=Xq[gate] Rq Xq[gate] Rq  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  bs=G2e[gate] Rs G2s Re G3s[gate] Rs G2e[gate] Rs G2s Rs D3s E3s F#3s  ky=Rq Re <G4 B4 D5 F#5>e[gate,rel=0.07] Rq Re <G4 B4 D5>s[gate] Rs
+bar 26: kk=Xq[gate] Rq Xq[gate] Rq  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  bs=C3e[gate] Rs C3s Re G2s Rs E3e[gate] Rs G3s[gate] Rs F#3s E3s D3s  ky=Rq Re <G4 C5 E5 B5>e[gate,rel=0.07] Rq Re <G4 C5 E5>s[gate] Rs  vx=Rh Rq B5e[gest=h72] Re
+bar 27: kk=Xq[gate] Rq Xq[gate] Rq  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  bs=G2e[gate] Rs G2s Re G3s[gate] Rs G2e[gate] Re B2s Rs D3s Rs  ky=Rq Re <G4 B4 D5 F#5>e[gate,rel=0.07] Rq Re <G4 B4 D5>s[gate] Rs
+bar 28: kk=Xq[gate] Rq Xq[gate] Rq  sn=Rq Xq[gate] Rs Xs[gain=-18] Rs Xs[gain=-16] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  bs=G2s A2s B2s D3s E3s D3s B2s A2s G2e[gate] Rs G3s[gate] Re Re  ky=Rq Re <G4 C5 E5 B5>e[gate,rel=0.07] Rq Re <G4 C5 E5>s[gate] Rs
+
+# section: bridge [29-32] — strip it: bass, claps, hats. Vulf rule: the drop-out IS the hook
+bar 29: hh=Re Xe Re Xe Re Xe Re Xe  cp=Rq Xq Rq Xq  bs=G2e[gate] Re G2s Rs B2s Rs D3e[gate] Re G3s[gate] Rs E3s D3s
+bar 30: hh=Re Xe Re Xe Re Xe Re Xe  cp=Rq Xq Rq Xq  bs=G2e[gate] Re G2s Rs B2s Rs D3e[gate] Re G3s[gate] Rs E3s D3s
+bar 31: hh=Re Xe Re Xe Re Xe Re Xe  cp=Rq Xq Rq Xq  bs=G2e[gate] Re G2s Rs B2s Rs D3e[gate] Re G3s[gate] Rs E3s D3s
+bar 32: hh=Re Xe Re Xe Re Xe Re Xe  cp=Rq Xq Rq Xq  bs=G2s A2s B2s D3s E3s D3s B2s A2s G2e[gate] Rs G3s[gate] Re Re
+
+# section: chorus B2 [33-40]
+bar 33: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  cp=Rq Xq Rq Xq  bs=A2e[gate] Rs A2s Re A3s[gate] Rs A2e[gate] Rs G2s Rs A2s B2s C#3s  ky=Rq Re <G4 C5 E5>e[gate,rel=0.07] Rq Re <A4 C5 E5>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=Rq Re B5e D6q E6e Re
+bar 34: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  cp=Rq Xq Rq Xq  bs=D3e[gate] Rs D3s Re D2s Rs D3e[gate] Rs C3s Rs B2s A2s F#2s  ky=Rq Re <F#4 A4 C5 E5>e[gate,rel=0.07] Rq Re <F#4 A4 C5>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=G6q Re E6e D6q Rq
+bar 35: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  cp=Rq Xq Rq Xq  bs=G2e[gate] Rs G2s Re G3s[gate] Rs B2e[gate] Rs D3s Rs G3s Rs Rs  ky=Rq Re <G4 B4 D5 F#5>e[gate,rel=0.07] Rq Re <G4 B4 D5>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=Rq Re D6e E6e G6e A6q
+bar 36: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Rs Xs[gain=-18] Rs Xs[gain=-16] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  cp=Rq Xq Rq Xq  bs=E3e[gate] Rs E3s Re E2s Rs G2e[gate] Rs A2s Rs B2s D3s E3s  ky=Rq Re <E4 G4 B4 D5>e[gate,rel=0.07] Rq Re <E4 G4 B4>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=B5q[gest=h70] Rq Rh
+bar 37: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  cp=Rq Xq Rq Xq  bs=A2e[gate] Rs A2s Re A3s[gate] Rs A2e[gate] Rs G2s Rs A2s B2s C#3s  ky=Rq Re <G4 C5 E5>e[gate,rel=0.07] Rq Re <A4 C5 E5>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=Rq Re D6e B5q G5e Re
+bar 38: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  cp=Rq Xq Rq Xq  bs=D3e[gate] Rs D3s Re D2s Rs D3e[gate] Rs C3s Rs B2s A2s F#2s  ky=Rq Re <F#4 A4 C5 E5>e[gate,rel=0.07] Rq Re <F#4 A4 C5>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=A5q Re B5e D6h
+bar 39: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  cp=Rq Xq Rq Xq  bs=G2e[gate] Rs G2s Re G3s[gate] Rs B2e[gate] Rs D3s Rs G3s Rs Rs  ky=Rq Re <G4 B4 D5 F#5>e[gate,rel=0.07] Rq Re <G4 B4 D5>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=Re E6e D6e B5e G6e E6e D6q
+bar 40: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Rs Xs[gain=-18] Rs Xs[gain=-16] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  cp=Rq Xq Rq Xq  bs=E3e[gate] Rs E3s Re E2s Rs G2e[gate] Rs A2s Rs B2s D3s E3s  ky=Rq Re <E4 G4 B4 D5>e[gate,rel=0.07] Rq Re <E4 G4 B4>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=G6q[gest=h72] Rq Rh
+
+# section: chorus B3 [41-48] — the shaker was earned
+bar 41: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  sh=Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs  cp=Rq Xq Rq Xq  bs=A2e[gate] Rs A2s Re A3s[gate] Rs A2e[gate] Rs G2s Rs A2s B2s C#3s  ky=Rq Re <G4 C5 E5>e[gate,rel=0.07] Rq Re <A4 C5 E5>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=Rq Re B5e D6q E6e Re
+bar 42: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  sh=Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs  cp=Rq Xq Rq Xq  bs=D3e[gate] Rs D3s Re D2s Rs D3e[gate] Rs C3s Rs B2s A2s F#2s  ky=Rq Re <F#4 A4 C5 E5>e[gate,rel=0.07] Rq Re <F#4 A4 C5>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=G6q Re E6e D6q Rq
+bar 43: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  sh=Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs  cp=Rq Xq Rq Xq  bs=G2e[gate] Rs G2s Re G3s[gate] Rs B2e[gate] Rs D3s Rs G3s Rs Rs  ky=Rq Re <G4 B4 D5 F#5>e[gate,rel=0.07] Rq Re <G4 B4 D5>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=Rq Re D6e E6e G6e A6q
+bar 44: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Rs Xs[gain=-18] Rs Xs[gain=-16] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  sh=Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs  cp=Rq Xq Rq Xq  bs=E3e[gate] Rs E3s Re E2s Rs G2e[gate] Rs A2s Rs B2s D3s E3s  ky=Rq Re <E4 G4 B4 D5>e[gate,rel=0.07] Rq Re <E4 G4 B4>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=B5q[gest=h70] Rq Rh
+bar 45: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  sh=Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs  cp=Rq Xq Rq Xq  bs=A2e[gate] Rs A2s Re A3s[gate] Rs A2e[gate] Rs G2s Rs A2s B2s C#3s  ky=Rq Re <G4 C5 E5>e[gate,rel=0.07] Rq Re <A4 C5 E5>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=Rq Re D6e B5q G5e Re
+bar 46: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  sh=Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs  cp=Rq Xq Rq Xq  bs=D3e[gate] Rs D3s Re D2s Rs D3e[gate] Rs C3s Rs B2s A2s F#2s  ky=Rq Re <F#4 A4 C5 E5>e[gate,rel=0.07] Rq Re <F#4 A4 C5>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=A5q Re B5e D6h
+bar 47: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Re Rs Xs[gain=-17] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  sh=Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs  cp=Rq Xq Rq Xq  bs=G2e[gate] Rs G2s Re G3s[gate] Rs B2e[gate] Rs D3s Rs G3s Rs Rs  ky=Rq Re <G4 B4 D5 F#5>e[gate,rel=0.07] Rq Re <G4 B4 D5>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=Re E6e D6e B5e G6e E6e D6q
+bar 48: kk=Xe[gate] Rq Re Re Xe[gate] Re Xe[gate]  sn=Rq Xq[gate] Rs Xs[gain=-18] Rs Xs[gain=-16] Xq[gate]  hh=Re Xe Re Xe Re Xe Re Xe  sh=Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs Xs[gain=-3] Xs  cp=Rq Xq Rq Xq  bs=E3e[gate] Rs E3s Re E2s Rs G2e[gate] Rs A2s Rs B2s D3s E3s  ky=Rq Re <E4 G4 B4 D5>e[gate,rel=0.07] Rq Re <E4 G4 B4>s[gate] Rs  gt=Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <D5 G5 B5>s[gate] Re Rs <B4 E5 G5>s[gate] Re  vx=Rq Re G6e[gest=h70] Rq E6q[gest=h72]
+
+# section: tag [49-52] — band hits, then the bird gets the last word, dry
+bar 49: kk=Xq[gate] Rq Rh  sn=Xq[gate] Rq Rh  cp=Xq Rq Rh  bs=G2q[gate] Rq Rh  ky=<G4 B4 D5 G5>q[gate,rel=0.09] Rq Rh  gt=<D5 G5 B5>q[gate] Rq Rh
+bar 50: kk=Xq[gate] Rq Rh  sn=Xq[gate] Rq Rq Xe[stut=3] Re  cp=Xq Rq Rh  bs=G2q[gate] Rq Rh  ky=<G4 B4 D5 G5>q[gate,rel=0.09] Rq Rh  gt=<D5 G5 B5>q[gate] Rq Rh
+bar 51: kk=Xq[gate] Rq Rh  sn=Xq[gate] Rq Rh  cp=Xq Rq Rh  bs=G2s A2s B2s D3s E3s D3s B2s A2s G2e[gate] Rs G3s[gate] Re Re  ky=<G4 B4 D5 G5>q[gate,rel=0.09] Rq Rh  gt=<D5 G5 B5>q[gate] Rq Rh
+bar 52: kk=Xq[gate] Rq Rh  bs=G2q[gate] Rq Rh  vx=Rq Re Xe[gest=h70,gsrc=raw,str=1,rel=0.03] Rh

@@ -1,0 +1,123 @@
+# score: Recusatio / En Aiguá cantan / Unus avis — motetus isorhythmicus
+# summary: 72 bars / 6 voices / 4:00 — an isorhythmic motet whose cantus firmus is one bird's recorded song
+# tempo: 54
+# time: 3/4
+# key: Dm
+# bars: 72
+# tuning: A=433.7
+# pack: instrument.json
+# gestures: v2/sweep-events.json
+# tape: aigua_raw.wav
+# reverb: 4.5
+# master: rms=-17
+
+# The tenor is found material in the strict medieval sense: seven recorded
+# calls of one persistent bird (gsrc=raw — the tape, not a resynthesis),
+# each shifted at most 1.2 semitones onto the color D-F-G-A-C-G-E. The mode
+# was measured before it was chosen: at A=433.7 (the consensus pitch of the
+# place), the bird's central call h37 has median 1547 Hz = G6 exactly, and
+# the consensus field peaks on C, the subtonium. Final D, reciting tone A.
+# Color 7 x talea 5 = 35 tenor notes = the call family's full census.
+# tenor source: urn:sophia:mus:run:sha256:c885315586e7c574... (the sweep
+# receipt); every quoted contour is a receipted consensus observation.
+
+# instruments:
+#   tr = triplum (treble, voice=glide, pan=-0.35, send=0.22, gain=-10)
+#   te = tenor (treble, voice=call, gsrc=raw, str=fit, atk=0.08, rel=0.45, lpf=6500, send=0.35, gain=6)
+#   mo = motetus (treble, voice=bright, pan=0.35, send=0.25, gain=-8)
+#   ct = contratenor bassus (bass, voice=buzz, pan=-0.12, lpf=1200, send=0.15, gain=-4)
+#   dr = drone (bass, sample=samples/sub_bed.wav, send=0.30, gain=-12)
+#   pc = campana (perc, voice=tick, pan=0.2, hpf=2500, rel=0.03, send=0.25, gain=-16)
+
+
+# section: intonatio [1-3] — the emblem call, verbatim: median 1547 Hz = G6+0c in the consensus tuning. The cantor states the reciting tone.
+# text @b1: TENOR: unus avis persistens — the persistent individual of the call family, 35 utterances in 56 seconds of tape
+bar 1: te={mp} Xq.[gest=h37,str=1,atk=0.004,rel=0.05] Rq.
+bar 2: ct={p} D3h.  dr={ppp} Xh.[gate,lpf=180->320]
+bar 3: ct=A2h.  pc=G7e[send=0.4] Re Rq Rq
+
+# section: pars prima, integer valorum [4-45] — color 7 x talea 5: seven statements, the tenor in longs, voices entering one per statement. 3 x 7 x 5 / 35 = the one bird's census, sung once, completely.
+# text @b4: talea: long, double long, long, rest, two shorts — the rest is part of the rhythm, and the hocket lives in it
+bar 4: te={mf} D6h.[gest=h105]"Unus"  ct=D3h.  dr=Xh.[gate,lpf=320->180]  pc=G7e[send=0.4] Re Rq Rq
+bar 5: te=F6h.~h.[gest=h46]  ct=F3h.~h.  dr=Xh.[gate,lpf=180->320]
+bar 6: dr=Xh.[gate,lpf=320->180]
+bar 7: te=G6h.[gest=h37]  ct=C3h.  dr=Xh.[gate,lpf=180->320]
+bar 8: dr=Xh.[gate,lpf=320->180]
+bar 9: te=A6q.[gest=h107] C7q.[gest=h78]  ct=D3q. F3q.  dr=Xh.[gate,lpf=180->320]
+# text @b10: MOTETUS: En Aiguá cantan los pájaros; uno solo insiste.
+bar 10: te=G6h.[gest=h72]  mo={mp} G5h."En"  ct=C3h.  dr=Xh.[gate,lpf=320->180]
+bar 11: te=E6h.~h.[gest=h40]  mo=A4q B4q A4q  ct=A2h.~h.  dr=Xh.[gate,lpf=180->320]
+bar 12: mo=G4q A4q B4q  dr=Xh.[gate,lpf=320->180]
+bar 13: te=D6h.[gest=h105]  mo=D5h.  ct=D3h.  dr=Xh.[gate,lpf=180->320]
+bar 14: dr=Xh.[gate,lpf=320->180]
+bar 15: te=F6q.[gest=h46] G6q.[gest=h37]  mo=F5q. G5q.  ct=F3q. C3q.  dr=Xh.[gate,lpf=180->320]
+# text @b16: TRIPLUM: Quis cantat? Tres testes audiunt — tempus perfectum for three estimators, not the Trinity
+bar 16: tr={mp} C7e D7e E7e F7e E7e D7e"Quis"  te=A6h.[gest=h107]  mo=A5h.  ct=D3h.  dr=Xh.[gate,lpf=320->180]
+bar 17: tr=G7h.  te=C7h.~h.[gest=h78]  mo=C5q D5q C5q  ct=F3h.~h.  dr=Xh.[gate,lpf=180->320]
+bar 18: tr=E7e F7e G7e F7e E7e D7e  mo=B4q C5q D5q  dr=Xh.[gate,lpf=320->180]
+bar 19: tr=D7q C7q B6q  te=G6h.[gest=h72]  mo=G5h.  ct=C3h.  dr=Xh.[gate,lpf=180->320]
+bar 20: dr=Xh.[gate,lpf=320->180]
+bar 21: tr=B6q. A6q.  te=E6q.[gest=h40] D6q.[gest=h105]  mo=A4q. D5q.  ct=A2q. D3q.  dr=Xh.[gate,lpf=180->320]
+# text @b22: ubi consentiunt, glacies — where they agree, ice
+bar 22: tr={mf} A6e C7e D7e C7e A6e G6e  te=F6h.[gest=h46]  mo=F5h.  ct=F3h.  dr=Xh.[gate,lpf=320->180]
+bar 23: tr=D7h.  te=G6h.~h.[gest=h37]  mo=G5q A5q G5q  ct=C3h.~h.  dr=Xh.[gate,lpf=180->320]
+bar 24: tr=B6e C7e D7e E7e D7e C7e  mo=F5q G5q A5q  dr=Xh.[gate,lpf=320->180]
+bar 25: tr=E7q D7q C7q  te=A6h.[gest=h107]  mo=A5h.  ct=D3h.  dr=Xh.[gate,lpf=180->320]
+bar 26: tr=G6e Re B6e Re B6e Re  mo=Re A4e Re G4e Re A4e  dr=Xh.[gate,lpf=320->180]
+bar 27: tr=G7q. D7q.  te=C7q.[gest=h78] G6q.[gest=h72]  mo=C5q. G5q.  ct=F3q. C3q.  dr=Xh.[gate,lpf=180->320]
+bar 28: tr=G6e A6e B6e C7e B6e A6e  te=E6h.[gest=h40]  mo=A4h.  ct=A2h.  dr=Xh.[gate,lpf=320->180]
+bar 29: tr=A6h.  te=D6h.~h.[gest=h105]  mo=D5q E5q D5q  ct=D3h.~h.  dr=Xh.[gate,lpf=180->320]
+bar 30: tr=A6e B6e C7e D7e C7e B6e  mo=C5q D5q E5q  dr=Xh.[gate,lpf=320->180]
+bar 31: tr=C7q A6q F6q  te=F6h.[gest=h46]  mo=F5h.  ct=F3h.  dr=Xh.[gate,lpf=180->320]
+bar 32: tr=E7e Re G7e Re E7e Re  mo=Re C5e Re B4e Re C5e  dr=Xh.[gate,lpf=320->180]
+bar 33: tr=G7q[gest=h70] Rq Rq  te=G6q.[gest=h37] A6q.[gest=h107]  mo=G5q. A5q.  ct=C3q. D3q.  dr=Xh.[gate,lpf=180->320]
+# text @b34: ubi octava fallitur, unda — where the octave deceives, water
+bar 34: tr=E7e F7e G7e F7e E7e D7e  te=C7h.[gest=h78]  mo=C5h.  ct=F3h.  dr=Xh.[gate,lpf=320->180]
+bar 35: tr=D7h.  te=G6h.~h.[gest=h72]  mo=G5q A5q G5q  ct=C3h.~h.  dr=Xh.[gate,lpf=180->320]
+bar 36: tr=B6e C7e D7e E7e D7e C7e  mo=F5q G5q A5q  dr=Xh.[gate,lpf=320->180]
+bar 37: tr=B6q A6q G6q  te=E6h.[gest=h40]  mo=A4h.  ct=A2h.  dr=Xh.[gate,lpf=180->320]
+bar 38: tr=B6e Re D7e Re D7e Re  mo=Re G5e Re F5e Re G5e  dr=Xh.[gate,lpf=320->180]
+bar 39: tr=E7q[gest=h66] Rq G7q[gest=h52]  te=D6q.[gest=h105] F6q.[gest=h46]  mo=D5q. F5q.  ct=D3q. F3q.  dr=Xh.[gate,lpf=180->320]
+bar 40: tr=B6e C7e D7e E7e D7e C7e  te=G6h.[gest=h37]  mo=G5h.  ct=C3h.  dr=Xh.[gate,lpf=320->180]
+bar 41: tr=E7h.  te=A6h.~h.[gest=h107]  mo=A5q B5q A5q  ct=D3h.~h.  dr=Xh.[gate,lpf=180->320]
+bar 42: tr=C7e D7e E7e F7e E7e D7e  mo=G5q A5q B5q  dr=Xh.[gate,lpf=320->180]
+bar 43: tr=G7q E7q C7q  te=C7h.[gest=h78]  mo=C5h.  ct=F3h.  dr=Xh.[gate,lpf=180->320]
+bar 44: tr=A6e Re C7e Re C7e Re  mo=Re D5e Re C5e Re D5e  dr=Xh.[gate,lpf=320->180]
+bar 45: tr=G7q[gest=h34] Rq E7q[gest=h52]  te=G6q.[gest=h72] E6q.[gest=h40]  mo=G5q. A4q.  ct=C3q. A2q.  dr=Xh.[gate,lpf=180->320]
+
+# section: pars secunda, per diminutionem [46-66] — the talea at half values. Raw quotes stretch less at speed, so the chant audibly sharpens from organ-wash into a bird: diminution as coming-into-focus.
+# text @b46: the same 35 calls, the same order, twice the speed
+bar 46: tr={f} A6e B6e C7e D7e C7e B6e  te={f} D6q.[gest=h105] F6q.[gest=h46]  mo={f} D5q E5q C5q  ct=D3q. F3q.  dr=Xh.[gate,lpf=380->200]  pc=G7e[send=0.4] Re Rq Rq
+bar 47: tr=C7e Re E7e Re E7e Re  te=G6q.[gest=h37] Rq.  mo=Re A5e Re G5e Re A5e  ct=C3h.  dr=Xh.[gate,lpf=200->380]
+bar 48: tr=C7e D7e E7e F7e E7e D7e  te=A6q.[gest=h107] C7q.[gest=h78]  mo=A5q. C5q.  ct=D3q. F3q.  dr=Xh.[gate,lpf=380->200]
+bar 49: tr=B6e C7e D7e E7e D7e C7e  te=G6q.[gest=h72] E6q.[gest=h40]  mo=G5q A5q F5q  ct=C3q. A2q.  dr=Xh.[gate,lpf=200->380]
+bar 50: tr=A6e Re D7e Re A6e Re  te=D6q.[gest=h105] Rq.  mo=Re F5e Re E5e Re F5e  ct=D3h.  dr=Xh.[gate,lpf=380->200]
+bar 51: tr=A6e C7e D7e C7e A6e G6e  te=F6q.[gest=h46] G6q.[gest=h37]  mo=F5q. G5q.  ct=F3q. C3q.  dr=Xh.[gate,lpf=200->380]
+bar 52: tr=C7e D7e E7e F7e E7e D7e  te=A6q.[gest=h107] C7q.[gest=h78]  mo=A5q B5q G5q  ct=D3q. F3q.  dr=Xh.[gate,lpf=380->200]
+bar 53: tr=G6e Re B6e Re B6e Re  te=G6q.[gest=h72] Rq.  mo=Re A4e Re G4e Re A4e  ct=C3h.  dr=Xh.[gate,lpf=200->380]
+bar 54: tr=G7q[gest=h70] G7e Re  te=E6q.[gest=h40] D6q.[gest=h105]  mo=A4q. D5q.  ct=A2q. D3q.  dr=Xh.[gate,lpf=380->200]
+bar 55: tr=A6e C7e D7e C7e A6e G6e  te=F6q.[gest=h46] G6q.[gest=h37]  mo=F5q G5q E5q  ct=F3q. C3q.  dr=Xh.[gate,lpf=200->380]
+bar 56: tr=E7e Re G7e Re E7e Re  te=A6q.[gest=h107] Rq.  mo=Re C5e Re B4e Re C5e  ct=D3h.  dr=Xh.[gate,lpf=380->200]
+bar 57: tr=E7e F7e G7e F7e E7e D7e  te=C7q.[gest=h78] G6q.[gest=h72]  mo=C5q. G5q.  ct=F3q. C3q.  dr=Xh.[gate,lpf=200->380]
+bar 58: tr=G6e A6e B6e C7e B6e A6e  te=E6q.[gest=h40] D6q.[gest=h105]  mo=A4q B4q G4q  ct=A2q. D3q.  dr=Xh.[gate,lpf=380->200]
+bar 59: tr=B6e Re D7e Re D7e Re  te=F6q.[gest=h46] Rq.  mo=Re G5e Re F5e Re G5e  ct=F3h.  dr=Xh.[gate,lpf=200->380]
+bar 60: tr=E7q[gest=h52] E7e Re  te=G6q.[gest=h37] A6q.[gest=h107]  mo=G5q. A5q.  ct=C3q. D3q.  dr=Xh.[gate,lpf=380->200]
+bar 61: tr=E7e F7e G7e F7e E7e D7e  te=C7q.[gest=h78] G6q.[gest=h72]  mo=C5q D5q B4q  ct=F3q. C3q.  dr=Xh.[gate,lpf=200->380]
+bar 62: tr=A6e Re C7e Re C7e Re  te=E6q.[gest=h40] Rq.  mo=Re D5e Re C5e Re D5e  ct=A2h.  dr=Xh.[gate,lpf=380->200]
+bar 63: tr=A6e B6e C7e D7e C7e B6e  te=D6q.[gest=h105] F6q.[gest=h46]  mo=D5q. F5q.  ct=D3q. F3q.  dr=Xh.[gate,lpf=200->380]
+# text @b64: ubi dissentiunt, nebula — where they differ, mist
+bar 64: tr={ff} B6e C7e D7e E7e D7e C7e  te=G6q.[gest=h37] A6q.[gest=h107]  mo=G5q A5q F5q  ct=C3q. D3q.  dr=Xh.[gate,lpf=380->200]
+bar 65: tr=B6e Re D7e Re D7e Re  te=C7q.[gest=h78] Rq.  mo=Re G5e Re F5e Re G5e  ct=F3h.  dr=Xh.[gate,lpf=200->380]
+bar 66: tr=A7q[gest=h67] A7e Re  te=G6q.[gest=h72] E6q.[gest=h40]  mo=G5q. A4q.  ct=C3q. A2q.  dr=Xh.[gate,lpf=380->200]  pc=G7e[send=0.4] Re G7e Re Rq
+
+# section: clausula [67-70] — double leading tone, ficta pushed +15 cents, resolving outward to the open fifth D-A-D. The nave (4.5 s) carries the chord through bar 70 on its own.
+# text @b67: Recusatio responsum est — refusal is an answer
+bar 67: tr={ff} C#7+15h."Re-"  mo=G#5+15h.  ct=E3h.  dr=Xh.[gate,lpf=300->200]
+bar 68: tr={mf} D7h.~h."-cu-"  mo=A5h.~h.  ct=D3h.~h.  dr=Xh.[gate,lpf=200->150]
+bar 69: dr=Xh.[gate,lpf=150->120]
+bar 70: dr={pp} Xh.[gate,lpf=120->90]
+
+# section: coda [71-72] — one call, unshifted, unstretched, alone.
+bar 71: dr={ppp} Xh.[gate,lpf=90->70]
+# text @b72: the chant outlives the motet
+bar 72: te={ppp} Xh.[gest=h60,str=1,atk=0.004,rel=0.06,send=0.5,gain=12]"amen"

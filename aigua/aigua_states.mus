@@ -1,0 +1,91 @@
+# score: Aiguá: Three States of Water
+# summary: 48 bars / 8 voices / 3:12 — the v2 analysis of the Aigua field recording, sounded
+# tempo: 60
+# time: 4/4
+# key: C
+# bars: 48
+# tuning: A=433.7
+# pack: instrument.json
+# gestures: v2/sweep-events.json
+# master: rms=-16
+
+# Every gest=hN figure quotes the consensus pitch contour of reconciled event
+# N in v2/sweep-events.json (SPEC-AUDIO §8). The three sections are the three
+# consensus states: disagreement (45% of frames) -> vapor, octave-conflict
+# (30%) -> liquid, resolved (25%) -> ice. Tuned to A=433.7: the consensus
+# pitch field peaks at C-25c re A440, and this tuning puts that peak on C.
+
+# instruments:
+#   gl = glide ice (treble, voice=glide, send=0.30)
+#   ca = call choir (treble, voice=call, send=0.24)
+#   br = bright shadow (treble, voice=bright, send=0.26)
+#   md = mid liquid (treble, voice=mid, send=0.22)
+#   tk = tick (perc, voice=tick, send=0.10)
+#   bz = buzz bass (bass, voice=buzz, gain=3, send=0.08)
+#   sb = sub bed (bass, sample=samples/sub_bed.wav, gain=-4, send=0.20)
+#   tp = tape (perc, sample=aigua_raw.wav, gain=-2, send=0.35)
+
+
+# section: vapor [1-12] — 45% of all frames: no defensible pitch, so the tape itself, pointed into at the pure-disagreement events.
+# text @b1: nothing in this section has a pitch. that is a finding, not a failure.
+bar 1: sb={ppp} Xw[gate,lpf=180->320]  tp={pp} Xw[off=39500,gate,lpf=2400,pan=-0.5]
+bar 2: sb=Xw[gate,lpf=320->180]
+bar 3: sb=Xw[gate,lpf=200->400]  tp=Xh[off=11470,gate,lpf=1800,pan=0.4] Rh
+bar 4: sb=Xw[gate,lpf=400->160]
+bar 5: bz={pp} C2w[atk=0.8,rel=1.2]  sb={pp} Xw[gate,lpf=250->500]  tp=Xw[off=42640,gate,lpf=2800,pan=-0.2->0.3]
+bar 6: bz=C2w[atk=0.8,rel=1.2]  sb=Xw[gate,lpf=250->500]
+bar 7: bz=C2w[atk=0.8,rel=1.2]  sb=Xw[gate,lpf=250->500]  tp=Xh[off=55960,gate,lpf=2000,pan=0.6] Rh
+bar 8: bz=C2w[atk=0.8,rel=1.2]  sb=Xw[gate,lpf=250->500]  tp=Xh[off=350,gate,lpf=1500,pan=-0.6] Rh
+bar 9: tk={pp} Re Xe[st=14] Rh Rq  bz=C2w[atk=0.8,rel=1.2]  sb=Xw[gate,lpf=500->200]
+bar 10: bz=C2w[atk=0.8,rel=1.2]  sb=Xw[gate,lpf=500->200]  tp=Xw[off=19190,gate,lpf=3200,pan=0.1->-0.4]
+bar 11: tk=Rq Xe[st=17] Re Rh  bz=G1w[atk=0.9,rel=1.4]  sb=Xw[gate,lpf=500->200]
+bar 12: tk=Rh Xe[st=12] Re Rq  bz=G1w[atk=0.9,rel=1.4]  sb=Xw[gate,lpf=500->200]
+
+# section: liquid [13-24] — octave-conflict: one event, two hearings. Resolved backbone left, octave shadow right. h91/h101 resolved nothing and exist only as shadows.
+# text @b13: the ensemble heard every one of these calls in two octaves at once.
+bar 13: ca={mp} C5q[gest=h71,pan=-0.35] Rq Rh  br={mp} C5q[gest=h71,glayer=octave,pan=0.35] Rq Rh  bz={pp} C2h[atk=0.3,rel=0.8] Rh  sb={ppp} Xw[gate,lpf=220->380]
+bar 14: bz=C2h[atk=0.3,rel=0.8] Rh  sb=Xw[gate,lpf=220->380]
+bar 15: ca=G4h[gest=h96,pan=-0.3] Rh  br=Rq C5q[gest=h71,glayer=octave,pan=0.45] Rh  md={p} Rq D5q[gest=h91,glayer=octave,pan=0.2] Rh  bz=C2h[atk=0.3,rel=0.8] Rh  sb=Xw[gate,lpf=220->380]
+bar 16: bz=C2h[atk=0.3,rel=0.8] Rh  sb=Xw[gate,lpf=220->380]
+bar 17: ca=C5q[gest=h71,pan=-0.35] Rq G4q[gest=h96,pan=-0.25] Rq  br=C5q[gest=h71,glayer=octave,pan=0.4] Rq Rh  bz=C2h[atk=0.3,rel=0.8] Rh  sb=Xw[gate,lpf=220->380]
+bar 18: md=Rh G5q[gest=h101,glayer=octave,pan=-0.2] Rq  bz=C2h[atk=0.3,rel=0.8] Rh  sb=Xw[gate,lpf=220->380]
+bar 19: ca={mf} C5q[gest=h71,pan=-0.4] Rq Rh  br={mf} C5q[gest=h71,glayer=octave,pan=0.45] Rq Rh  bz=C2h[atk=0.3,rel=0.8] Rh  sb=Xw[gate,lpf=220->380]
+bar 20: md=Rq D5q[gest=h91,glayer=octave,pan=0.25] Rh  bz=C2h[atk=0.3,rel=0.8] Rh  sb=Xw[gate,lpf=220->380]
+bar 21: ca=G4h[gest=h96,pan=-0.3] Rh  br=Rq C5q[gest=h71,glayer=octave,pan=0.5] Rh  bz=C2h[atk=0.3,rel=0.8] Rh  sb=Xw[gate,lpf=220->380]
+bar 22: md=Rh G5q[gest=h101,glayer=octave,pan=-0.25] Rq  bz=C2h[atk=0.3,rel=0.8] Rh  sb=Xw[gate,lpf=220->380]
+bar 23: ca=C5q[gest=h71,pan=-0.35] Rq G4q[gest=h96,pan=-0.3] Rq  br=C5q[gest=h71,glayer=octave,pan=0.4] Rq Rh  bz=G1h[atk=0.3,rel=0.9] Rh  sb=Xw[gate,lpf=220->380]
+bar 24: bz=G1h[atk=0.3,rel=0.9] Rh  sb=Xw[gate,lpf=220->380]
+
+# section: ice [25-38] — resolved frames only. Chorale = the stable call/bright core (h54, h60, h44) frozen with str=fit; soprano = h70, the cleanest event (74% resolved). Bar 33: h67, 36.1 semitones in 0.19 s — the aria.
+# text @b25: only what all three estimators agreed on. a quarter of the recording.
+bar 25: gl={mf} C6h[gest=h70,str=fit] Rh  ca={mf} G4w[gest=h54,str=fit,pan=-0.2]  br={mf} C5w[gest=h44,str=fit,pan=0.2]  bz={p} C2w[atk=0.5,rel=1.0]
+bar 26: gl=C6h[gest=h70,str=fit] Rh  ca=G4w[gest=h54,str=fit,pan=-0.2]  br=C5w[gest=h44,str=fit,pan=0.2]  bz=C2w[atk=0.5,rel=1.0]
+bar 27: gl=C6h[gest=h70,str=fit] Rh  ca=G4w[gest=h60,str=fit,pan=-0.2]  br=D5w[gest=h44,str=fit,pan=0.25]  bz=C2w[atk=0.5,rel=1.0]
+bar 28: gl=C6h[gest=h70,str=fit] Rh  ca=G4w[gest=h60,str=fit,pan=-0.2]  br=D5w[gest=h44,str=fit,pan=0.25]  bz=C2w[atk=0.5,rel=1.0]
+bar 29: gl=G6h[gest=h70,str=fit] Rh  ca=C5w[gest=h54,str=fit,pan=-0.15]  br=G5w[gest=h44,str=fit,pan=0.2]  bz=C2w[atk=0.5,rel=1.0]
+bar 30: gl=G6h[gest=h70,str=fit] Rh  ca=C5w[gest=h54,str=fit,pan=-0.15]  br=G5w[gest=h44,str=fit,pan=0.2]  bz=C2w[atk=0.5,rel=1.0]
+bar 31: gl=C6h[gest=h70,str=fit] Rh  ca=G4w[gest=h60,str=fit,pan=-0.2]  br=C5w[gest=h44,str=fit,pan=0.25]  bz=C2w[atk=0.5,rel=1.0]
+bar 32: gl=C6h[gest=h70,str=fit] Rh  ca=G4w[gest=h60,str=fit,pan=-0.2]  br=C5w[gest=h44,str=fit,pan=0.25]  bz=C2w[atk=0.5,rel=1.0]
+# text @b33: three octaves in a fifth of a second. the widest gesture that survived.
+bar 33: gl={fff} C6q[gest=h67] Rq Rh  tk={ff} Rh C5q[gest=h68] Rq  bz={mf} C2h[atk=0.1,rel=0.6] G1h[atk=0.1,rel=0.6]
+bar 34: gl=Rq E6q[gest=h52] Rh  tk=Rh Rq C5q[gest=h68]  bz=C2h[atk=0.1,rel=0.6] G1h[atk=0.1,rel=0.6]
+bar 35: gl={ff} G6q[gest=h34] Rq C6q[gest=h67] Rq  bz=C2h[atk=0.1,rel=0.6] G1h[atk=0.1,rel=0.6]
+bar 36: gl={mp} C6h[gest=h70,str=fit] Rh  ca={mp} G4w[gest=h54,str=fit,pan=-0.2]  br={mp} C5w[gest=h44,str=fit,pan=0.2]  bz={p} C2w[atk=0.5,rel=1.0]
+bar 37: gl=C6h[gest=h70,str=fit] Rh  ca=G4w[gest=h54,str=fit,pan=-0.2]  br=C5w[gest=h44,str=fit,pan=0.2]  bz=C2w[atk=0.5,rel=1.0]
+bar 38: gl=C6h[gest=h70,str=fit] Rh  ca=G4w[gest=h54,str=fit,pan=-0.2]  br=C5w[gest=h44,str=fit,pan=0.2]  bz=C2w[atk=0.5,rel=1.0]
+
+# section: correction [39-46] — v1's median-span claim (18.7 st) as the straight line it was; the ensemble answers with h57, then h60 — the shape of the revised median (7.0 st). Bars 45-46: silence for the 31 events that refused a pitch.
+# text @b39: first the claim, then the evidence.
+bar 39: gl={mf} C5h->F#6+67 Rh  bz={pp} C2w[atk=0.6,rel=1.2]  sb={ppp} Xw[gate,lpf=200->300]
+bar 40: bz=C2w[atk=0.6,rel=1.2]  sb=Xw[gate,lpf=200->300]
+bar 41: ca={mp} C5h[gest=h57] Rh  bz=C2w[atk=0.6,rel=1.2]  sb=Xw[gate,lpf=200->300]
+bar 42: bz=C2w[atk=0.6,rel=1.2]  sb=Xw[gate,lpf=200->300]
+bar 43: gl=G5h[gest=h60] Rh  ca=Rh C5q[gest=h50] Rq  bz=C2w[atk=0.6,rel=1.2]  sb=Xw[gate,lpf=200->300]
+bar 44: bz=C2w[atk=0.6,rel=1.2]  sb=Xw[gate,lpf=200->300]
+# text @b45: thirty-one events refused a pitch. this is their notation.
+bar 45: gl=Rw[fer]  ca=Rw[fer]
+bar 46: gl=Rw[fer]  ca=Rw[fer]
+
+# section: release [47-48] — the one non-bird protagonist passes once, unclustered, and the place is itself again.
+bar 47: sb={ppp} Xw[gate,lpf=300->120]  tp={pp} Xw[off=9050,gate,lpf=4000,pan=-1->1]
+bar 48: sb=Xw[gate,lpf=120->60]  tp=Xw[off=0,gate,lpf=1200,gain=-6]
