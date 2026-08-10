@@ -1,0 +1,170 @@
+            buzz: parsed(map, "buzz", d.buzz).clamp(0.0, 1.0),
+            body_size: parsed(map, "body_size", d.body_size).clamp(0.45, 2.4),
+            couple: parsed(map, "couple", d.couple).clamp(0.0, 0.45),
+            chirality: parsed(map, "chirality", d.chirality).clamp(-1.0, 1.0),
+            orbit_hz: parsed(map, "orbit", d.orbit_hz).clamp(0.0, 20.0),
+            orbit_depth: parsed(map, "orbit_depth", d.orbit_depth).clamp(0.0, 1.0),
+            curvature: parsed(map, "curvature", d.curvature).clamp(0.0, 1.0),
+            courses: parsed_usize(map, "courses", d.courses).clamp(3, 24),
+            spectral_dimension: parsed(map, "dimension", d.spectral_dimension).clamp(0.55, 3.0),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum StringNetworkMode {
+    Guitar,
+    Weave,
+}
+
+/// Content-keyed seed (doctrine A7): no global random stream and no event
+/// ordering dependence. FNV-1a over every value that changes the contact.
+fn content_seed(
+    f0: f64,
+    slot_s: f64,
+    patch: &PluckPatch,
+    course_index: u64,
+    mode: StringNetworkMode,
+) -> u64 {
+    let mut hash = 0xcbf2_9ce4_8422_2325_u64;
+    let mut eat = |bits: u64| {
+        for byte in bits.to_le_bytes() {
+            hash ^= byte as u64;
+            hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
+        }
+    };
+    eat(f0.to_bits());
+    eat(slot_s.to_bits());
+    eat(patch.pos.to_bits());
+    eat(patch.pick.to_bits());
+    eat(patch.stiff.to_bits());
+    eat((patch.pm as u64) | ((mode == StringNetworkMode::Weave) as u64) << 1);
+    eat(course_index);
+    hash
+}
+
+fn uniform_bipolar(rng: &mut Pcg64) -> f64 {
+    (rng.next_u64() >> 11) as f64 / (1_u64 << 53) as f64 * 2.0 - 1.0
+}
+
+fn rms(values: &[f64]) -> f64 {
+    (values.iter().map(|value| value * value).sum::<f64>() / values.len().max(1) as f64)
+        .sqrt()
+}
+
+/// Circular box smoothing. The radius is intentionally fractional at the
+/// control layer but rounded here: the excitation is one finite spatial
+/// period, not an infinite audio stream.
+fn circular_smooth(values: &[f64], radius: usize) -> Vec<f64> {
+    if radius == 0 || values.len() < 3 {
+        return values.to_vec();
+    }
+    let n = values.len();
+    let width = radius * 2 + 1;
+    let mut out = vec![0.0; n];
+    for (index, slot) in out.iter_mut().enumerate() {
+        let mut sum = 0.0;
+        for offset in 0..width {
+            let source = (index + n + offset - radius) % n;
+            sum += values[source];
+        }
+        *slot = sum / width as f64;
+    }
+    out
+}
+
+/// One spatial period of a plucked string.
+///
+/// The triangular component is the ideal displaced-string initial
+/// condition. Its Fourier coefficients already encode the pick-position
+/// nodal pattern. A smaller content-keyed roughness component is circularly
+/// combed at the same position and smoothed according to contact width.
+fn physical_excitation(
+    f0: f64,
+    slot_s: f64,
+    patch: &PluckPatch,
+    course_index: u64,
+    mode: StringNetworkMode,
+    level: f64,
+) -> Vec<f64> {
+    let period = (SR_F64 / f0.max(20.0)).ceil().max(8.0) as usize;
+    let pick_position = patch.pos.clamp(0.02, 0.98);
+    let mut triangle = Vec::with_capacity(period);
+    for index in 0..period {
+        let x = index as f64 / period as f64;
+        let value = if x < pick_position {
+            x / pick_position
+        } else {
+            (1.0 - x) / (1.0 - pick_position)
+        };
+        triangle.push(value);
+    }
+    let triangle_mean = triangle.iter().sum::<f64>() / period as f64;
+    for value in &mut triangle {
+        *value -= triangle_mean;
+    }
+    let triangle_rms = rms(&triangle).max(1e-12);
+    for value in &mut triangle {
+        *value /= triangle_rms;
+    }
+
+    let mut seed = SeedSequence::new(content_seed(f0, slot_s, patch, course_index, mode));
+    let mut rng = Pcg64::from_seed_sequence(&mut seed);
+    let noise: Vec<f64> = (0..period).map(|_| uniform_bipolar(&mut rng)).collect();
+    let comb = ((pick_position * period as f64).round() as usize).clamp(1, period - 1);
+    let mut rough = vec![0.0; period];
+    for index in 0..period {
+        rough[index] = noise[index] - noise[(index + period - comb) % period];
+    }
+    let smoothing_radius = ((1.0 - patch.pick) * 0.12 * period as f64).round() as usize;
+    let mut rough = circular_smooth(&rough, smoothing_radius);
+    let rough_mean = rough.iter().sum::<f64>() / period as f64;
+    for value in &mut rough {
+        *value -= rough_mean;
+    }
+    let rough_rms = rms(&rough).max(1e-12);
+    for value in &mut rough {
+        *value /= rough_rms;
+    }
+
+    let rough_mix = 0.10 + 0.45 * patch.pick;
+    let mut excitation: Vec<f64> = triangle
+        .iter()
+        .zip(rough.iter())
+        .map(|(shape, grain)| (1.0 - rough_mix) * shape + rough_mix * grain)
+        .collect();
+    let excitation_rms = rms(&excitation).max(1e-12);
+    let palm_scale = if patch.pm { 0.72 } else { 1.0 };
+    for value in &mut excitation {
+        *value = *value / excitation_rms * level * palm_scale;
+    }
+    excitation
+}
+
+#[derive(Debug, Clone, Copy)]
+struct FirstOrderAllpass {
+    coefficient: f64,
+    x1: f64,
+    y1: f64,
+}
+
+impl FirstOrderAllpass {
+    fn new(coefficient: f64) -> Self {
+        Self {
+            coefficient,
+            x1: 0.0,
+            y1: 0.0,
+        }
+    }
+
+    fn set_coefficient(&mut self, coefficient: f64) {
+        self.coefficient = coefficient.clamp(-0.999_5, 0.999_5);
+    }
+
+    fn tick(&mut self, input: f64) -> f64 {
+        // H(z) = (a + z^-1) / (1 + a z^-1)
+        let output = self.coefficient * input + self.x1 - self.coefficient * self.y1;
+        self.x1 = input;
+        self.y1 = output;
+        output
+    }
