@@ -1,0 +1,140 @@
+//! Invariants for the post-Karplus string network.
+//!
+//! There is no external golden vector for original synthesis work, so the
+//! tests assert the promises that matter: deterministic identity, tuning,
+//! T60, spatial pluck physics, dispersion, tension relaxation, physical
+//! bends, block/stream parity, audible topology, and boundedness.
+
+use std::collections::BTreeMap;
+
+use mus_dsp::pluck::{pluck_note, weave_note, StringNetworkVoice};
+use mus_dsp::SR_F64;
+
+fn params(pairs: &[(&str, &str)]) -> BTreeMap<String, String> {
+    pairs
+        .iter()
+        .map(|(key, value)| (key.to_string(), value.to_string()))
+        .collect()
+}
+
+fn isolated(extra: &[(&str, &str)]) -> BTreeMap<String, String> {
+    let mut patch = params(&[
+        ("synth", "pluck"),
+        ("body", "0"),
+        ("symp", "0"),
+        ("stiff", "0"),
+        ("tension", "0"),
+        ("buzz", "0"),
+        ("detune", "0"),
+        ("strum", "0"),
+    ]);
+    for (key, value) in extra {
+        patch.insert((*key).to_string(), (*value).to_string());
+    }
+    patch
+}
+
+fn rms(values: &[f32]) -> f64 {
+    (values
+        .iter()
+        .map(|&value| (value as f64) * (value as f64))
+        .sum::<f64>()
+        / values.len().max(1) as f64)
+        .sqrt()
+}
+
+fn autocorrelation_f0(values: &[f32], lo_hz: f64, hi_hz: f64) -> f64 {
+    let min_lag = (SR_F64 / hi_hz) as usize;
+    let max_lag = (SR_F64 / lo_hz) as usize;
+    let mut best = (f64::NEG_INFINITY, min_lag);
+    for lag in min_lag..=max_lag.min(values.len() / 2) {
+        let correlation = values[..values.len() - lag]
+            .iter()
+            .zip(values[lag..].iter())
+            .map(|(&left, &right)| left as f64 * right as f64)
+            .sum::<f64>();
+        if correlation > best.0 {
+            best = (correlation, lag);
+        }
+    }
+    let correlation = |lag: usize| -> f64 {
+        values[..values.len() - lag]
+            .iter()
+            .zip(values[lag..].iter())
+            .map(|(&left, &right)| left as f64 * right as f64)
+            .sum()
+    };
+    let lag = best.1;
+    if lag <= min_lag || lag + 1 >= max_lag {
+        return SR_F64 / lag as f64;
+    }
+    let (a, b, c) = (correlation(lag - 1), correlation(lag), correlation(lag + 1));
+    let denominator = a - 2.0 * b + c;
+    let refinement = if denominator.abs() > 1e-12 {
+        0.5 * (a - c) / denominator
+    } else {
+        0.0
+    };
+    SR_F64 / (lag as f64 + refinement)
+}
+
+fn estimate_f0(values: &[f32], start_s: f64, end_s: f64, lo_hz: f64, hi_hz: f64) -> f64 {
+    let start = (start_s * SR_F64) as usize;
+    let end = ((end_s * SR_F64) as usize).min(values.len());
+    autocorrelation_f0(&values[start..end], lo_hz, hi_hz)
+}
+
+fn goertzel(values: &[f32], frequency: f64) -> f64 {
+    let omega = 2.0 * std::f64::consts::PI * frequency / SR_F64;
+    let coefficient = 2.0 * omega.cos();
+    let (mut state_1, mut state_2) = (0.0_f64, 0.0_f64);
+    for &value in values {
+        let state_0 = value as f64 + coefficient * state_1 - state_2;
+        state_2 = state_1;
+        state_1 = state_0;
+    }
+    state_1 * state_1 + state_2 * state_2 - coefficient * state_1 * state_2
+}
+
+fn spectral_peak(values: &[f32], center_hz: f64, fractional_span: f64) -> f64 {
+    let steps = 120;
+    let mut best = (f64::NEG_INFINITY, center_hz);
+    for step in 0..=steps {
+        let position = step as f64 / steps as f64;
+        let frequency = center_hz * (1.0 - fractional_span + 2.0 * fractional_span * position);
+        let power = goertzel(values, frequency);
+        if power > best.0 {
+            best = (power, frequency);
+        }
+    }
+    best.1
+}
+
+#[test]
+fn deterministic_and_content_keyed() {
+    let patch = isolated(&[]);
+    let a = pluck_note(&patch, &[110.0], 1.0, 1.0);
+    let b = pluck_note(&patch, &[110.0], 1.0, 1.0);
+    assert_eq!(a, b, "same note renders byte-identically");
+    let c = pluck_note(&patch, &[110.5], 1.0, 1.0);
+    assert_ne!(a, c, "different note content gets a different contact state");
+}
+
+#[test]
+fn streaming_blocks_equal_offline_render() {
+    let patch = params(&[
+        ("synth", "pluck"),
+        ("sus", "1.2"),
+        ("body", "0.45"),
+        ("symp", "0.2"),
+        ("stiff", "0.13"),
+        ("tension", "8"),
+    ]);
+    let expected = pluck_note(&patch, &[110.0, 164.8138], 0.7, 1.0);
+    let mut voice = StringNetworkVoice::guitar(&patch, &[110.0, 164.8138], 0.7, 1.0);
+    let mut actual = Vec::new();
+    for block_len in [1, 31, 64, 127, 509] {
+        while !voice.is_finished() && actual.len() % 1_023 < 800 {
+            let mut block = vec![0.0; block_len];
+            let written = voice.render_block(&mut block);
+            actual.extend_from_slice(&block[..written]);
