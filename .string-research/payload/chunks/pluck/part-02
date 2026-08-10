@@ -1,0 +1,170 @@
+}
+
+fn one_zero_response(damp: f64, omega: f64) -> (f64, f64) {
+    let real = 1.0 - damp + damp * omega.cos();
+    let imag = -damp * omega.sin();
+    let magnitude = real.hypot(imag).max(1e-12);
+    let phase_delay = if omega > 1e-12 {
+        -imag.atan2(real) / omega
+    } else {
+        damp
+    };
+    (magnitude, phase_delay)
+}
+
+fn allpass_phase_delay(coefficient: f64, omega: f64) -> f64 {
+    if omega <= 1e-12 {
+        return (1.0 - coefficient) / (1.0 + coefficient);
+    }
+    let numerator_phase = (-omega.sin()).atan2(coefficient + omega.cos());
+    let denominator_phase = (-coefficient * omega.sin()).atan2(1.0 + coefficient * omega.cos());
+    let mut phase = numerator_phase - denominator_phase;
+    while phase > 0.0 {
+        phase -= 2.0 * PI;
+    }
+    while phase <= -2.0 * PI {
+        phase += 2.0 * PI;
+    }
+    -phase / omega
+}
+
+/// First-order allpass coefficient whose *phase delay* is `delay_samples`
+/// at `omega`. This is exact at the fundamental, unlike a broadband
+/// approximation based only on DC group delay.
+fn allpass_coefficient_for_delay(delay_samples: f64, omega: f64) -> f64 {
+    let delay = delay_samples.clamp(0.02, 1.98);
+    if omega.abs() < 1e-9 {
+        return ((1.0 - delay) / (1.0 + delay)).clamp(-0.999_5, 0.999_5);
+    }
+    let denominator = (omega * 0.5).tan();
+    if denominator.abs() < 1e-12 {
+        return ((1.0 - delay) / (1.0 + delay)).clamp(-0.999_5, 0.999_5);
+    }
+    let ratio = (omega * delay * 0.5).tan() / denominator;
+    ((1.0 - ratio) / (1.0 + ratio)).clamp(-0.999_5, 0.999_5)
+}
+
+#[derive(Debug)]
+struct DelayString {
+    line: Vec<f64>,
+    write_index: usize,
+    f0: f64,
+    f1: f64,
+    t60: f64,
+    damp: f64,
+    dispersion_coefficient: f64,
+    tension_cents: f64,
+    tension_tau_samples: f64,
+    start_sample: usize,
+    slot_samples: usize,
+    excitation: Vec<f64>,
+    active: bool,
+    coupling_scale: f64,
+    damping_x1: f64,
+    dispersion: [FirstOrderAllpass; 2],
+    fractional: FirstOrderAllpass,
+    integer_delay: usize,
+    loop_gain: f64,
+    energy_smooth: f64,
+    contact_memory: f64,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct DelayStringSpec {
+    f0: f64,
+    f1: f64,
+    t60: f64,
+    damp: f64,
+    stiff: f64,
+    tension_cents: f64,
+    start_sample: usize,
+    slot_samples: usize,
+    active: bool,
+    coupling_scale: f64,
+    max_downward_ratio: f64,
+}
+
+impl DelayString {
+    fn new(spec: DelayStringSpec, excitation: Vec<f64>) -> Self {
+        let minimum_frequency = (spec.f0.min(spec.f1) / spec.max_downward_ratio)
+            .max(15.0);
+        let line_len = (SR_F64 / minimum_frequency).ceil() as usize + 32;
+        let dispersion_coefficient = if spec.stiff <= 1e-12 {
+            0.0
+        } else {
+            -0.72 * spec.stiff.powf(0.75)
+        };
+        // If amplitude reaches -60 dB at T60, squared displacement (and
+        // therefore mean elongation) decays with tau=T60/(2 ln 1000).
+        let tension_tau_s = (spec.t60 / (6.0 * LN_10)).clamp(0.025, 1.5);
+        Self {
+            line: vec![0.0; line_len],
+            write_index: 0,
+            f0: spec.f0,
+            f1: spec.f1,
+            t60: spec.t60,
+            damp: spec.damp,
+            dispersion_coefficient,
+            tension_cents: spec.tension_cents,
+            tension_tau_samples: tension_tau_s * SR_F64,
+            start_sample: spec.start_sample,
+            slot_samples: spec.slot_samples.max(1),
+            excitation,
+            active: spec.active,
+            coupling_scale: spec.coupling_scale,
+            damping_x1: 0.0,
+            dispersion: [
+                FirstOrderAllpass::new(dispersion_coefficient),
+                FirstOrderAllpass::new(dispersion_coefficient),
+            ],
+            fractional: FirstOrderAllpass::new(0.0),
+            integer_delay: 2,
+            loop_gain: 0.999,
+            energy_smooth: 0.0,
+            contact_memory: 0.0,
+        }
+    }
+
+    fn nominal_frequency(&self, sample_index: usize) -> f64 {
+        let age = sample_index.saturating_sub(self.start_sample);
+        let bend_progress = (age as f64 / self.slot_samples as f64).min(1.0);
+        self.f0 + (self.f1 - self.f0) * bend_progress
+    }
+
+    fn instantaneous_frequency(&self, sample_index: usize) -> f64 {
+        let nominal = self.nominal_frequency(sample_index);
+        if self.tension_cents <= 1e-12 || sample_index < self.start_sample {
+            return nominal;
+        }
+        let age = (sample_index - self.start_sample) as f64;
+        let cents = self.tension_cents * (-age / self.tension_tau_samples).exp();
+        nominal * 2_f64.powf(cents / 1200.0)
+    }
+
+    fn update_loop(&mut self, sample_index: usize) {
+        let frequency = self.instantaneous_frequency(sample_index).max(20.0);
+        let omega = 2.0 * PI * frequency / SR_F64;
+        let (damping_magnitude, damping_delay) = one_zero_response(self.damp, omega);
+        let total_delay = SR_F64 / frequency;
+        // High fundamentals have only a few samples of round-trip delay.
+        // Reduce (never increase) the requested stiffness when its allpass
+        // phase would consume the delay budget needed by the causal line.
+        let mut effective_dispersion = self.dispersion_coefficient;
+        let available_dispersion_delay = (total_delay - damping_delay - 2.25).max(0.0);
+        for _ in 0..12 {
+            let candidate_delay = if effective_dispersion.abs() > 1e-12 {
+                2.0 * allpass_phase_delay(effective_dispersion, omega)
+            } else {
+                0.0
+            };
+            if candidate_delay <= available_dispersion_delay + 1e-9 {
+                break;
+            }
+            effective_dispersion *= 0.72;
+        }
+        for section in &mut self.dispersion {
+            section.set_coefficient(effective_dispersion);
+        }
+        let dispersion_delay = if effective_dispersion.abs() > 1e-12 {
+            2.0 * allpass_phase_delay(effective_dispersion, omega)
+        } else {
