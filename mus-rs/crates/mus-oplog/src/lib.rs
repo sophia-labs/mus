@@ -208,6 +208,17 @@ pub enum OpBody {
         to_bar: u32,
         prose: Option<String>,
     },
+    /// Inline bar changes (`bar 11 [tempo=88]:`) — text-face data the graph
+    /// must carry so ingest→project→reduce is closed without hand-patching.
+    SetBarChanges {
+        bar: u32,
+        changes: Vec<String>,
+    },
+    /// A `# text @bN:` margin gloss. Appends in log order (deterministic).
+    AddText {
+        bar: u32,
+        prose: String,
+    },
     AnnotatePerformance {
         key: String,
         value: String,

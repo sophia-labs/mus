@@ -208,6 +208,12 @@ fn fold_op(g: &mut ScoreGraph, op: &Op) {
                 },
             );
         }
+        OpBody::SetBarChanges { bar, changes } => {
+            g.inline_changes.insert(*bar, changes.clone());
+        }
+        OpBody::AddText { bar, prose } => {
+            g.texts.entry(*bar).or_default().push(prose.clone());
+        }
         OpBody::SupersedeEvent {
             lineage,
             basis,

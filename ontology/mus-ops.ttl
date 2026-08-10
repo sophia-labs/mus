@@ -17,6 +17,8 @@ mop:RetractEvent a rdfs:Class ; rdfs:comment "supersede-to-absence; tombstone se
 mop:AddSection a rdfs:Class .
 mop:SetSectionProse a rdfs:Class .
 mop:AnnotatePerformance a rdfs:Class ; rdfs:comment "swing and friends (R6)." .
+mop:SetBarChanges a rdfs:Class ; rdfs:comment "inline bar changes (tempo=/time= brackets) as ops, so ingest is closed." .
+mop:AddText a rdfs:Class ; rdfs:comment "a text @bN margin gloss; appends in log order." .
 
 mop:actor a rdfs:Property .
 mop:seq a rdfs:Property ; rdfs:comment "per-actor monotone" .
