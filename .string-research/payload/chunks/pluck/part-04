@@ -1,0 +1,170 @@
+    body: Vec<BodyMode>,
+    waves: Vec<f64>,
+    incoming: Vec<f64>,
+    contact: Vec<f64>,
+    active_count: usize,
+    sample_index: usize,
+    total_samples: usize,
+    previous_input: f64,
+    previous_output: f64,
+}
+
+impl StringNetworkVoice {
+    pub fn guitar(
+        params: &BTreeMap<String, String>,
+        frequencies_hz: &[f64],
+        slot_s: f64,
+        gliss_ratio: f64,
+    ) -> Self {
+        Self::new(
+            params,
+            frequencies_hz,
+            slot_s,
+            gliss_ratio,
+            StringNetworkMode::Guitar,
+        )
+    }
+
+    pub fn weave(
+        params: &BTreeMap<String, String>,
+        frequencies_hz: &[f64],
+        slot_s: f64,
+        gliss_ratio: f64,
+    ) -> Self {
+        Self::new(
+            params,
+            frequencies_hz,
+            slot_s,
+            gliss_ratio,
+            StringNetworkMode::Weave,
+        )
+    }
+
+    fn new(
+        params: &BTreeMap<String, String>,
+        frequencies_hz: &[f64],
+        slot_s: f64,
+        gliss_ratio: f64,
+        mode: StringNetworkMode,
+    ) -> Self {
+        let mut patch = PluckPatch::from(params);
+        if patch.pm {
+            patch.sus = (patch.sus * 0.14).max(0.05);
+            patch.damp = (patch.damp + 0.38).min(0.95);
+            patch.pick *= 0.48;
+            patch.tension_cents *= 0.22;
+            patch.symp *= 0.35;
+        }
+
+        let slot_samples = (slot_s.max(0.0) * SR_F64).round().max(1.0) as usize;
+        let strum_samples = (patch.strum_ms.abs() * SR_F64 / 1000.0).round() as usize;
+        let pitch_count = frequencies_hz.len().max(1);
+        let base_level = 0.82 / (pitch_count as f64).sqrt();
+        let mut starts = vec![0_usize; frequencies_hz.len()];
+        if patch.strum_ms >= 0.0 {
+            for (order, start) in starts.iter_mut().enumerate() {
+                *start = order * strum_samples;
+            }
+        } else {
+            let len = starts.len();
+            for (index, start) in starts.iter_mut().enumerate() {
+                *start = (len - 1 - index) * strum_samples;
+            }
+        }
+
+        let mut strings = Vec::new();
+        let mut course_index = 0_u64;
+        for (pitch_index, &frequency) in frequencies_hz.iter().enumerate() {
+            if frequency < 20.0 {
+                continue;
+            }
+            let f1 = frequency * gliss_ratio.max(0.05);
+            let spec = DelayStringSpec {
+                f0: frequency,
+                f1,
+                t60: patch.sus,
+                damp: patch.damp,
+                stiff: patch.stiff,
+                tension_cents: patch.tension_cents,
+                start_sample: starts[pitch_index],
+                slot_samples,
+                active: true,
+                coupling_scale: 1.0,
+                max_downward_ratio: 2.4,
+            };
+            let excitation = physical_excitation(
+                frequency,
+                slot_s,
+                &patch,
+                course_index,
+                mode,
+                base_level,
+            );
+            strings.push(DelayString::new(spec, excitation));
+            course_index += 1;
+
+            if patch.detune > 0.0 {
+                let ratio = 2_f64.powf(patch.detune / 1200.0);
+                let detuned_f0 = frequency * ratio;
+                let detuned_spec = DelayStringSpec {
+                    f0: detuned_f0,
+                    f1: f1 * ratio,
+                    t60: patch.sus * 1.03,
+                    damp: (patch.damp + 0.025).min(0.95),
+                    stiff: patch.stiff * 0.92,
+                    tension_cents: patch.tension_cents * 0.82,
+                    start_sample: starts[pitch_index],
+                    slot_samples,
+                    active: true,
+                    coupling_scale: 0.78,
+                    max_downward_ratio: 2.4,
+                };
+                let detuned_excitation = physical_excitation(
+                    detuned_f0,
+                    slot_s,
+                    &patch,
+                    course_index,
+                    mode,
+                    base_level * 0.48,
+                );
+                strings.push(DelayString::new(detuned_spec, detuned_excitation));
+                course_index += 1;
+            }
+        }
+        let active_count = strings.len();
+
+        match mode {
+            StringNetworkMode::Guitar if patch.symp > 1e-12 => {
+                for &frequency in &OPEN_GUITAR_STRINGS {
+                    let spec = DelayStringSpec {
+                        f0: frequency,
+                        f1: frequency,
+                        t60: (patch.sus * 1.35).min(20.0),
+                        damp: (patch.damp + 0.08).min(0.88),
+                        stiff: patch.stiff * 0.70,
+                        tension_cents: 0.0,
+                        start_sample: 0,
+                        slot_samples,
+                        active: false,
+                        coupling_scale: patch.symp,
+                        max_downward_ratio: 1.25,
+                    };
+                    strings.push(DelayString::new(spec, Vec::new()));
+                }
+            }
+            StringNetworkMode::Weave => {
+                let base = frequencies_hz
+                    .iter()
+                    .copied()
+                    .filter(|frequency| *frequency >= 20.0)
+                    .reduce(f64::min)
+                    .unwrap_or(110.0);
+                let target = patch.courses.max(active_count).min(24);
+                let mut ordinal = 0;
+                while strings.len() < target {
+                    let frequency = virtual_course_frequency(
+                        base,
+                        ordinal,
+                        patch.spectral_dimension,
+                    )
+                    .clamp(25.0, 9_000.0);
