@@ -26,11 +26,12 @@
 //! Base64-in-JSON was rejected up front: a 33% tax on every audition, paid
 //! at the latency-critical edge, for no gain over a loopback file read.
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::io::{BufRead, Write};
 use std::path::PathBuf;
 use std::time::Instant;
 
+use mus_dsp::pluck::StringNetworkVoice;
 use mus_engine::{render, sha256_bytes, ENGINE_VERSION};
 use serde::Serialize;
 use serde_json::{json, Value};
@@ -66,6 +67,7 @@ struct ErrorBody {
 struct Service {
     docs: HashMap<String, LoadedDoc>,
     renders: HashMap<String, RenderedEntry>,
+    probes: HashMap<String, Value>,
     tmp_dir: PathBuf,
 }
 
@@ -77,6 +79,7 @@ impl Service {
         Ok(Service {
             docs: HashMap::new(),
             renders: HashMap::new(),
+            probes: HashMap::new(),
             tmp_dir,
         })
     }
@@ -94,11 +97,138 @@ impl Service {
             })),
             "load" => self.load(params),
             "renderScore" => self.render_score(params),
+            "vocab" => Ok(crate::vocab_dump::dump()),
+            "renderWeaveProbe" => self.render_weave_probe(params),
             other => Err(ErrorBody {
                 code: "unknown-method",
-                message: format!("no method {other:?} (protocol v0: ping, load, renderScore)"),
+                message: format!(
+                    "no method {other:?} (protocol v0: ping, load, renderScore, vocab, renderWeaveProbe)"
+                ),
             }),
         }
+    }
+
+    /// `renderWeaveProbe {params, midis, slotSeconds?, glissRatio?, traceStride?}` —
+    /// one string-network event through the voice itself (no score, no
+    /// mix/master), returning mono PCM plus the frame-major telemetry the
+    /// Observatory draws: per-course energy, per-edge applied |angle|,
+    /// orbit phase. Memoized by the canonical request — the engine is
+    /// deterministic, so identical probes return identical entries.
+    fn render_weave_probe(&mut self, params: &Value) -> Result<Value, ErrorBody> {
+        let midis = params["midis"].as_array().ok_or_else(|| ErrorBody {
+            code: "bad-request",
+            message: "renderWeaveProbe: params.midis (array of numbers) is required".into(),
+        })?;
+        let freqs: Vec<f64> = midis
+            .iter()
+            .filter_map(Value::as_f64)
+            .map(|midi| 440.0 * 2_f64.powf((midi - 69.0) / 12.0))
+            .collect();
+        if freqs.is_empty() {
+            return Err(ErrorBody {
+                code: "bad-request",
+                message: "renderWeaveProbe: params.midis must contain at least one number".into(),
+            });
+        }
+        let slot_s = params["slotSeconds"]
+            .as_f64()
+            .unwrap_or(1.5)
+            .clamp(0.05, 8.0);
+        let gliss_ratio = params["glissRatio"]
+            .as_f64()
+            .unwrap_or(1.0)
+            .clamp(0.25, 4.0);
+        let stride = params["traceStride"]
+            .as_u64()
+            .unwrap_or(256)
+            .clamp(32, 4096) as usize;
+        let mut patch: BTreeMap<String, String> = BTreeMap::new();
+        if let Some(map) = params["params"].as_object() {
+            for (key, value) in map {
+                let text = match value {
+                    Value::String(text) => text.clone(),
+                    Value::Number(number) => number.to_string(),
+                    Value::Bool(flag) => (if *flag { "1" } else { "0" }).to_string(),
+                    other => other.to_string(),
+                };
+                patch.insert(key.clone(), text);
+            }
+        }
+        let synth = patch.get("synth").map(String::as_str).unwrap_or("weave");
+        if synth != "weave" && synth != "pluck" {
+            return Err(ErrorBody {
+                code: "unsupported-synth",
+                message: format!(
+                    "renderWeaveProbe: synth {synth:?} is not a string-network voice (weave, pluck)"
+                ),
+            });
+        }
+
+        let canonical = json!({
+            "params": patch,
+            "midis": midis,
+            "slotSeconds": slot_s,
+            "glissRatio": gliss_ratio,
+            "traceStride": stride,
+        });
+        let probe_key = sha256_bytes(canonical.to_string().as_bytes());
+        if !self.probes.contains_key(&probe_key) {
+            let started = Instant::now();
+            let voice = if synth == "pluck" {
+                StringNetworkVoice::guitar(&patch, &freqs, slot_s, gliss_ratio)
+            } else {
+                StringNetworkVoice::weave(&patch, &freqs, slot_s, gliss_ratio)
+            };
+            let (audio, trace) = voice.render_traced(stride);
+            let render_ms = started.elapsed().as_millis();
+
+            let pcm_path = self.tmp_dir.join(format!("{probe_key}.probe.f32"));
+            let mut bytes = Vec::with_capacity(audio.len() * 4);
+            for sample in &audio {
+                bytes.extend_from_slice(&sample.to_le_bytes());
+            }
+            let render_digest = sha256_bytes(&bytes);
+            std::fs::write(&pcm_path, &bytes).map_err(|e| ErrorBody {
+                code: "render-failed",
+                message: format!("write {}: {e}", pcm_path.display()),
+            })?;
+
+            let trace_path = self.tmp_dir.join(format!("{probe_key}.trace.f32"));
+            let mut trace_bytes = Vec::with_capacity(trace.data.len() * 4);
+            for value in &trace.data {
+                trace_bytes.extend_from_slice(&value.to_le_bytes());
+            }
+            std::fs::write(&trace_path, &trace_bytes).map_err(|e| ErrorBody {
+                code: "render-failed",
+                message: format!("write {}: {e}", trace_path.display()),
+            })?;
+
+            let entry = json!({
+                "probeKey": probe_key,
+                "engine": ENGINE_VERSION,
+                "renderMs": render_ms,
+                "renderDigest": render_digest,
+                "pcm": {
+                    "path": pcm_path.to_string_lossy(),
+                    "frames": audio.len(),
+                    "channels": 1,
+                    "sampleRate": 48_000,
+                    "layout": "mono-f32le",
+                },
+                "trace": {
+                    "path": trace_path.to_string_lossy(),
+                    "frames": trace.frames,
+                    "stride": trace.stride,
+                    "courses": trace.courses,
+                    "played": trace.played,
+                    "courseFreqs": trace.course_freqs,
+                    "values": ["energy", "edgeActivity", "orbitPhase"],
+                    "layout": "frame-major-f32le",
+                },
+            });
+            self.probes.insert(probe_key.clone(), entry);
+        }
+        Ok(self.probes[&probe_key].clone())
     }
 
     /// `load {source, baseDir}` → parse + adopt once, cache under the

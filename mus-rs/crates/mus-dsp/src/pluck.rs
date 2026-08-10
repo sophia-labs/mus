@@ -682,6 +682,9 @@ pub struct StringNetworkVoice {
     waves: Vec<f64>,
     incoming: Vec<f64>,
     contact: Vec<f64>,
+    /// Per-edge |angle| applied this sample (forward + reverse pass),
+    /// kept for [`Self::render_traced`] telemetry; never read by audio.
+    edge_activity: Vec<f64>,
     active_count: usize,
     sample_index: usize,
     total_samples: usize,
@@ -866,6 +869,7 @@ impl StringNetworkVoice {
             waves: vec![0.0; n_strings],
             incoming: vec![0.0; n_strings],
             contact: vec![0.0; n_strings],
+            edge_activity: vec![0.0; n_strings],
             active_count,
             sample_index: 0,
             total_samples,
@@ -885,6 +889,7 @@ impl StringNetworkVoice {
     fn scatter_weave(&mut self) {
         let count = self.waves.len();
         if count < 2 || self.patch.couple <= 1e-12 {
+            self.edge_activity.iter_mut().for_each(|slot| *slot = 0.0);
             return;
         }
         let phase = 2.0 * PI * self.patch.orbit_hz * self.sample_index as f64 / SR_F64;
@@ -907,6 +912,7 @@ impl StringNetworkVoice {
             let metric = 1.0 + 0.72 * self.patch.curvature * gradient;
             let angle =
                 (self.patch.couple * travelling * metric * forward_weight).clamp(-0.48, 0.48);
+            self.edge_activity[index] = angle.abs();
             let (a, b) = givens(self.waves[index], self.waves[next], angle);
             self.waves[index] = a;
             self.waves[next] = b;
@@ -922,6 +928,7 @@ impl StringNetworkVoice {
             let metric = 1.0 + 0.72 * self.patch.curvature * gradient;
             let angle =
                 (self.patch.couple * travelling * metric * backward_weight).clamp(-0.48, 0.48);
+            self.edge_activity[reverse_index] += angle.abs();
             let (a, b) = givens(self.waves[reverse_index], self.waves[next], angle);
             self.waves[reverse_index] = a;
             self.waves[next] = b;
@@ -1033,6 +1040,60 @@ impl StringNetworkVoice {
         self.render_block(&mut output);
         output
     }
+
+    /// Render while sampling telemetry every `stride` samples. The audio
+    /// is byte-identical to [`Self::render`] — the trace is a tap, never
+    /// a participant (tested in `pluck_invariants`).
+    pub fn render_traced(mut self, stride: usize) -> (Vec<f32>, WeaveTrace) {
+        let stride = stride.max(1);
+        let courses = self.strings.len();
+        let course_freqs: Vec<f64> = self.strings.iter().map(|string| string.f0).collect();
+        let played = self.active_count;
+        let total = self.total_samples;
+        let frames = total.div_ceil(stride);
+        let orbit_hz = self.patch.orbit_hz;
+        let mut data = Vec::with_capacity(frames * (2 * courses + 1));
+        let mut audio = vec![0.0_f32; total];
+        for (index, slot) in audio.iter_mut().enumerate() {
+            *slot = self.next_sample();
+            if index.is_multiple_of(stride) {
+                for string in &self.strings {
+                    data.push(string.energy_smooth.sqrt() as f32);
+                }
+                for edge in &self.edge_activity {
+                    data.push(*edge as f32);
+                }
+                let phase = (2.0 * PI * orbit_hz * index as f64 / SR_F64).rem_euclid(2.0 * PI);
+                data.push(phase as f32);
+            }
+        }
+        (
+            audio,
+            WeaveTrace {
+                stride,
+                courses,
+                played,
+                course_freqs,
+                frames,
+                data,
+            },
+        )
+    }
+}
+
+/// Telemetry from [`StringNetworkVoice::render_traced`]. `data` is
+/// frame-major: each frame is `[energy[courses], edge_activity[courses],
+/// orbit_phase]` — `2*courses + 1` values, `frames` frames. Energy is the
+/// square root of the loop's smoothed mean-square (an amplitude, ready to
+/// draw); edge activity is the applied |Givens angle| per ring edge
+/// (forward + reverse pass); phase is the orbit field's angle in radians.
+pub struct WeaveTrace {
+    pub stride: usize,
+    pub courses: usize,
+    pub played: usize,
+    pub course_freqs: Vec<f64>,
+    pub frames: usize,
+    pub data: Vec<f32>,
 }
 
 /// Render the deepened physical guitar. Existing callers keep the same

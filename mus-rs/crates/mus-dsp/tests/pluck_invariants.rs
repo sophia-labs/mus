@@ -437,3 +437,29 @@ fn zero_limit_laws_decouple_the_network() {
         "orbit must be inert when orbit_depth=0"
     );
 }
+
+#[test]
+fn traced_render_is_byte_identical_and_shaped() {
+    let patch = params(&[
+        ("synth", "weave"),
+        ("sus", "1.2"),
+        ("courses", "9"),
+        ("couple", "0.2"),
+        ("body", "0.4"),
+        ("orbit", "0.5"),
+    ]);
+    let plain = weave_note(&patch, &[110.0, 165.0], 0.6, 1.0);
+    let (traced, trace) =
+        StringNetworkVoice::weave(&patch, &[110.0, 165.0], 0.6, 1.0).render_traced(256);
+    assert_eq!(plain, traced, "the trace is a tap, never a participant");
+    assert_eq!(trace.courses, 9);
+    assert_eq!(trace.played, 2);
+    assert_eq!(trace.frames, plain.len().div_ceil(256));
+    assert_eq!(trace.data.len(), trace.frames * (2 * trace.courses + 1));
+    assert_eq!(trace.course_freqs.len(), trace.courses);
+    assert!(trace.data.iter().all(|value| value.is_finite()));
+    assert!(
+        trace.data.iter().any(|value| *value > 0.0),
+        "energy telemetry is live"
+    );
+}
