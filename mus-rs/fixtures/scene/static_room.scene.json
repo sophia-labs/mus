@@ -1,0 +1,146 @@
+{
+ "sceneId": "fx-static",
+ "title": "static trio with seeded room",
+ "sampleRate": 48000,
+ "durationSeconds": 2.0,
+ "objects": [
+  {
+   "objectId": "a",
+   "label": "left sine",
+   "audio": "stems/sine220.wav",
+   "startSeconds": 0.0,
+   "durationSeconds": null,
+   "kind": "point",
+   "position": {
+    "x": -1.0724622203665692,
+    "y": 0.0,
+    "z": -0.8999026535611551
+   },
+   "trajectory": [],
+   "gainDb": -2.0,
+   "spread": 0.0,
+   "reverbSend": 0.5,
+   "loop": false,
+   "muted": false,
+   "controls": {
+    "gainDb": 0.0,
+    "targetLufs": null,
+    "brightnessDb": 0.0,
+    "brightnessHz": 2500.0,
+    "roughnessDepth": 0.0,
+    "roughnessRateHz": 70.0,
+    "fluctuationDepth": 0.0,
+    "fluctuationRateHz": 4.0,
+    "attackSeconds": null,
+    "pitchSemitones": 0.0,
+    "tonalFocus": 0.0,
+    "safetyPeak": 0.98
+   },
+   "analysis": {},
+   "sourceRegion": null,
+   "placementProvenance": "composition-authored",
+   "metadata": {}
+  },
+  {
+   "objectId": "b",
+   "label": "right burst",
+   "audio": "stems/burst.wav",
+   "startSeconds": 0.35,
+   "durationSeconds": null,
+   "kind": "point",
+   "position": {
+    "x": 1.963585657635866,
+    "y": 0.38202599086724676,
+    "z": -0.9156350295989235
+   },
+   "trajectory": [],
+   "gainDb": 0.0,
+   "spread": 0.0,
+   "reverbSend": 0.3,
+   "loop": false,
+   "muted": false,
+   "controls": {
+    "gainDb": 0.0,
+    "targetLufs": null,
+    "brightnessDb": 0.0,
+    "brightnessHz": 2500.0,
+    "roughnessDepth": 0.0,
+    "roughnessRateHz": 70.0,
+    "fluctuationDepth": 0.0,
+    "fluctuationRateHz": 4.0,
+    "attackSeconds": null,
+    "pitchSemitones": 0.0,
+    "tonalFocus": 0.0,
+    "safetyPeak": 0.98
+   },
+   "analysis": {},
+   "sourceRegion": null,
+   "placementProvenance": "composition-authored",
+   "metadata": {}
+  },
+  {
+   "objectId": "c",
+   "label": "behind noise",
+   "audio": "stems/noise.wav",
+   "startSeconds": 0.9,
+   "durationSeconds": null,
+   "kind": "point",
+   "position": {
+    "x": 0.5189621817752681,
+    "y": -0.2614672282429745,
+    "z": 2.943180786571221
+   },
+   "trajectory": [],
+   "gainDb": -6.0,
+   "spread": 0.0,
+   "reverbSend": 0.8,
+   "loop": false,
+   "muted": false,
+   "controls": {
+    "gainDb": 0.0,
+    "targetLufs": null,
+    "brightnessDb": 0.0,
+    "brightnessHz": 2500.0,
+    "roughnessDepth": 0.0,
+    "roughnessRateHz": 70.0,
+    "fluctuationDepth": 0.0,
+    "fluctuationRateHz": 4.0,
+    "attackSeconds": null,
+    "pitchSemitones": 0.0,
+    "tonalFocus": 0.0,
+    "safetyPeak": 0.98
+   },
+   "analysis": {},
+   "sourceRegion": null,
+   "placementProvenance": "composition-authored",
+   "metadata": {}
+  }
+ ],
+ "listener": {
+  "position": {
+   "x": 0.0,
+   "y": 0.0,
+   "z": 0.0
+  },
+  "forward": {
+   "x": 0.0,
+   "y": 0.0,
+   "z": -1.0
+  },
+  "up": {
+   "x": 0.0,
+   "y": 1.0,
+   "z": 0.0
+  }
+ },
+ "room": {
+  "enabled": true,
+  "decaySeconds": 1.1,
+  "wet": 0.22,
+  "damping": 0.5,
+  "seed": 17
+ },
+ "coordinateSystem": "+X right, +Y up, -Z front",
+ "metadata": {},
+ "schema": "https://sophia-labs.ai/schemas/mus-spatial-scene/1"
+}

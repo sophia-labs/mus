@@ -1,0 +1,41 @@
+[
+ {
+  "name": "static_room",
+  "scene": "static_room.scene.json",
+  "stereo": "static_room.stereo.bin",
+  "channels": 2,
+  "frames": 96000,
+  "layout": "planar-f32le",
+  "metric": "max_abs",
+  "tol": 2e-05,
+  "safetyGainDb": 0.0,
+  "renderer": "mus.spatial-stereo/1",
+  "foa": "static_room.foa.bin",
+  "foaChannels": 4,
+  "foaRenderer": "mus.foa-ambix-encoder/1"
+ },
+ {
+  "name": "orbit",
+  "scene": "orbit.scene.json",
+  "stereo": "orbit.stereo.bin",
+  "channels": 2,
+  "frames": 76800,
+  "layout": "planar-f32le",
+  "metric": "max_abs",
+  "tol": 2e-05,
+  "safetyGainDb": 0.0,
+  "renderer": "mus.spatial-stereo/1"
+ },
+ {
+  "name": "spread_duo",
+  "scene": "spread_duo.scene.json",
+  "stereo": "spread_duo.stereo.bin",
+  "channels": 2,
+  "frames": 67200,
+  "layout": "planar-f32le",
+  "metric": "max_abs",
+  "tol": 2e-05,
+  "safetyGainDb": -0.03015068696991632,
+  "renderer": "mus.spatial-stereo/1"
+ }
+]

@@ -1,0 +1,109 @@
+{
+ "sceneId": "fx-spread",
+ "title": "spread pair, listener honored",
+ "sampleRate": 48000,
+ "durationSeconds": 1.4,
+ "objects": [
+  {
+   "objectId": "w",
+   "label": "wide",
+   "audio": "stems/noise.wav",
+   "startSeconds": 0.0,
+   "durationSeconds": null,
+   "kind": "point",
+   "position": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": -1.0
+   },
+   "trajectory": [],
+   "gainDb": 0.0,
+   "spread": 0.8,
+   "reverbSend": 0.1,
+   "loop": false,
+   "muted": false,
+   "controls": {
+    "gainDb": 0.0,
+    "targetLufs": null,
+    "brightnessDb": 0.0,
+    "brightnessHz": 2500.0,
+    "roughnessDepth": 0.0,
+    "roughnessRateHz": 70.0,
+    "fluctuationDepth": 0.0,
+    "fluctuationRateHz": 4.0,
+    "attackSeconds": null,
+    "pitchSemitones": 0.0,
+    "tonalFocus": 0.0,
+    "safetyPeak": 0.98
+   },
+   "analysis": {},
+   "sourceRegion": null,
+   "placementProvenance": "composition-authored",
+   "metadata": {}
+  },
+  {
+   "objectId": "n",
+   "label": "narrow near",
+   "audio": "stems/burst.wav",
+   "startSeconds": 0.2,
+   "durationSeconds": null,
+   "kind": "point",
+   "position": {
+    "x": 0.2535709570444197,
+    "y": 0.0,
+    "z": -0.5437846722219899
+   },
+   "trajectory": [],
+   "gainDb": 0.0,
+   "spread": 0.0,
+   "reverbSend": 0.2,
+   "loop": false,
+   "muted": false,
+   "controls": {
+    "gainDb": 0.0,
+    "targetLufs": null,
+    "brightnessDb": 0.0,
+    "brightnessHz": 2500.0,
+    "roughnessDepth": 0.0,
+    "roughnessRateHz": 70.0,
+    "fluctuationDepth": 0.0,
+    "fluctuationRateHz": 4.0,
+    "attackSeconds": null,
+    "pitchSemitones": 0.0,
+    "tonalFocus": 0.0,
+    "safetyPeak": 0.98
+   },
+   "analysis": {},
+   "sourceRegion": null,
+   "placementProvenance": "composition-authored",
+   "metadata": {}
+  }
+ ],
+ "listener": {
+  "position": {
+   "x": 0.0,
+   "y": 0.0,
+   "z": 0.0
+  },
+  "forward": {
+   "x": 0.0,
+   "y": 0.0,
+   "z": -1.0
+  },
+  "up": {
+   "x": 0.0,
+   "y": 1.0,
+   "z": 0.0
+  }
+ },
+ "room": {
+  "enabled": true,
+  "decaySeconds": 0.8,
+  "wet": 0.15,
+  "damping": 0.4,
+  "seed": 17
+ },
+ "coordinateSystem": "+X right, +Y up, -Z front",
+ "metadata": {},
+ "schema": "https://sophia-labs.ai/schemas/mus-spatial-scene/1"
+}
