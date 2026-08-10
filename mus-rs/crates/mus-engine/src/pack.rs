@@ -25,7 +25,7 @@ pub const STRUCTURAL_PARAMS: &[&str] = &[
 /// never reads `patch["fdec"]` inside `synth_note`.
 pub const SYNTH_KEYS: &[&str] = &[
     "synth", "osc2", "mix2", "detune", "sub", "cutoff", "famt", "fdec", "satk", "sdec", "ssus",
-    "srel",
+    "srel", "sus", "damp", "pos", "pick", "body", "strum", "pm",
 ];
 
 #[derive(Debug, Clone)]

@@ -1,0 +1,29 @@
+# score: Pluck — the string, demonstrated
+# summary: extended Karplus-Strong: fingerstyle, strums both ways, palm mute, physical bends, pick color
+# tempo: 92    time: 4/4    key: Em    bars: 8
+# reverb: 1.4
+# master: rms=-16
+
+# instruments:
+#   gt = guitar (treble, synth=pluck, sus=3.0, pos=0.13, pick=0.6, body=0.4, detune=6, send=0.22)
+#   bs = bass string (bass, synth=pluck, sus=1.8, damp=0.5, pos=0.1, pick=0.35, body=0.2, gain=2, send=0.08)
+
+# section: fingerstyle [1-2] — one string per note, the hand arpeggiating
+bar 1: gt=E2e B2e E3e G3e B3e E4e B3e G3e  bs=-
+bar 2: gt=A2e E3e A3e C4e E4e C4e A3e E3e  bs=-
+
+# section: strums [3-4] — chord tokens staggered by the strum hand
+bar 3: gt=<E2 B2 E3 G3 B3 E4>h[strum=16] <C3 G3 C4 E4>h[strum=16]  bs=E2h C2h
+bar 4: gt=<A2 E3 A3 C4 E4>q[strum=14] <A2 E3 A3 C4 E4>q[strum=-14] <G2 D3 G3 B3 D4>h[strum=18]  bs=A2h G2h
+
+# section: palm mute [5] — short dark felt, then the hand lifts
+bar 5: gt=E2e[pm] E2e[pm] E3e[pm] E2e[pm] G2e[pm] G2e[pm] <E2 B2 E3>q[strum=8]  bs=E2q[pm] E2q[pm] E2q[pm] E2q[pm]
+
+# section: bends [6] — the delay line re-tuning, a string actually bending
+bar 6: gt=G3q->A3 B3q A3q->G3 E3q  bs=E2w
+
+# section: pick color [7] — bridge-bright against neck-round, same notes
+bar 7: gt=E3q[pos=0.06,pick=0.95] E3q[pos=0.45,pick=0.2] A3q[pos=0.06,pick=0.95] A3q[pos=0.45,pick=0.2]  bs=-
+
+# section: let ring [8] — the box breathing
+bar 8: gt=<E2 B2 E3 G3 B3 E4>w[strum=22,sus=5]  bs=E1w[sus=5]

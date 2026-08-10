@@ -28,6 +28,7 @@ pub mod fixtures;
 pub mod glow;
 pub mod kernels;
 pub mod pitch;
+pub mod pluck;
 pub mod synth;
 
 /// Engine sample rate. `mus_audio.py` line 47: `SR = 48_000`.

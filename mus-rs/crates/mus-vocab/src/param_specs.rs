@@ -149,7 +149,7 @@ pub fn param_specs() -> Vec<ParamSpec> {
         ParamSpec { name: "mode", layer: Extension, kind: Enum { values: &["varispeed", "vocoder"], default: Some("varispeed") }, doc: "pitch mechanism: tape (duration couples) or phase vocoder (duration held)" },
         ParamSpec { name: "gliss", layer: Extension, kind: NoteName, doc: "glissando target pitch (equivalent to the A6q->C7 arrow form)" },
         // ------------------------------------------------ mus-x: synth voice
-        ParamSpec { name: "synth", layer: Extension, kind: Enum { values: &["saw", "square", "tri", "sine"], default: Some("saw") }, doc: "oscillator wave (declaring it makes the track a synth voice)" },
+        ParamSpec { name: "synth", layer: Extension, kind: Enum { values: &["saw", "square", "tri", "sine", "pluck"], default: Some("saw") }, doc: "oscillator wave (declaring it makes the track a synth voice); pluck = the extended Karplus-Strong string" },
         ParamSpec { name: "osc2", layer: Extension, kind: Enum { values: &["saw", "square", "tri", "sine"], default: None }, doc: "second oscillator, one octave up, mixed at mix2" },
         ParamSpec { name: "mix2", layer: Extension, kind: Ratio { min: 0.0, max: 1.0, default: Some(0.5) }, doc: "osc2 mix (0 = osc1 only)" },
         ParamSpec { name: "detune", layer: Extension, kind: Cents { min: 0.0, max: 100.0, default: Some(0.0) }, doc: "unison detune: adds a ± detuned pair around osc1" },
@@ -169,6 +169,14 @@ pub fn param_specs() -> Vec<ParamSpec> {
         ParamSpec { name: "gwarble", layer: Extension, kind: Hz { min: 0.5, max: 16.0, default: None, sweep: false }, doc: "square-LFO semitone trill — autotune artifact, robots only" },
         ParamSpec { name: "gharm", layer: Extension, kind: IntervalStack { default: "0" }, doc: "harmonizer stack (0+4+7+12): every note a parallel chord of itself, weights falling 0.85 per layer" },
         ParamSpec { name: "pump", layer: Extension, kind: Hz { min: 0.25, max: 8.0, default: Some(0.0), sweep: false }, doc: "beat-synced duck inside the glow chain" },
+        // -------------------------------------------- mus-x: pluck (the string)
+        ParamSpec { name: "sus", layer: Extension, kind: Seconds { min: 0.05, max: 20.0, default: Some(2.5) }, doc: "pluck T60 sustain: how long the string rings to -60 dB" },
+        ParamSpec { name: "damp", layer: Extension, kind: Ratio { min: 0.0, max: 0.95, default: Some(0.35) }, doc: "pluck brightness decay: how much faster highs die than lows" },
+        ParamSpec { name: "pos", layer: Extension, kind: Ratio { min: 0.02, max: 0.5, default: Some(0.13) }, doc: "pick position along the string: bridge (small) to neck (0.5)" },
+        ParamSpec { name: "pick", layer: Extension, kind: Ratio { min: 0.0, max: 1.0, default: Some(0.6) }, doc: "pick hardness: fingertip felt (0) to bright plectrum (1)" },
+        ParamSpec { name: "body", layer: Extension, kind: Ratio { min: 0.0, max: 1.0, default: Some(0.25) }, doc: "body resonance mix: the wood around the string" },
+        ParamSpec { name: "strum", layer: Extension, kind: Milliseconds { min: -80.0, max: 80.0, default: Some(10.0) }, doc: "chord stagger per string; negative strums upward" },
+        ParamSpec { name: "pm", layer: Extension, kind: Toggle { default: false }, doc: "palm mute: short, dark, felt-soft" },
         ParamSpec { name: "haas", layer: Extension, kind: Milliseconds { min: 0.0, max: 40.0, default: Some(0.0) }, doc: "interaural delay on the right channel — width without a pan move" },
     ]
 }
