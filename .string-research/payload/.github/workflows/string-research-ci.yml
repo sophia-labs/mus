@@ -1,0 +1,92 @@
+name: String-network research
+
+on:
+  push:
+    branches:
+      - agent/weave-string-network
+  pull_request:
+    paths:
+      - "mus-rs/crates/mus-dsp/**"
+      - "mus-rs/crates/mus-engine/**"
+      - "mus-rs/crates/mus-vocab/**"
+      - "aigua/guitar_v2_demo.mus"
+      - "aigua/weave_demo.mus"
+      - "docs/STRING-WEAVE.md"
+      - ".github/workflows/string-research-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-and-audition:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Install native DSP dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsoxr-dev pkg-config
+
+      - name: Formatting
+        working-directory: mus-rs
+        run: cargo fmt --all -- --check
+
+      - name: Mathematical and audible string invariants
+        working-directory: mus-rs
+        run: cargo test -p mus-dsp --test pluck_invariants -- --nocapture
+
+      - name: DSP unit tests
+        working-directory: mus-rs
+        run: cargo test -p mus-dsp --lib
+
+      - name: Engine and vocabulary integration
+        working-directory: mus-rs
+        run: |
+          cargo test -p mus-engine
+          cargo test -p mus-vocab
+          cargo test -p mus-cli --test vocab_dump
+
+      - name: Render audition scores
+        run: |
+          mkdir -p artifacts
+          cargo run --release --manifest-path mus-rs/Cargo.toml -p mus-cli -- \
+            render aigua/guitar_v2_demo.mus -o artifacts/guitar_v2.wav
+          cargo run --release --manifest-path mus-rs/Cargo.toml -p mus-cli -- \
+            render aigua/weave_demo.mus -o artifacts/weave.wav
+          python - <<'PY'
+          import json
+          import wave
+          from pathlib import Path
+
+          report = {}
+          for path in sorted(Path("artifacts").glob("*.wav")):
+              with wave.open(str(path), "rb") as handle:
+                  report[path.name] = {
+                      "channels": handle.getnchannels(),
+                      "sampleRate": handle.getframerate(),
+                      "frames": handle.getnframes(),
+                      "seconds": handle.getnframes() / handle.getframerate(),
+                      "bytes": path.stat().st_size,
+                  }
+          Path("artifacts/manifest.json").write_text(
+              json.dumps(report, indent=2) + "\n", encoding="utf-8"
+          )
+          print(json.dumps(report, indent=2))
+          PY
+
+      - name: Upload audition renders
+        uses: actions/upload-artifact@v4
+        with:
+          name: string-network-auditions
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 30
