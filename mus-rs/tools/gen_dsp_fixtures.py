@@ -226,6 +226,21 @@ case("synth_note_chord_gliss", "synth", "synth_note",
      None, ma.synth_note(patch_b, [220.0, 277.18, 329.63], 0.35, 1.5),
      "max_abs", 5e-5)
 
+print("glow:")
+gp_full = {"ghold": "1", "gwarble": 6.0, "gharm": "0+4+7+12", "pump": 2.0}
+case("glow_full_chain", "glow", "glow_chain",
+     {"st_g": 5.0, "params": gp_full, "slot_samples": int(0.5 * SR)},
+     BURST, ma.glow_chain(BURST, 5.0, gp_full, int(0.5 * SR)),
+     "rel_rms", 5e-3,
+     note="hold -> warble -> harmonizer stack -> hp600/lp7800 -> bitcrush10 "
+          "-> tanh 2.4 -> pump; vocode-tier because gharm/gwarble vocode inside")
+gp_hold = {"ghold": "1", "gharm": "0", "pump": 4.0}
+case("glow_hold_pump", "glow", "glow_chain",
+     {"st_g": 0.0, "params": gp_hold, "slot_samples": int(0.4 * SR)},
+     BURST, ma.glow_chain(BURST, 0.0, gp_hold, int(0.4 * SR)),
+     "rel_rms", 5e-3,
+     note="hold loop + root-layer micro-detune (vocode ±0.15) + pump, no warble")
+
 print("rng (np-rand):")
 ss = np.random.SeedSequence(7)
 (OUT / "seedseq_7_state.json").write_text(json.dumps(

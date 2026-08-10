@@ -323,6 +323,69 @@ def ring_mod(x: np.ndarray, f_hz: float, wet: float = 1.0) -> np.ndarray:
     return ((1.0 - wet) * x + wet * x * car).astype(np.float32)
 
 
+def glow_chain(x, st_g, params, slot_samples):
+    """Hyperpop candy chain. The un-birding move is the HOLD: loop the
+    loudest slice of the call to the notated slot. Birds cannot sustain a
+    pitch (median FM velocity 11 st/s, by our own measurement); holding one
+    is the most artificial thing this material can do. Then the coating:
+    micro-detuned doubles for ensemble shine, a +24 sparkle, plastic
+    bitcrush, dense saturation, beat-synced pump."""
+    if str(params.get("ghold", "0")) not in ("0", "off"):
+        win = int(0.07 * SR)
+        if len(x) > 2 * win:
+            e = np.convolve(np.abs(x), np.ones(win) / win, mode="valid")
+            piece = x[int(np.argmax(e)):int(np.argmax(e)) + win].copy()
+            f = int(0.015 * SR)
+            w = np.ones(win, np.float32)
+            w[:f] = np.linspace(0, 1, f)
+            w[-f:] = np.linspace(1, 0, f)
+            n_out = max(slot_samples, win)
+            held = np.zeros(n_out + win, np.float32)
+            pos = 0
+            while pos < n_out:
+                held[pos:pos + win] += piece * w
+                pos += win - f
+            x = held[:n_out]
+    if "gwarble" in params:
+        # autotune-artifact trill: square-LFO crossfade between the tone
+        # and itself a semitone up. Robots only.
+        wr = float(params["gwarble"])
+        up = vocode(x, 1.0)
+        n_w = min(len(x), len(up))
+        tt = np.arange(n_w, dtype=np.float32) / SR
+        lfo = ((tt * wr) % 1.0) < 0.5
+        x = np.where(lfo, x[:n_w], up[:n_w]).astype(np.float32)
+    # `gharm=0+4+7+12` — the harmonizer glued to the voice: every note
+    # becomes a parallel chord of itself, weights falling 0.85 per layer,
+    # root layer micro-detuned.
+    try:
+        ivs = [float(t) for t in
+               str(params.get("gharm", "0")).replace("|", "+").split("+") if t]
+    except ValueError:
+        ivs = [0.0]
+    y = np.zeros(len(x), np.float32)
+    w = 1.0
+    for j, iv in enumerate(ivs):
+        layer = vocode(x, st_g + iv)
+        if j == 0:
+            layer = (0.6 * layer
+                     + 0.2 * vocode(x, st_g + iv + 0.15)
+                     + 0.2 * vocode(x, st_g + iv - 0.15))
+        y[:len(layer)] += w * layer[:len(y)]
+        w *= 0.85
+    y /= math.sqrt(max(len(ivs), 1))
+    y = sweep_filter(y, 600.0, 600.0, "high")
+    y = sweep_filter(y, 7800.0, 7800.0, "low")
+    y = bitcrush(y, bits=10)
+    y = np.tanh(y * 2.4) / math.tanh(2.4)
+    pump = float(params.get("pump", 0.0))
+    if pump > 0:
+        tt = np.arange(len(y), dtype=np.float32) / SR
+        ph = (tt * pump) % 1.0
+        y *= (0.45 + 0.55 * np.exp(-3.5 * ph)).astype(np.float32)
+    return y.astype(np.float32)
+
+
 def bitcrush(x, bits=None, decim=None):
     """Quantise amplitude and/or hold samples. Both are aliasing on purpose."""
     if bits:
@@ -975,68 +1038,8 @@ def render(score_path: Path, out_path: Path, verbose=True):
                     x = ring_mod(x, float(ev.params["ring"]),
                                  float(ev.params.get("rwet", 1.0)))
                 if "glow" in ev.params and len(x) >= 2048:
-                    # Hyperpop candy chain. The un-birding move is the HOLD:
-                    # loop the loudest slice of the call to the notated slot.
-                    # Birds cannot sustain a pitch (median FM velocity 11
-                    # st/s, by our own measurement); holding one is the most
-                    # artificial thing this material can do. Then the coating:
-                    # micro-detuned doubles for ensemble shine, a +24 sparkle,
-                    # plastic bitcrush, dense saturation, beat-synced pump.
-                    st_g = float(ev.params["glow"])
-                    if str(ev.params.get("ghold", "0")) not in ("0", "off"):
-                        win = int(0.07 * SR)
-                        if len(x) > 2 * win:
-                            e = np.convolve(np.abs(x), np.ones(win) / win, mode="valid")
-                            piece = x[int(np.argmax(e)):int(np.argmax(e)) + win].copy()
-                            f = int(0.015 * SR)
-                            w = np.ones(win, np.float32)
-                            w[:f] = np.linspace(0, 1, f)
-                            w[-f:] = np.linspace(1, 0, f)
-                            n_out = max(int(slot * SR), win)
-                            held = np.zeros(n_out + win, np.float32)
-                            pos = 0
-                            while pos < n_out:
-                                held[pos:pos + win] += piece * w
-                                pos += win - f
-                            x = held[:n_out]
-                    if "gwarble" in ev.params:
-                        # autotune-artifact trill: square-LFO crossfade between
-                        # the tone and itself a semitone up. Robots only.
-                        wr = float(ev.params["gwarble"])
-                        up = vocode(x, 1.0)
-                        n_w = min(len(x), len(up))
-                        tt = np.arange(n_w, dtype=np.float32) / SR
-                        lfo = ((tt * wr) % 1.0) < 0.5
-                        x = np.where(lfo, x[:n_w], up[:n_w]).astype(np.float32)
-                    # `gharm=0+4+7+12` — the harmonizer glued to the voice:
-                    # every note becomes a parallel chord of itself, weights
-                    # falling 0.85 per layer, root layer micro-detuned.
-                    try:
-                        ivs = [float(t) for t in
-                               str(ev.params.get("gharm", "0")).replace("|", "+").split("+") if t]
-                    except ValueError:
-                        ivs = [0.0]
-                    y = np.zeros(len(x), np.float32)
-                    w = 1.0
-                    for j, iv in enumerate(ivs):
-                        layer = vocode(x, st_g + iv)
-                        if j == 0:
-                            layer = (0.6 * layer
-                                     + 0.2 * vocode(x, st_g + iv + 0.15)
-                                     + 0.2 * vocode(x, st_g + iv - 0.15))
-                        y[:len(layer)] += w * layer[:len(y)]
-                        w *= 0.85
-                    y /= math.sqrt(max(len(ivs), 1))
-                    y = sweep_filter(y, 600.0, 600.0, "high")
-                    y = sweep_filter(y, 7800.0, 7800.0, "low")
-                    y = bitcrush(y, bits=10)
-                    y = np.tanh(y * 2.4) / math.tanh(2.4)
-                    pump = float(ev.params.get("pump", 0.0))
-                    if pump > 0:
-                        tt = np.arange(len(y), dtype=np.float32) / SR
-                        ph = (tt * pump) % 1.0
-                        y *= (0.45 + 0.55 * np.exp(-3.5 * ph)).astype(np.float32)
-                    x = y.astype(np.float32)
+                    x = glow_chain(x, float(ev.params["glow"]),
+                                   ev.params, int(slot * SR))
 
                 # --- time treatment
                 if ev.params.get("str") == "fit":

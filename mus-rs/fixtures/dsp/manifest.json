@@ -833,6 +833,59 @@
   ]
  },
  {
+  "name": "glow_full_chain",
+  "module": "glow",
+  "func": "glow_chain",
+  "args": {
+   "st_g": 5.0,
+   "params": {
+    "ghold": "1",
+    "gwarble": 6.0,
+    "gharm": "0+4+7+12",
+    "pump": 2.0
+   },
+   "slot_samples": 24000
+  },
+  "metric": "rel_rms",
+  "tol": 0.005,
+  "dtype": "<f4",
+  "note": "hold -> warble -> harmonizer stack -> hp600/lp7800 -> bitcrush10 -> tanh 2.4 -> pump; vocode-tier because gharm/gwarble vocode inside",
+  "input": "glow_full_chain.in.bin",
+  "shape_in": [
+   16800
+  ],
+  "output": "glow_full_chain.out.bin",
+  "shape_out": [
+   24000
+  ]
+ },
+ {
+  "name": "glow_hold_pump",
+  "module": "glow",
+  "func": "glow_chain",
+  "args": {
+   "st_g": 0.0,
+   "params": {
+    "ghold": "1",
+    "gharm": "0",
+    "pump": 4.0
+   },
+   "slot_samples": 19200
+  },
+  "metric": "rel_rms",
+  "tol": 0.005,
+  "dtype": "<f4",
+  "note": "hold loop + root-layer micro-detune (vocode \u00b10.15) + pump, no warble",
+  "input": "glow_hold_pump.in.bin",
+  "shape_in": [
+   16800
+  ],
+  "output": "glow_hold_pump.out.bin",
+  "shape_out": [
+   19200
+  ]
+ },
+ {
   "name": "standard_normal_64",
   "module": "rng",
   "func": "standard_normal",
