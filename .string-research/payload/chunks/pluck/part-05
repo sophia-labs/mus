@@ -1,0 +1,170 @@
+                    let spec = DelayStringSpec {
+                        f0: frequency,
+                        f1: frequency,
+                        t60: (patch.sus * (1.0 + 0.045 * ordinal as f64)).min(20.0),
+                        damp: patch.damp,
+                        stiff: (patch.stiff + 0.18 * ordinal as f64 / target as f64).min(1.0),
+                        tension_cents: 0.0,
+                        start_sample: 0,
+                        slot_samples,
+                        active: false,
+                        coupling_scale: 1.0,
+                        max_downward_ratio: 1.3,
+                    };
+                    strings.push(DelayString::new(spec, Vec::new()));
+                    ordinal += 1;
+                }
+            }
+            _ => {}
+        }
+
+        let n_strings = strings.len();
+        let tail = (patch.sus * 0.78).min(4.0);
+        let total_samples = ((slot_s + tail).max(64.0 / SR_F64) * SR_F64) as usize;
+        Self {
+            mode,
+            body: make_body(patch.body_size),
+            patch,
+            strings,
+            waves: vec![0.0; n_strings],
+            incoming: vec![0.0; n_strings],
+            contact: vec![0.0; n_strings],
+            active_count,
+            sample_index: 0,
+            total_samples,
+            previous_input: 0.0,
+            previous_output: 0.0,
+        }
+    }
+
+    pub fn is_finished(&self) -> bool {
+        self.sample_index >= self.total_samples
+    }
+
+    pub fn remaining_samples(&self) -> usize {
+        self.total_samples.saturating_sub(self.sample_index)
+    }
+
+    fn scatter_weave(&mut self) {
+        let count = self.waves.len();
+        if count < 2 || self.patch.couple <= 1e-12 {
+            return;
+        }
+        let phase = 2.0 * PI * self.patch.orbit_hz * self.sample_index as f64 / SR_F64;
+        let total_energy = self
+            .strings
+            .iter()
+            .map(|string| string.energy_smooth)
+            .sum::<f64>()
+            .max(1e-14);
+        let forward_weight = 0.5 * (1.0 + self.patch.chirality);
+        let backward_weight = 0.5 * (1.0 - self.patch.chirality);
+
+        for index in 0..count {
+            let next = (index + 1) % count;
+            let travelling = 1.0
+                + self.patch.orbit_depth
+                    * (phase + 2.0 * PI * index as f64 / count as f64).sin();
+            let previous_energy = self.strings[(index + count - 1) % count].energy_smooth;
+            let next_energy = self.strings[next].energy_smooth;
+            let gradient = ((previous_energy - next_energy) * count as f64 / total_energy).tanh();
+            let metric = 1.0 + 0.72 * self.patch.curvature * gradient;
+            let angle = (self.patch.couple * travelling * metric * forward_weight)
+                .clamp(-0.48, 0.48);
+            let (a, b) = givens(self.waves[index], self.waves[next], angle);
+            self.waves[index] = a;
+            self.waves[next] = b;
+        }
+        for reverse_index in (0..count).rev() {
+            let next = (reverse_index + 1) % count;
+            let travelling = 1.0
+                + self.patch.orbit_depth
+                    * (phase + 2.0 * PI * reverse_index as f64 / count as f64).sin();
+            let previous_energy =
+                self.strings[(reverse_index + count - 1) % count].energy_smooth;
+            let next_energy = self.strings[next].energy_smooth;
+            let gradient = ((previous_energy - next_energy) * count as f64 / total_energy).tanh();
+            let metric = 1.0 + 0.72 * self.patch.curvature * gradient;
+            let angle = (self.patch.couple * travelling * metric * backward_weight)
+                .clamp(-0.48, 0.48);
+            let (a, b) = givens(self.waves[reverse_index], self.waves[next], angle);
+            self.waves[reverse_index] = a;
+            self.waves[next] = b;
+        }
+    }
+
+    fn scatter_body(&mut self) -> f64 {
+        let count = self.waves.len();
+        if count == 0 || self.patch.body <= 1e-12 {
+            for mode in &mut self.body {
+                mode.free_tick();
+            }
+            return 0.0;
+        }
+        let chirality = if self.mode == StringNetworkMode::Weave {
+            self.patch.chirality
+        } else {
+            0.0
+        };
+        let forward_weight = 0.5 * (1.0 + chirality);
+        let backward_weight = 0.5 * (1.0 - chirality);
+        let mut body_output = 0.0;
+        for mode in &mut self.body {
+            mode.free_tick();
+            let base_angle = self.patch.body * mode.coupling;
+            for index in 0..count {
+                let angle = base_angle * self.strings[index].coupling_scale * forward_weight;
+                let (wave, momentum) = givens(self.waves[index], mode.p, angle);
+                self.waves[index] = wave;
+                mode.p = momentum;
+            }
+            for index in (0..count).rev() {
+                let angle = base_angle * self.strings[index].coupling_scale * backward_weight;
+                let (wave, momentum) = givens(self.waves[index], mode.p, angle);
+                self.waves[index] = wave;
+                mode.p = momentum;
+            }
+            body_output += mode.radiation * mode.q;
+        }
+        body_output
+    }
+
+    /// Render one mono sample. No allocation occurs on this path.
+    pub fn next_sample(&mut self) -> f32 {
+        if self.is_finished() || self.strings.is_empty() {
+            return 0.0;
+        }
+        for index in 0..self.strings.len() {
+            let wave = self.strings[index].read(self.sample_index);
+            self.waves[index] = wave;
+            self.incoming[index] = wave;
+        }
+        if self.mode == StringNetworkMode::Weave {
+            self.scatter_weave();
+        }
+        let body_output = self.scatter_body();
+
+        let mut contact_output = 0.0;
+        for index in 0..self.strings.len() {
+            let excitation = self.strings[index].excitation_at(self.sample_index);
+            let value = self.waves[index] + excitation;
+            let (feedback, contact) = self.strings[index].apply_contact(value, self.patch.buzz);
+            self.contact[index] = contact;
+            contact_output += contact;
+            self.strings[index].write(feedback);
+        }
+
+        let active_normalization = (self.active_count.max(1) as f64).sqrt();
+        let string_direct = self
+            .incoming
+            .iter()
+            .take(self.active_count)
+            .sum::<f64>()
+            / active_normalization;
+        let bridge_force = self
+            .incoming
+            .iter()
+            .zip(self.waves.iter())
+            .map(|(before, after)| before - after)
+            .sum::<f64>()
+            / (self.strings.len().max(1) as f64).sqrt();
