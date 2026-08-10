@@ -82,7 +82,7 @@ fn parity_check_corpus() {
     assert_eq!(python_reports.len(), 13);
 }
 
-fn run_python_checker(root: &PathBuf, score: &PathBuf, base: &PathBuf) -> Result<Value, String> {
+fn run_python_checker(root: &Path, score: &Path, base: &Path) -> Result<Value, String> {
     let uv = Command::new("uv")
         .current_dir(root.join("mus-rs"))
         .args([
@@ -239,8 +239,8 @@ fn compare_report(expected: &Value, actual: &Value, path: &str, mismatches: &mut
                 );
             }
             for key in actual.keys() {
-                if (root && (key == "producer" || key == "rendererVersion"))
-                    || (root && key == "extensionUsage")
+                if root
+                    && (key == "producer" || key == "rendererVersion" || key == "extensionUsage")
                 {
                     continue;
                 }
@@ -284,7 +284,7 @@ fn stable_json_key(value: &Value) -> String {
     match value {
         Value::Object(map) => {
             let mut entries: Vec<_> = map.iter().collect();
-            entries.sort_by(|(a, _), (b, _)| a.cmp(b));
+            entries.sort_by_key(|(a, _)| *a);
             format!(
                 "{{{}}}",
                 entries

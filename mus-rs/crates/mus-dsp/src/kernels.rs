@@ -107,7 +107,7 @@ pub fn bitcrush(x: &[f32], bits: Option<f64>, decim: Option<u32>) -> Vec<f32> {
                 let mut held = Vec::with_capacity(len);
                 let mut i = 0;
                 while i < n {
-                    held.extend(std::iter::repeat(y[i]).take(d));
+                    held.extend(std::iter::repeat_n(y[i], d));
                     i += d;
                 }
                 held.extend_from_slice(&y[n..]);
@@ -142,9 +142,9 @@ pub fn stutter(x: &[f32], n: usize, slot_samples: usize) -> Vec<f32> {
         for i in 0..f {
             piece[i] = (piece[i] as f64 * up[i]) as f32;
         }
-        for i in 0..f {
+        for (i, &gain) in down[..f].iter().enumerate() {
             let idx = plen - f + i;
-            piece[idx] = (piece[idx] as f64 * down[i]) as f32;
+            piece[idx] = (piece[idx] as f64 * gain) as f32;
         }
     }
     let mut out = Vec::with_capacity(plen * n);

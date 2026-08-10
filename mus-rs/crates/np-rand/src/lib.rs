@@ -111,6 +111,8 @@ fn mix_entropy(mixer: &mut [u32; DEFAULT_POOL_SIZE], entropy: &[u32]) {
             }
         }
     }
+    // Index loop kept: mirrors numpy's C mixing loop structure exactly.
+    #[allow(clippy::needless_range_loop)]
     for i_src in mixer.len()..entropy.len() {
         for slot in mixer.iter_mut() {
             let hashed_src = hashmix(entropy[i_src], &mut hash_const);

@@ -456,7 +456,7 @@ fn format_track_bar(
             }
         }
         toks.push(event_token(ev)?);
-        cursor = ev.onset_ql.add(ev.dur_ql);
+        cursor = ev.onset_ql + ev.dur_ql;
     }
     if cursor < bar_qlen {
         toks.push(format!("R{}", duration_code(sub(bar_qlen, cursor))?));
@@ -465,7 +465,7 @@ fn format_track_bar(
 }
 
 fn sub(a: Frac, b: Frac) -> Frac {
-    a.add(Frac::new(-b.num, b.den))
+    a + Frac::new(-b.num, b.den)
 }
 
 fn event_token(ev: &EventState) -> Result<String, ReduceError> {

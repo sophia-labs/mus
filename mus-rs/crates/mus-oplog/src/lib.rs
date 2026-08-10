@@ -70,15 +70,19 @@ impl Frac {
         Frac { num: 0, den: 1 }
     }
 
-    pub fn add(self, other: Frac) -> Frac {
+    pub fn as_f64(self) -> f64 {
+        self.num as f64 / self.den as f64
+    }
+}
+
+impl std::ops::Add for Frac {
+    type Output = Frac;
+
+    fn add(self, other: Frac) -> Frac {
         Frac::new(
             self.num * other.den + other.num * self.den,
             self.den * other.den,
         )
-    }
-
-    pub fn as_f64(self) -> f64 {
-        self.num as f64 / self.den as f64
     }
 }
 
@@ -398,7 +402,7 @@ mod tests {
     #[test]
     fn fractions_normalize() {
         assert_eq!(Frac::new(2, 4), Frac::new(1, 2));
-        assert_eq!(Frac::new(3, 2).add(Frac::new(1, 2)), Frac::new(2, 1));
+        assert_eq!(Frac::new(3, 2) + Frac::new(1, 2), Frac::new(2, 1));
         assert_eq!(Frac::new(1, -2), Frac::new(-1, 2));
     }
 }

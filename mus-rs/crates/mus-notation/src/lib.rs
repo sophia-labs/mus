@@ -84,12 +84,8 @@ pub fn tokenize_bar_content(content: &str) -> Vec<String> {
 /// Expand `(… ×N)` groups, including nested groups, then tokenize again.
 pub fn expand_pattern_repetitions(tokens: &[String]) -> Vec<String> {
     let mut text = tokens.join(" ");
-    loop {
-        let Some((start, end, pattern, count)) = repetition(&text) else {
-            break;
-        };
-        let replacement = std::iter::repeat(pattern)
-            .take(count)
+    while let Some((start, end, pattern, count)) = repetition(&text) {
+        let replacement = std::iter::repeat_n(pattern, count)
             .collect::<Vec<_>>()
             .join(" ");
         text.replace_range(start..end, &replacement);
@@ -175,7 +171,7 @@ pub fn parse_duration_code(code: &str) -> Option<f64> {
     }
     let mut index = 1;
     let mut base = chars[0].to_ascii_lowercase().to_string();
-    if index < chars.len() && chars[index].to_ascii_lowercase() == chars[0].to_ascii_lowercase() {
+    if index < chars.len() && chars[index].eq_ignore_ascii_case(&chars[0]) {
         base.push(chars[index].to_ascii_lowercase());
         index += 1;
     }
@@ -435,7 +431,7 @@ pub fn parse_token(raw: &str) -> Option<Note> {
             .collect();
         let mut out = note("chord");
         out.midis = pitches;
-        out.ql = duration_ql(&token[close + 1..].replace('~', "~"));
+        out.ql = duration_ql(&token[close + 1..]);
         out.params = params;
         out.flags = flags;
         out.gliss_midi = gliss;

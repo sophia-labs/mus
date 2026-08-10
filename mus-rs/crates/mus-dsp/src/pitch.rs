@@ -459,7 +459,7 @@ fn istft(d: &[Frame], length: usize) -> Vec<f32> {
     let half = N_FFT / 2;
     let total_frames = d.len();
     let padded_length = length + 2 * half;
-    let n_frames = total_frames.min((padded_length + HOP - 1) / HOP).max(1);
+    let n_frames = total_frames.min(padded_length.div_ceil(HOP)).max(1);
 
     let full_len = N_FFT + HOP * (n_frames - 1);
     let mut acc = vec![0.0f32; full_len];

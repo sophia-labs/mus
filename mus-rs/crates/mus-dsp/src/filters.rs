@@ -118,7 +118,7 @@ fn buttap(n: usize) -> (Vec<Cx>, Vec<Cx>, f64) {
     let nf = n as f64;
     let mut poles = Vec::with_capacity(n);
     let mut m = -(n as i64) + 1;
-    while m <= n as i64 - 1 {
+    while m < n as i64 {
         let theta = std::f64::consts::PI * (m as f64) / (2.0 * nf);
         poles.push(-Cx::new(theta.cos(), theta.sin()));
         m += 2;
@@ -327,7 +327,7 @@ fn zpk2sos_nearest(z_in: &[Cx], p_in: &[Cx], k: f64) -> Vec<[f64; 6]> {
     let mut z: Vec<Cx> = z_in.to_vec();
     p.resize(target, Cx::ZERO);
     z.resize(target, Cx::ZERO);
-    let n_sections = (target + 1) / 2;
+    let n_sections = target.div_ceil(2);
     if p.len() % 2 == 1 {
         p.push(Cx::ZERO);
         z.push(Cx::ZERO);

@@ -69,7 +69,7 @@ fn build_report(
     let reverb_s = header_float(
         &proposal.headers,
         "reverb",
-        |raw| number_prefix(raw),
+        number_prefix,
         2.6,
         &mut diagnostics,
     );
@@ -285,9 +285,7 @@ fn python_g(value: f64) -> String {
 }
 
 fn parse_swing(headers: &BTreeMap<String, String>, diagnostics: &mut Vec<Value>) -> Option<Value> {
-    let Some(raw) = headers.get("swing") else {
-        return None;
-    };
+    let raw = headers.get("swing")?;
     let pieces: Vec<&str> = raw.split_whitespace().collect();
     let parsed = if pieces.len() > 1 {
         pieces[0]
@@ -602,6 +600,7 @@ fn split_bar_content(content: &str, abbrevs: &[String]) -> BTreeMap<String, Stri
         .collect()
 }
 
+#[allow(clippy::too_many_arguments)] // faithful port: the oracle threads this context
 fn event_report(
     proposal: &Proposal,
     bar_content: &BTreeMap<u32, BTreeMap<String, String>>,
@@ -740,6 +739,7 @@ fn event_report(
     events
 }
 
+#[allow(clippy::too_many_arguments)] // faithful port: the oracle threads this context
 fn quote_report(
     note: &mus_notation::Note,
     effective: &BTreeMap<String, String>,
