@@ -87,6 +87,10 @@ impl Service {
                 "ok": true,
                 "service": SERVICE_VERSION,
                 "engine": ENGINE_VERSION,
+                // Announced so hosts can validate that any pcmPath they
+                // are asked to stream lives inside the service's own
+                // tmpdir — never stream arbitrary filesystem paths.
+                "tmpDir": self.tmp_dir.to_string_lossy(),
             })),
             "load" => self.load(params),
             "renderScore" => self.render_score(params),

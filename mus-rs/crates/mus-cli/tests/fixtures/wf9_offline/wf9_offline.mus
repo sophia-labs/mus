@@ -1,0 +1,22 @@
+# score: WF9 offline fixture — gest= + tape off=/gate/lpf, no aigua/ assets
+# summary: 1 bar / 2 voices — self-contained regression cover
+# tempo: 120
+# time: 4/4
+# key: C
+# bars: 1
+# tuning: A=440
+# gestures: v2/sweep-events.json
+
+# This score exists only to keep `gest=` gesture-quotation (the pack-sample
+# polyline path — SPEC-AUDIO.md §8) and tape-style `off=`/`gate`/`lpf=`
+# sample playback (§4/§7) inside the always-green `cargo test` fast subset
+# without depending on `aigua/v2/sweep-events.json` or `aigua/aigua_raw.wav`
+# (gitignored, absent from a clean checkout — see
+# `mus-rs/crates/mus-cli/tests/parity_expectations.rs`). Every asset it
+# references lives next to it in this directory and is committed.
+
+# instruments:
+#   gl = gesture voice (treble, sample=bird.wav, root=A3, send=0.20)
+#   tp = tape voice (perc, sample=bird.wav, gain=-2, send=0.30)
+
+bar 1: gl=A3q[gest=h0] Rq Rh  tp=Rq Xq[off=200,gate,lpf=1200->2400,pan=-0.3] Rh

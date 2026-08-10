@@ -1,0 +1,17 @@
+{
+ "schema": "wf9-offline-fixture-sweep-events/1",
+ "note": "Hand-authored stand-in for an aigua-sweep-events file (SPEC-AUDIO.md §8), sized for the WF9 self-contained fast-subset fixture only. Not derived from any recording.",
+ "events": [
+  {
+   "hypothesis_id": "wf9-fixture-h0",
+   "start_seconds": 0.0,
+   "end_seconds": 0.2,
+   "contour": [
+    [0.0, 220.0, "r"],
+    [0.05, 228.0, "r"],
+    [0.1, 232.0, "r"],
+    [0.15, 224.0, "r"]
+   ]
+  }
+ ]
+}

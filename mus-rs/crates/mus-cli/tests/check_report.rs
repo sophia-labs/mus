@@ -88,6 +88,17 @@ fn run_python_checker(root: &PathBuf, score: &PathBuf, base: &PathBuf) -> Result
         .args([
             "run",
             "--script",
+            // `mus_audio.py`'s own PEP 723 header declares only a floor
+            // (`requires-python = ">=3.10"`), not the ceiling its pinned
+            // `numba<0.61` actually needs — unpinned, `uv` is free to
+            // resolve the newest interpreter it can find, and numba 0.60
+            // fails to build past 3.12 ("Cannot install on Python version
+            // 3.14.4; only versions >=3.9,<3.13 are supported"). Pinning
+            // here rather than editing the oracle's own header: WF9-corpus-
+            // parity.md's whole premise is that `mus_audio.py` stays
+            // exactly what ships.
+            "--python",
+            "3.12",
             "../mus_audio.py",
             score.to_str().unwrap(),
             "--check",
