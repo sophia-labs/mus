@@ -1,0 +1,140 @@
+        }
+    }
+    while !voice.is_finished() {
+        let mut block = [0.0_f32; 113];
+        let written = voice.render_block(&mut block);
+        actual.extend_from_slice(&block[..written]);
+    }
+    assert_eq!(expected, actual, "the DSP kernel is host-block invariant");
+}
+
+#[test]
+fn in_tune_across_the_guitar_neck() {
+    let patch = isolated(&[("sus", "3.0"), ("damp", "0.2")]);
+    for target in [82.4069, 110.0, 220.0, 440.0, 880.0] {
+        let audio = pluck_note(&patch, &[target], 1.2, 1.0);
+        let estimate = estimate_f0(&audio, 0.16, 0.56, target * 0.80, target * 1.25);
+        let cents = 1200.0 * (estimate / target).log2().abs();
+        assert!(
+            cents < 8.0,
+            "{target} Hz estimated {estimate:.3} Hz: {cents:.2} cents"
+        );
+    }
+}
+
+#[test]
+fn sus_remains_an_honest_fundamental_t60() {
+    let patch = isolated(&[("sus", "0.8"), ("damp", "0")]);
+    let audio = pluck_note(&patch, &[196.0], 1.6, 1.0);
+    let early = rms(&audio[(0.06 * SR_F64) as usize..(0.16 * SR_F64) as usize]);
+    let at_t60 = rms(&audio[(0.78 * SR_F64) as usize..(0.88 * SR_F64) as usize]);
+    let decibels = 20.0 * (at_t60 / early).log10();
+    assert!(
+        (-76.0..=-40.0).contains(&decibels),
+        "T60=0.8s measured {decibels:.1} dB relative to early"
+    );
+}
+
+#[test]
+fn midpoint_pluck_suppresses_the_second_harmonic() {
+    let f0 = 220.0;
+    let near_bridge = pluck_note(
+        &isolated(&[("pos", "0.07"), ("pick", "0")]),
+        &[f0],
+        1.0,
+        1.0,
+    );
+    let midpoint = pluck_note(
+        &isolated(&[("pos", "0.5"), ("pick", "0")]),
+        &[f0],
+        1.0,
+        1.0,
+    );
+    let start = (0.04 * SR_F64) as usize;
+    let end = (0.55 * SR_F64) as usize;
+    let ratio_bridge = goertzel(&near_bridge[start..end], 2.0 * f0)
+        / goertzel(&near_bridge[start..end], f0).max(1e-12);
+    let ratio_midpoint = goertzel(&midpoint[start..end], 2.0 * f0)
+        / goertzel(&midpoint[start..end], f0).max(1e-12);
+    assert!(
+        ratio_midpoint < ratio_bridge * 0.12,
+        "2nd/1st power: midpoint {ratio_midpoint:.5}, bridge {ratio_bridge:.5}"
+    );
+}
+
+#[test]
+fn stiff_string_spreads_upper_partials_without_detuning_the_fundamental() {
+    let plain = pluck_note(
+        &isolated(&[("sus", "3"), ("damp", "0.12"), ("stiff", "0")]),
+        &[110.0],
+        1.4,
+        1.0,
+    );
+    let stiff = pluck_note(
+        &isolated(&[("sus", "3"), ("damp", "0.12"), ("stiff", "0.75")]),
+        &[110.0],
+        1.4,
+        1.0,
+    );
+    let start = (0.12 * SR_F64) as usize;
+    let end = (0.95 * SR_F64) as usize;
+    let plain_window = &plain[start..end];
+    let stiff_window = &stiff[start..end];
+    let plain_1 = spectral_peak(plain_window, 110.0, 0.02);
+    let plain_5 = spectral_peak(plain_window, 550.0, 0.025);
+    let stiff_1 = spectral_peak(stiff_window, 110.0, 0.02);
+    let stiff_5 = spectral_peak(stiff_window, 550.0, 0.04);
+    let plain_ratio = plain_5 / (5.0 * plain_1);
+    let stiff_ratio = stiff_5 / (5.0 * stiff_1);
+    assert!(
+        stiff_ratio > plain_ratio + 0.00035,
+        "upper-partial ratio plain={plain_ratio:.6}, stiff={stiff_ratio:.6}"
+    );
+    let fundamental_cents = 1200.0 * (stiff_1 / 110.0).log2().abs();
+    assert!(fundamental_cents < 10.0, "fundamental moved {fundamental_cents:.2} cents");
+}
+
+#[test]
+fn nonlinear_tension_glide_relaxes_toward_nominal_pitch() {
+    let patch = isolated(&[
+        ("sus", "3.0"),
+        ("damp", "0.18"),
+        ("tension", "32"),
+    ]);
+    let audio = pluck_note(&patch, &[110.0], 1.5, 1.0);
+    let early = estimate_f0(&audio, 0.035, 0.19, 105.0, 116.0);
+    let late = estimate_f0(&audio, 0.85, 1.25, 105.0, 116.0);
+    let glide_cents = 1200.0 * (early / late).log2();
+    let late_error = 1200.0 * (late / 110.0).log2().abs();
+    assert!(glide_cents > 5.0, "early={early:.3}, late={late:.3}, glide={glide_cents:.2}c");
+    assert!(late_error < 9.0, "late pitch remains {late_error:.2} cents from nominal");
+}
+
+#[test]
+fn body_is_feedback_coupling_not_a_post_eq_alias() {
+    let dry = pluck_note(
+        &isolated(&[("body", "0"), ("sus", "2.5"), ("pos", "0.19")]),
+        &[137.0],
+        1.0,
+        1.0,
+    );
+    let coupled = pluck_note(
+        &isolated(&[
+            ("body", "0.9"),
+            ("body_size", "1.0"),
+            ("sus", "2.5"),
+            ("pos", "0.19"),
+        ]),
+        &[137.0],
+        1.0,
+        1.0,
+    );
+    assert_ne!(dry, coupled);
+    let start = (0.04 * SR_F64) as usize;
+    let end = (0.55 * SR_F64) as usize;
+    let dry_body_mode = goertzel(&dry[start..end], 186.0);
+    let coupled_body_mode = goertzel(&coupled[start..end], 186.0);
+    assert!(
+        coupled_body_mode > dry_body_mode * 1.15,
+        "186 Hz body mode dry={dry_body_mode:.3e}, coupled={coupled_body_mode:.3e}"
+    );
