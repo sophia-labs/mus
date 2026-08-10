@@ -1,0 +1,50 @@
+# score: The Thread Remembers the Labyrinth
+# summary: first Ariadne score — guitar limit, virtual courses, chirality, orbit, curvature, spectral dimension, bends, and an extreme impossible body
+# tempo: 76    time: 4/4    key: Em    bars: 14
+# reverb: 1.7
+# master: rms=-16
+# note: intentionally requires synth=weave dispatch and vocabulary wiring
+# note: bars 4-5 demonstrate order bias; the stronger closed AB/-A/-B loop experiment requires persistent within-note coupling automation and is specified in .string-research/EXPERIMENTS.md
+
+# instruments:
+#   gt = guitar limit (treble, synth=pluck, sus=3.0, damp=0.30, pos=0.14, pick=0.52, body=0.50, stiff=0.08, tension=6, symp=0.20, strum=13, send=0.18)
+#   th = Ariadne thread (treble, synth=weave, sus=3.1, damp=0.30, pos=0.17, pick=0.46, body=0.52, stiff=0.16, tension=7, courses=11, dimension=1.35, couple=0.11, chirality=0.72, orbit=0.31, orbit_depth=0.62, curvature=0.28, strum=10, send=0.24)
+#   rv = reverse thread (treble, synth=weave, sus=3.1, damp=0.30, pos=0.17, pick=0.46, body=0.52, stiff=0.16, tension=7, courses=11, dimension=1.35, couple=0.11, chirality=-0.72, orbit=0.31, orbit_depth=0.62, curvature=0.28, strum=10, send=0.24)
+#   lb = labyrinth (treble, synth=weave, sus=4.3, damp=0.24, pos=0.23, pick=0.58, body=0.68, body_size=1.25, stiff=0.34, tension=15, buzz=0.08, courses=17, dimension=1.08, couple=0.19, chirality=-0.86, orbit=0.57, orbit_depth=0.82, curvature=0.61, strum=18, send=0.30)
+#   ex = impossible body (bass, synth=weave, sus=5.2, damp=0.16, pos=0.31, pick=0.84, body=0.84, body_size=1.75, stiff=0.72, tension=28, buzz=0.24, courses=24, dimension=0.72, couple=0.34, chirality=1, orbit=2.3, orbit_depth=1, curvature=0.92, strum=24, gain=-2, send=0.34)
+
+# section: the familiar thread [1-2]
+bar 1: gt=E2e B2e E3e G3e B3e E4e B3e G3e  th=-  rv=-  lb=-  ex=-
+bar 2: gt=-  th=E2e B2e E3e G3e B3e E4e B3e G3e  rv=-  lb=-  ex=-
+
+# section: courses appear [3]
+bar 3: gt=-  th=<E2 B2 E3 G3 B3 E4>w[courses=11,couple=0.08,orbit_depth=0.25,curvature=0.08,strum=21]  rv=-  lb=-  ex=-
+
+# section: same endpoint family, opposite ordered traversal [4-5]
+bar 4: gt=-  th=<A2 E3 A3 C4 E4>w[chirality=0.92,couple=0.17,orbit=0.43,orbit_depth=0.72,curvature=0.35,strum=16]  rv=-  lb=-  ex=-
+bar 5: gt=-  th=-  rv=<A2 E3 A3 C4 E4>w[chirality=-0.92,couple=0.17,orbit=0.43,orbit_depth=0.72,curvature=0.35,strum=16]  lb=-  ex=-
+
+# section: internal motion without output chorus [6]
+bar 6: gt=-  th=E3h[orbit=0,orbit_depth=0.8,couple=0.16,curvature=0] E3h[orbit=1.2,orbit_depth=0.8,couple=0.16,curvature=0]  rv=-  lb=-  ex=-
+
+# section: the network reacts to where its energy went [7]
+bar 7: gt=-  th=<E3 B3 E4>h[curvature=0,couple=0.18,orbit=0.38] <E3 B3 E4>h[curvature=0.82,couple=0.18,orbit=0.38]  rv=-  lb=-  ex=-
+
+# section: spectral dimension as a musical coordinate [8]
+bar 8: gt=-  th=A2q[dimension=0.65,courses=15,couple=0.13] A2q[dimension=1.0,courses=15,couple=0.13] A2q[dimension=1.6,courses=15,couple=0.13] A2q[dimension=2.6,courses=15,couple=0.13]  rv=-  lb=-  ex=-
+
+# section: the labyrinth opens [9-10]
+bar 9: gt=-  th=-  rv=-  lb=<E2 B2 E3 G3 B3 E4>h <F2 C3 F3 A3 C4>h  ex=-
+bar 10: gt=-  th=-  rv=-  lb=G3q->B3 D4q C4q->A3 E3q  ex=-
+
+# section: moving architecture [11]
+bar 11: gt=-  th=-  rv=-  lb=<A2 E3 A3 C4 E4>q[orbit=0.19] <A2 E3 A3 C4 E4>q[orbit=0.57] <A2 E3 A3 C4 E4>q[orbit=1.4] <A2 E3 A3 C4 E4>q[orbit=3.2]  ex=-
+
+# section: an instrument matter cannot conveniently hold [12]
+bar 12: gt=-  th=-  rv=-  lb=-  ex=<E1 B1 E2 G2 B2 E3>w[strum=30]
+
+# section: the impossible body answers the thread [13]
+bar 13: gt=-  th=<E2 B2 E3 G3 B3 E4>h[courses=9,couple=0.07,curvature=0.12,orbit=0.18]  rv=-  lb=-  ex=<E1 B1 E2 G2 B2 E3>h[courses=24,couple=0.30,curvature=0.88,orbit=1.7]
+
+# section: return, carrying memory [14]
+bar 14: gt=<E2 B2 E3 G3 B3 E4>h[strum=24,sus=6]  th=<E2 B2 E3 G3 B3 E4>h[strum=-24,sus=6,couple=0.14,chirality=0.55,orbit=0.22,curvature=0.44]  rv=-  lb=-  ex=-
