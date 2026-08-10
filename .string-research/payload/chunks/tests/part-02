@@ -1,0 +1,83 @@
+}
+
+#[test]
+fn bends_retime_the_waveguide_and_land_on_the_target() {
+    let patch = isolated(&[("sus", "4"), ("damp", "0.18")]);
+    let audio = pluck_note(&patch, &[220.0], 1.3, 1.5);
+    let estimate = estimate_f0(&audio, 1.42, 1.82, 260.0, 380.0);
+    let cents = 1200.0 * (estimate / 330.0).log2().abs();
+    assert!(cents < 45.0, "tail={estimate:.2} Hz, target=330 Hz, error={cents:.1}c");
+}
+
+#[test]
+fn weave_is_path_sensitive_but_deterministic() {
+    let clockwise_patch = params(&[
+        ("synth", "weave"),
+        ("sus", "2.2"),
+        ("courses", "9"),
+        ("couple", "0.16"),
+        ("chirality", "0.9"),
+        ("orbit", "0.47"),
+        ("orbit_depth", "0.7"),
+        ("curvature", "0.55"),
+        ("body", "0.55"),
+    ]);
+    let counter_patch = {
+        let mut patch = clockwise_patch.clone();
+        patch.insert("chirality".to_string(), "-0.9".to_string());
+        patch
+    };
+    let a = weave_note(&clockwise_patch, &[110.0, 165.0], 1.1, 1.0);
+    let b = weave_note(&clockwise_patch, &[110.0, 165.0], 1.1, 1.0);
+    let reversed = weave_note(&counter_patch, &[110.0, 165.0], 1.1, 1.0);
+    assert_eq!(a, b);
+    assert_ne!(a, reversed, "reversing the ordered coupling path changes the state");
+    let difference = a
+        .iter()
+        .zip(reversed.iter())
+        .map(|(&left, &right)| (left as f64 - right as f64).powi(2))
+        .sum::<f64>()
+        .sqrt();
+    assert!(difference > 0.05, "path difference norm={difference}");
+}
+
+#[test]
+fn bounded_and_finite_over_extreme_controls() {
+    let cases = [
+        params(&[
+            ("synth", "pluck"),
+            ("sus", "0.05"),
+            ("damp", "0"),
+            ("pos", "0.02"),
+            ("pick", "1"),
+            ("stiff", "1"),
+            ("tension", "80"),
+            ("buzz", "1"),
+            ("body", "1"),
+            ("symp", "1"),
+            ("detune", "60"),
+        ]),
+        params(&[
+            ("synth", "weave"),
+            ("sus", "5"),
+            ("damp", "0.9"),
+            ("courses", "24"),
+            ("couple", "0.45"),
+            ("chirality", "1"),
+            ("orbit", "20"),
+            ("orbit_depth", "1"),
+            ("curvature", "1"),
+            ("body", "1"),
+        ]),
+    ];
+    for patch in &cases {
+        let audio = if patch.get("synth").map(String::as_str) == Some("weave") {
+            weave_note(patch, &[82.4069, 110.0, 146.832], 0.45, 1.0)
+        } else {
+            pluck_note(patch, &[82.4069, 110.0, 146.832], 0.45, 1.0)
+        };
+        assert!(audio.iter().all(|sample| sample.is_finite()));
+        let peak = audio.iter().fold(0.0_f32, |maximum, sample| maximum.max(sample.abs()));
+        assert!(peak <= 4.0, "network peak {peak} is bounded");
+    }
+}
