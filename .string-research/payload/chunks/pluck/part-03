@@ -1,0 +1,170 @@
+            0.0
+        };
+        let remaining = (total_delay - damping_delay - dispersion_delay).max(2.25);
+        let mut integer_delay = (remaining - 0.20).floor().max(2.0) as usize;
+        integer_delay = integer_delay.min(self.line.len().saturating_sub(2));
+        let mut fractional_delay = remaining - integer_delay as f64;
+        if fractional_delay > 1.95 && integer_delay + 1 < self.line.len() {
+            integer_delay += 1;
+            fractional_delay -= 1.0;
+        }
+        if fractional_delay < 0.02 && integer_delay > 2 {
+            integer_delay -= 1;
+            fractional_delay += 1.0;
+        }
+        self.integer_delay = integer_delay;
+        self.fractional
+            .set_coefficient(allpass_coefficient_for_delay(fractional_delay, omega));
+
+        // Fundamental T60 calibration. The allpasses have unit magnitude;
+        // divide out the damping filter's fundamental magnitude so `sus`
+        // still means what it says. Very dark settings may require gain >1
+        // to compensate; refusing that keeps the total loop contractive.
+        let target_circulation_gain = 10_f64.powf(-3.0 / (self.t60 * frequency));
+        self.loop_gain = (target_circulation_gain / damping_magnitude).min(0.999_999_5);
+    }
+
+    fn read(&mut self, sample_index: usize) -> f64 {
+        if sample_index % 16 == 0 {
+            self.update_loop(sample_index);
+        }
+        let read_index =
+            (self.write_index + self.line.len() - self.integer_delay) % self.line.len();
+        let delayed = self.line[read_index];
+        let mut value = (1.0 - self.damp) * delayed + self.damp * self.damping_x1;
+        self.damping_x1 = delayed;
+        if self.dispersion[0].coefficient.abs() > 1e-12 {
+            value = self.dispersion[0].tick(value);
+            value = self.dispersion[1].tick(value);
+        }
+        value = self.fractional.tick(value) * self.loop_gain;
+        self.energy_smooth = 0.999 * self.energy_smooth + 0.001 * value * value;
+        value
+    }
+
+    fn excitation_at(&self, sample_index: usize) -> f64 {
+        let Some(age) = sample_index.checked_sub(self.start_sample) else {
+            return 0.0;
+        };
+        self.excitation.get(age).copied().unwrap_or(0.0)
+    }
+
+    /// Contractive contact. The feedback value never exceeds the incoming
+    /// magnitude; the removed energy appears only in the radiated contact
+    /// signal, never back inside the loop.
+    fn apply_contact(&mut self, value: f64, buzz: f64) -> (f64, f64) {
+        if buzz <= 1e-12 {
+            return (value, 0.0);
+        }
+        let clearance = 1.22 - 0.88 * buzz;
+        let magnitude = value.abs();
+        if magnitude <= clearance {
+            self.contact_memory *= 0.72;
+            return (value, self.contact_memory * 0.08 * buzz);
+        }
+        let over = magnitude - clearance;
+        let hardness = 1.0 + 11.0 * buzz;
+        let compressed_magnitude = clearance + (hardness * over).tanh() / hardness;
+        let feedback = value.signum() * compressed_magnitude.min(magnitude);
+        let removed = value - feedback;
+        let radiation = removed - 0.78 * self.contact_memory;
+        self.contact_memory = removed;
+        (feedback, radiation)
+    }
+
+    fn write(&mut self, value: f64) {
+        self.line[self.write_index] = value;
+        self.write_index = (self.write_index + 1) % self.line.len();
+    }
+}
+
+#[derive(Debug)]
+struct BodyMode {
+    q: f64,
+    p: f64,
+    cos_omega: f64,
+    sin_omega: f64,
+    radius: f64,
+    coupling: f64,
+    radiation: f64,
+}
+
+impl BodyMode {
+    fn new(frequency: f64, t60: f64, coupling: f64, radiation: f64) -> Self {
+        let omega = 2.0 * PI * frequency / SR_F64;
+        Self {
+            q: 0.0,
+            p: 0.0,
+            cos_omega: omega.cos(),
+            sin_omega: omega.sin(),
+            radius: 10_f64.powf(-3.0 / (t60 * SR_F64)),
+            coupling,
+            radiation,
+        }
+    }
+
+    fn free_tick(&mut self) {
+        let q = self.radius * (self.cos_omega * self.q - self.sin_omega * self.p);
+        let p = self.radius * (self.sin_omega * self.q + self.cos_omega * self.p);
+        self.q = q;
+        self.p = p;
+    }
+}
+
+/// Exact real Givens rotation. `a²+b²` is invariant up to floating-point
+/// rounding for every finite angle.
+fn givens(a: f64, b: f64, angle: f64) -> (f64, f64) {
+    let (sin_angle, cos_angle) = angle.sin_cos();
+    (
+        cos_angle * a - sin_angle * b,
+        sin_angle * a + cos_angle * b,
+    )
+}
+
+/// Closed-form Frobenius norm of the commutator defect between rotations
+/// on overlapping planes R01(a) and R12(b), divided by sqrt(2).
+///
+/// It is zero when either rotation vanishes and is approximately `|a*b|`
+/// for small angles. In Weave this is an interpretable scalar measure of
+/// how strongly changing the order of two coupling gestures can change the
+/// resulting sound.
+pub fn weave_holonomy_defect(angle_a: f64, angle_b: f64) -> f64 {
+    let (sa, ca) = angle_a.sin_cos();
+    let (sb, cb) = angle_b.sin_cos();
+    (((ca - 1.0).powi(2) * sb.powi(2))
+        + ((cb - 1.0).powi(2) * sa.powi(2))
+        + (sa * sb).powi(2))
+    .sqrt()
+}
+
+fn make_body(size: f64) -> Vec<BodyMode> {
+    BODY_MODE_SPECS
+        .iter()
+        .map(|&(frequency, t60, coupling, radiation)| {
+            BodyMode::new(frequency / size, t60, coupling, radiation)
+        })
+        .collect()
+}
+
+fn virtual_course_frequency(base: f64, ordinal: usize, dimension: f64) -> f64 {
+    // Weyl-like mode counting N(f) proportional to f^d, inverted to
+    // f_k proportional to k^(1/d), then octave-folded into a playable
+    // four-octave window. Irrational d gives an inharmonic but structured
+    // spectrum rather than arbitrary detuning.
+    let mut ratio = (ordinal as f64 + 2.0).powf(1.0 / dimension.max(0.55));
+    while ratio > 8.0 {
+        ratio *= 0.5;
+    }
+    while ratio < 1.0 {
+        ratio *= 2.0;
+    }
+    base * ratio
+}
+
+/// Stateful real-time-safe kernel shared by offline MUS rendering and a
+/// future VST/CLAP wrapper. Construction allocates; [`next_sample`] and
+/// [`render_block`] do not.
+pub struct StringNetworkVoice {
+    mode: StringNetworkMode,
+    patch: PluckPatch,
+    strings: Vec<DelayString>,
