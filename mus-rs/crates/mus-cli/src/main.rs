@@ -1,5 +1,6 @@
 mod check;
 mod service;
+mod vocab_dump;
 
 use mus_engine::{render, sha256_bytes, write_wav, RenderStats, ENGINE_VERSION};
 use mus_text::{adopt, parse_score};
@@ -105,6 +106,13 @@ fn run() -> Result<(), String> {
     }
     if command == "service" {
         return service::run_service();
+    }
+    if command == "vocab" {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&vocab_dump::dump()).map_err(|e| e.to_string())?
+        );
+        return Ok(());
     }
     if command == "check" {
         let score = PathBuf::from(args.next().ok_or_else(usage)?);

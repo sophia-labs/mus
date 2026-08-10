@@ -16,6 +16,6 @@ mus-graph = { path = "../mus-graph" }
 mus-notation = { path = "../mus-notation" }
 mus-oplog = { path = "../mus-oplog" }
 mus-text = { path = "../mus-text" }
-mus-vocab = { path = "../mus-vocab" }
+mus-vocab = { version = "0.1.0", path = "../mus-vocab" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

@@ -9,6 +9,8 @@
 
 use sha2::{Digest, Sha256};
 
+pub mod param_specs;
+
 pub const MUS_SCORE_TTL: &str = include_str!("../../../../ontology/mus-score.ttl");
 pub const MUS_OPS_TTL: &str = include_str!("../../../../ontology/mus-ops.ttl");
 
