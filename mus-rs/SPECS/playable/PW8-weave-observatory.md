@@ -1,8 +1,12 @@
 # PW8 — the Weave Observatory (DRAFT for Vera's reaction)
 
 A standalone Shrubbery/Atril face that is a control-and-visualization
-surface for `synth=weave`. Status: **design draft**, written the day the
-instrument landed. Nothing here is dispatched yet.
+surface for `synth=weave`. Status: **PW8a landed** (render_traced +
+service vocab/renderWeaveProbe, this repo) and **the app v1 shipped**
+(shrubbery `apps/observatory`, feat/atril): Ring + Defect Gauge +
+vocab-driven controls + string bar, verified live. PW8c (Braid,
+trajectory record/replay) still waits on the within-note automation
+seam below.
 
 ## The idea in one sentence
 
