@@ -169,13 +169,20 @@ fn fold_op(g: &mut ScoreGraph, op: &Op) {
             clef,
             params,
         } => {
-            g.instruments.push(InstrumentDecl {
+            let declaration = InstrumentDecl {
                 abbrev: abbrev.clone(),
                 name: name.clone(),
                 clef: clef.clone(),
                 params: params.clone(),
                 declared_by: op.id.clone(),
-            });
+            };
+            // Instruments are set/replace declarations keyed by abbreviation;
+            // unlike sections, they are not an ordered repeated list.
+            if let Some(existing) = g.instruments.iter_mut().find(|i| i.abbrev == *abbrev) {
+                *existing = declaration;
+            } else {
+                g.instruments.push(declaration);
+            }
         }
         OpBody::AddSection {
             name,

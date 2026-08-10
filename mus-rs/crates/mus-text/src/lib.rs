@@ -13,6 +13,8 @@ use mus_oplog::{EventKind, EventState, Frac, OpBody, OpLog, Quote, QuoteLayer};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
+pub mod ingest;
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Diag {
     pub severity: String,
