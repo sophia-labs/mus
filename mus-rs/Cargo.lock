@@ -101,7 +101,10 @@ version = "0.1.0"
 dependencies = [
  "mus-engine",
  "mus-graph",
+ "mus-notation",
+ "mus-oplog",
  "mus-text",
+ "mus-vocab",
  "serde",
  "serde_json",
 ]

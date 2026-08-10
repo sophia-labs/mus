@@ -62,6 +62,18 @@ fn diag(code: &str, message: impl Into<String>) -> Diag {
 /// Parse one complete MUS score. Unknown non-comment/non-bar prose is
 /// intentionally tolerated, matching `mus.py::parse_mus`.
 pub fn parse_score(text: &str) -> Result<Proposal, Vec<Diag>> {
+    let (proposal, diagnostics) = parse_score_lossy(text);
+    if diagnostics.is_empty() {
+        Ok(proposal)
+    } else {
+        Err(diagnostics)
+    }
+}
+
+/// Parse a score while retaining the graph-shaped proposal even when one or
+/// more tokens are malformed.  The check face is deliberately tolerant: a
+/// refused score is a report with `clean: false`, not a process-level error.
+pub fn parse_score_lossy(text: &str) -> (Proposal, Vec<Diag>) {
     let mut proposal = Proposal {
         title: "Untitled".into(),
         ..Proposal::default()
@@ -154,14 +166,22 @@ pub fn parse_score(text: &str) -> Result<Proposal, Vec<Diag>> {
             for bar in from..=to {
                 bars.insert(
                     bar,
-                    split_bar_content(
-                        content,
-                        &proposal
+                    if content.trim() == "tacet" {
+                        proposal
                             .instruments
                             .iter()
-                            .map(|i| i.abbrev.clone())
-                            .collect::<Vec<_>>(),
-                    ),
+                            .map(|i| (i.abbrev.clone(), "-".to_string()))
+                            .collect()
+                    } else {
+                        split_bar_content(
+                            content,
+                            &proposal
+                                .instruments
+                                .iter()
+                                .map(|i| i.abbrev.clone())
+                                .collect::<Vec<_>>(),
+                        )
+                    },
                 );
                 if !changes.is_empty() {
                     proposal.bar_changes.insert(bar, changes.clone());
@@ -242,11 +262,7 @@ pub fn parse_score(text: &str) -> Result<Proposal, Vec<Diag>> {
             }
         }
     }
-    if diagnostics.is_empty() {
-        Ok(proposal)
-    } else {
-        Err(diagnostics)
-    }
+    (proposal, diagnostics)
 }
 
 fn split_headers(body: &str) -> Vec<&str> {
@@ -552,6 +568,47 @@ mod tests {
         assert_eq!(p.bar_changes[&3], vec!["tempo=88", "time=3/4"]);
         assert_eq!(p.events.iter().filter(|e| e.bar == 2).count(), 1);
         assert_eq!(p.events.iter().filter(|e| e.bar == 3).count(), 1);
+    }
+
+    #[test]
+    fn parse_score_lossy_preserves_valid_events_around_bad_input() {
+        let text = "# score: tolerant\n# summary: keeps going\n# bars: 1\n# instruments:\n#   v = voice (treble)\nbar 1: v=C4q definitely-not-a-token D4q\n";
+        let (proposal, diagnostics) = parse_score_lossy(text);
+        assert!(
+            diagnostics.is_empty(),
+            "token lossiness belongs to the check face"
+        );
+        assert_eq!(proposal.title, "tolerant");
+        assert_eq!(proposal.headers["summary"], "keeps going");
+        assert_eq!(proposal.events.len(), 2);
+        assert_eq!(proposal.events[0].bar, 1);
+        assert_eq!(proposal.events[1].pitches_midi_cents, vec![6200]);
+    }
+
+    #[test]
+    fn tacet_fills_each_declared_track_without_creating_events() {
+        let text = "# score: rests\n# bars: 3\n# instruments:\n#   a = voice (treble)\n#   b = percussion (perc)\nbar 1: tacet\nbars 2-3: a=C4q b=Xe\n";
+        let (proposal, diagnostics) = parse_score_lossy(text);
+        assert!(diagnostics.is_empty());
+        assert_eq!(proposal.headers["bars"], "3");
+        assert_eq!(proposal.events.len(), 4);
+        assert!(proposal.events.iter().all(|event| event.bar >= 2));
+        assert_eq!(
+            proposal
+                .events
+                .iter()
+                .filter(|event| event.track == "a")
+                .count(),
+            2
+        );
+        assert_eq!(
+            proposal
+                .events
+                .iter()
+                .filter(|event| event.track == "b")
+                .count(),
+            2
+        );
     }
 
     #[test]

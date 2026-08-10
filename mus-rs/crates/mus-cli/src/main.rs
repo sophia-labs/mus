@@ -1,3 +1,5 @@
+mod check;
+
 use mus_engine::{render, sha256_bytes, write_wav, ENGINE_VERSION};
 use mus_text::{adopt, parse_score};
 use serde::Serialize;
@@ -36,7 +38,42 @@ fn main() {
 
 fn run() -> Result<(), String> {
     let mut args = env::args().skip(1);
-    let command = args.next().ok_or_else(usage)?;
+    let Some(command) = args.next() else {
+        return Err(usage());
+    };
+    if command == "--help" || command == "-h" {
+        println!("{}", usage());
+        return Ok(());
+    }
+    if command == "check" {
+        let score = PathBuf::from(args.next().ok_or_else(usage)?);
+        let mut base = None;
+        let mut json_output = false;
+        while let Some(arg) = args.next() {
+            match arg.as_str() {
+                "--base" => base = Some(PathBuf::from(args.next().ok_or_else(usage)?)),
+                "--json" => json_output = true,
+                "--help" | "-h" => {
+                    println!("{}", usage());
+                    return Ok(());
+                }
+                _ => return Err(format!("unknown argument {arg}\n{}", usage())),
+            }
+        }
+        let report = check::run(&score, base.as_deref())?;
+        if json_output {
+            println!(
+                "{}",
+                serde_json::to_string(&report).map_err(|e| e.to_string())?
+            );
+        } else {
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&report).map_err(|e| e.to_string())?
+            );
+        }
+        return Ok(());
+    }
     if command != "render" {
         return Err(usage());
     }
@@ -114,5 +151,5 @@ fn head_selection(graph: &mus_graph::ScoreGraph) -> serde_json::Value {
 }
 
 fn usage() -> String {
-    "usage: mus render <score.mus> -o <out.wav> [--json]".into()
+    "usage:\n  mus check <score.mus> [--base DIR] [--json]\n  mus render <score.mus> -o <out.wav> [--json]\n\nAtril swap:\n  MUS_CHECK_CMD=\"/Users/vera/dev/sophia/mus/mus-rs/target/release/mus check\"".into()
 }
