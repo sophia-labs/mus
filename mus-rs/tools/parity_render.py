@@ -890,7 +890,15 @@ def main() -> int:
     elif args.write_expectations:
         score_names = list(FAST_SUBSET_RENDER_ARGS)
     else:
-        score_names = sorted(p.name for p in AIGUA_DIR.glob("*.mus"))
+        score_names = []
+        for p in sorted(AIGUA_DIR.glob("*.mus")):
+            # Post-parity voices (synth=pluck/weave) have no oracle line to
+            # compare against; skipping is the correct result, and it must
+            # be loud — a silently shrunk corpus would read as coverage.
+            if re.search(r"synth\s*=\s*(pluck|weave)", p.read_text()):
+                print(f"skipping {p.name}: post-parity voice, no oracle", file=sys.stderr)
+                continue
+            score_names.append(p.name)
 
     work_dir = args.tmp_dir or Path(tempfile.mkdtemp(prefix="mus-parity-"))
     work_dir.mkdir(parents=True, exist_ok=True)

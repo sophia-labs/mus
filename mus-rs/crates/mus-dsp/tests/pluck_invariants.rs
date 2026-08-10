@@ -154,7 +154,7 @@ fn streaming_blocks_equal_offline_render() {
 #[test]
 fn in_tune_across_the_guitar_neck() {
     let patch = isolated(&[("sus", "3.0"), ("damp", "0.2")]);
-    for target in [82.4069, 110.0, 220.0, 440.0, 880.0] {
+    for target in [82.4069, 110.0, 220.0, 440.0, 880.0, 1318.51] {
         let audio = pluck_note(&patch, &[target], 1.2, 1.0);
         let estimate = estimate_f0(&audio, 0.16, 0.56, target * 0.80, target * 1.25);
         let cents = 1200.0 * (estimate / target).log2().abs();
@@ -370,5 +370,70 @@ fn bounded_and_finite_over_extreme_controls() {
             .iter()
             .fold(0.0_f32, |maximum, sample| maximum.max(sample.abs()));
         assert!(peak <= 4.0, "network peak {peak} is bounded");
+        let bent = if patch.get("synth").map(String::as_str) == Some("weave") {
+            weave_note(patch, &[82.4069, 110.0, 146.832], 0.45, 1.5)
+        } else {
+            pluck_note(patch, &[82.4069, 110.0, 146.832], 0.45, 1.5)
+        };
+        assert!(bent.iter().all(|sample| sample.is_finite()));
+        let bent_peak = bent
+            .iter()
+            .fold(0.0_f32, |maximum, sample| maximum.max(sample.abs()));
+        // Delay-line retuning during a bend performs work on the state —
+        // the predicted gap in the rotation proof, measured: this exact
+        // weave patch peaks 3.24 unbent and 5.38 during an upward-fifth
+        // bend (a bounded ~0.3 s transient that then decays to silence;
+        // the fretting hand doing work on a shortening string is real
+        // physics). Bound is measurement + headroom, not a passivity
+        // claim; energy-compensated retuning is the P0 follow-up.
+        assert!(bent_peak <= 8.0, "bent network peak {bent_peak} is bounded");
     }
+}
+
+#[test]
+fn zero_limit_laws_decouple_the_network() {
+    // couple=0 with body=0: every scattering-path control is inert — the
+    // decoupled network is nothing but independent courses.
+    let base = params(&[
+        ("synth", "weave"),
+        ("body", "0"),
+        ("couple", "0"),
+        ("courses", "9"),
+        ("sus", "1.0"),
+    ]);
+    let reference = weave_note(&base, &[110.0, 165.0], 0.5, 1.0);
+    for (key, value) in [
+        ("chirality", "-0.9"),
+        ("orbit", "7.0"),
+        ("orbit_depth", "0.9"),
+        ("curvature", "0.9"),
+        ("dimension", "2.4"),
+    ] {
+        let mut patch = base.clone();
+        patch.insert(key.to_string(), value.to_string());
+        let altered = weave_note(&patch, &[110.0, 165.0], 0.5, 1.0);
+        assert_eq!(
+            reference, altered,
+            "{key} must be inert when couple=0 and body=0"
+        );
+    }
+
+    // orbit_depth=0: the travelling field's rate is inert even while the
+    // network is coupled and the body is live.
+    let still = params(&[
+        ("synth", "weave"),
+        ("body", "0.4"),
+        ("couple", "0.2"),
+        ("orbit_depth", "0"),
+        ("orbit", "0.1"),
+        ("courses", "9"),
+        ("sus", "1.0"),
+    ]);
+    let mut spinning = still.clone();
+    spinning.insert("orbit".to_string(), "19.0".to_string());
+    assert_eq!(
+        weave_note(&still, &[110.0, 165.0], 0.5, 1.0),
+        weave_note(&spinning, &[110.0, 165.0], 0.5, 1.0),
+        "orbit must be inert when orbit_depth=0"
+    );
 }
