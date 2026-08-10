@@ -1,0 +1,31 @@
+# score: The deepened string — guitar v2
+# summary: physical displacement, stiffness, tension glide, shared body, sympathetic strings, contact, bends
+# tempo: 88    time: 4/4    key: Em    bars: 10
+# reverb: 1.25
+# master: rms=-16
+
+# instruments:
+#   gt = guitar v2 (treble, synth=pluck, sus=3.2, damp=0.31, pos=0.14, pick=0.54, body=0.58, body_size=1.0, stiff=0.11, tension=8, symp=0.30, detune=3, send=0.16)
+#   bs = wound bass (bass, synth=pluck, sus=2.4, damp=0.48, pos=0.10, pick=0.42, body=0.42, stiff=0.16, tension=11, symp=0.18, send=0.08, gain=1.5)
+
+# section: displacement [1-2] — fingerstyle; every note begins as a pulled string, not filtered noise
+bar 1: gt=E2e B2e E3e G3e B3e E4e B3e G3e  bs=E1h B1h
+bar 2: gt=C3e G3e C4e E4e G4e E4e C4e G3e  bs=C2h G1h
+
+# section: one shared box [3-4] — chords exchange energy through body and open sympathetic courses
+bar 3: gt=<E2 B2 E3 G3 B3 E4>h[strum=17] <D3 A3 D4 F#4>h[strum=15]  bs=E1h D2h
+bar 4: gt=<C3 G3 C4 E4 G4>q[strum=14] <A2 E3 A3 C4 E4>q[strum=-14] <B2 F#3 B3 D#4 F#4>h[strum=19]  bs=C2q A1q B1h
+
+# section: material [5-6] — same pitch, changing stiffness/contact/pick point
+bar 5: gt=E3q[stiff=0,tension=0,pos=0.46,pick=0.12] E3q[stiff=0.25,tension=10,pos=0.14,pick=0.55] E3q[stiff=0.72,tension=24,pos=0.06,pick=0.92] E3q[stiff=0.20,tension=14,buzz=0.55,pos=0.10,pick=0.78]  bs=-
+bar 6: gt=A2q[pos=0.5,pick=0] A2q[pos=0.08,pick=0] A2q[pos=0.5,pick=1] A2q[pos=0.08,pick=1]  bs=A1w
+
+# section: hands [7-8] — palm contact, release, and waveguide retiming
+bar 7: gt=E2e[pm] E2e[pm] E3e[pm] E2e[pm] G2e[pm,buzz=0.35] G2e[pm,buzz=0.35] <E2 B2 E3 G3>q[strum=9]  bs=E1q[pm] E1q[pm] E1q[pm] E1q[pm]
+bar 8: gt=G3q->A3 B3q->D4 A3q->G3 E3q->B3  bs=E1w
+
+# section: body scale [9] — one impossible luthier control, still inside the bridge loop
+bar 9: gt=<E2 B2 E3 G3 B3 E4>h[strum=20,body_size=0.72] <E2 B2 E3 G3 B3 E4>h[strum=-20,body_size=1.55]  bs=E1w
+
+# section: let the ecology ring [10]
+bar 10: gt=<E2 B2 E3 G3 B3 E4>w[strum=24,sus=6,body=0.8,symp=0.6]  bs=E1w[sus=6,body=0.65]
