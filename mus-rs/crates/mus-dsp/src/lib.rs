@@ -25,6 +25,7 @@
 pub mod bus;
 pub mod filters;
 pub mod fixtures;
+pub mod glow;
 pub mod kernels;
 pub mod pitch;
 pub mod synth;
