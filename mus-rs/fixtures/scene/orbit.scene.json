@@ -1,0 +1,113 @@
+{
+ "sceneId": "fx-orbit",
+ "title": "one object orbiting, room off",
+ "sampleRate": 48000,
+ "durationSeconds": 1.6,
+ "objects": [
+  {
+   "objectId": "o",
+   "label": "orbiter",
+   "audio": "stems/sine220.wav",
+   "startSeconds": 0.0,
+   "durationSeconds": null,
+   "kind": "point",
+   "position": {
+    "x": -1.5,
+    "y": 0.0,
+    "z": -9.184850993605148e-17
+   },
+   "trajectory": [
+    {
+     "timeSeconds": 0.0,
+     "position": {
+      "x": -1.5,
+      "y": 0.0,
+      "z": -9.184850993605148e-17
+     }
+    },
+    {
+     "timeSeconds": 0.375,
+     "position": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": -1.5
+     }
+    },
+    {
+     "timeSeconds": 0.75,
+     "position": {
+      "x": 1.5,
+      "y": 0.0,
+      "z": -9.184850993605148e-17
+     }
+    },
+    {
+     "timeSeconds": 1.125,
+     "position": {
+      "x": 1.8369701987210297e-16,
+      "y": 0.0,
+      "z": 1.5
+     }
+    },
+    {
+     "timeSeconds": 1.5,
+     "position": {
+      "x": -1.5,
+      "y": 0.0,
+      "z": 2.755455298081545e-16
+     }
+    }
+   ],
+   "gainDb": 0.0,
+   "spread": 0.0,
+   "reverbSend": 0.0,
+   "loop": false,
+   "muted": false,
+   "controls": {
+    "gainDb": 0.0,
+    "targetLufs": null,
+    "brightnessDb": 0.0,
+    "brightnessHz": 2500.0,
+    "roughnessDepth": 0.0,
+    "roughnessRateHz": 70.0,
+    "fluctuationDepth": 0.0,
+    "fluctuationRateHz": 4.0,
+    "attackSeconds": null,
+    "pitchSemitones": 0.0,
+    "tonalFocus": 0.0,
+    "safetyPeak": 0.98
+   },
+   "analysis": {},
+   "sourceRegion": null,
+   "placementProvenance": "composition-authored",
+   "metadata": {}
+  }
+ ],
+ "listener": {
+  "position": {
+   "x": 0.0,
+   "y": 0.0,
+   "z": 0.0
+  },
+  "forward": {
+   "x": 0.0,
+   "y": 0.0,
+   "z": -1.0
+  },
+  "up": {
+   "x": 0.0,
+   "y": 1.0,
+   "z": 0.0
+  }
+ },
+ "room": {
+  "enabled": false,
+  "decaySeconds": 1.6,
+  "wet": 0.16,
+  "damping": 0.45,
+  "seed": 17
+ },
+ "coordinateSystem": "+X right, +Y up, -Z front",
+ "metadata": {},
+ "schema": "https://sophia-labs.ai/schemas/mus-spatial-scene/1"
+}
