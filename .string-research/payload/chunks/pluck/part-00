@@ -1,0 +1,170 @@
+//! Physically informed string networks: a deepened guitar and the
+//! impossible `weave` instrument.
+//!
+//! This module begins at extended Karplus--Strong and then makes the
+//! feedback loop explicit enough to support instruments that are not
+//! reducible to one string plus an output EQ.
+//!
+//! ## Guitar
+//!
+//! The `pluck` voice now combines:
+//!
+//! - a physical triangular initial displacement, with content-keyed pick
+//!   roughness rather than a noise-only delay-line fill;
+//! - exact fundamental-phase compensation for the damping and dispersion
+//!   filters, preserving tuning while adding stiffness;
+//! - frequency-dependent decay with fundamental T60 calibration;
+//! - amplitude-dependent onset pitch glide whose relaxation time is tied
+//!   to the string's energy-decay time;
+//! - a shared, damped modal body coupled *inside* the feedback network by
+//!   norm-preserving rotations;
+//! - optional sympathetic open strings, detuned courses, palm muting,
+//!   bends, strums, and a contractive fret/bridge-contact model.
+//!
+//! ## Weave
+//!
+//! `weave` is a strict generalisation. It adds virtual courses whose mode
+//! count follows a configurable spectral dimension, then scatters their
+//! travelling-wave endpoint values through a time-varying ordered product
+//! of Givens rotations. Every individual rotation is exactly orthogonal,
+//! so modulation can create sidebands and redistribute energy without
+//! introducing hidden gain. Because adjacent rotations do not commute,
+//! changing their order creates an audible holonomy: the state after a
+//! control cycle depends on the path through coupling space, not just the
+//! final knob values.
+//!
+//! The pointwise nonlinear case remains safe. If the rotation angles are
+//! functions of the current state, `Q(x)` is still orthogonal for every
+//! `x`, and therefore `||Q(x)x||_2 = ||x||_2`. With the explicitly
+//! contractive loop and body losses used here, the unforced network is
+//! non-expansive. This is the module's mathematical safety contract and is
+//! tested directly below and in `tests/pluck_invariants.rs`.
+
+use std::collections::BTreeMap;
+use std::f64::consts::{LN_10, PI};
+
+use np_rand::{Pcg64, SeedSequence};
+
+use crate::SR_F64;
+
+const OPEN_GUITAR_STRINGS: [f64; 6] = [82.4069, 110.0, 146.832, 195.998, 246.942, 329.628];
+const BODY_MODE_SPECS: [(f64, f64, f64, f64); 10] = [
+    // frequency, T60, coupling angle at body=1, radiation weight
+    (98.0, 1.25, 0.0065, 0.78),
+    (186.0, 0.95, 0.0058, 0.72),
+    (221.0, 0.82, 0.0053, 0.66),
+    (286.0, 0.72, 0.0047, 0.58),
+    (365.0, 0.58, 0.0042, 0.50),
+    (455.0, 0.50, 0.0038, 0.43),
+    (610.0, 0.40, 0.0032, 0.34),
+    (835.0, 0.32, 0.0027, 0.27),
+    (1175.0, 0.25, 0.0022, 0.20),
+    (1580.0, 0.18, 0.0018, 0.14),
+];
+
+/// Everything read by the guitar and Weave string-network voices.
+///
+/// The original eight fields remain source-compatible. New fields have
+/// conservative guitar defaults: `synth=pluck` becomes better without
+/// turning into the exotic instrument unless explicitly requested.
+#[derive(Debug, Clone, PartialEq)]
+pub struct PluckPatch {
+    /// Fundamental T60 in seconds (`sus`).
+    pub sus: f64,
+    /// Frequency-dependent loop loss, 0..0.95 (`damp`).
+    pub damp: f64,
+    /// Pluck point as a fraction of string length (`pos`).
+    pub pos: f64,
+    /// Contact hardness: fingertip 0, plectrum 1 (`pick`).
+    pub pick: f64,
+    /// Shared body-coupling amount (`body`).
+    pub body: f64,
+    /// Chord stagger in milliseconds; negative reverses order (`strum`).
+    pub strum_ms: f64,
+    /// Palm mute (`pm`).
+    pub pm: bool,
+    /// Detuned companion course in cents (`detune`).
+    pub detune: f64,
+    /// Stiff-string dispersion amount, 0..1 (`stiff`).
+    pub stiff: f64,
+    /// Initial onset pitch elevation in cents (`tension`).
+    pub tension_cents: f64,
+    /// Coupling to unplayed standard-guitar open strings (`symp`).
+    pub symp: f64,
+    /// Contractive fret/bridge contact amount (`buzz`).
+    pub buzz: f64,
+    /// Body-size ratio; >1 lowers body modes (`body_size`).
+    pub body_size: f64,
+    /// Weave nearest-neighbour scattering angle in radians (`couple`).
+    pub couple: f64,
+    /// Ordered-scattering bias, -1..1 (`chirality`).
+    pub chirality: f64,
+    /// Rate of the travelling coupling field in Hz (`orbit`).
+    pub orbit_hz: f64,
+    /// Depth of the travelling coupling field (`orbit_depth`).
+    pub orbit_depth: f64,
+    /// State-dependent metric curvature, 0..1 (`curvature`).
+    pub curvature: f64,
+    /// Target total number of Weave courses (`courses`).
+    pub courses: usize,
+    /// Spectral dimension d, with f_k proportional to k^(1/d) (`dimension`).
+    pub spectral_dimension: f64,
+}
+
+impl Default for PluckPatch {
+    fn default() -> Self {
+        Self {
+            sus: 2.5,
+            damp: 0.35,
+            pos: 0.13,
+            pick: 0.6,
+            body: 0.42,
+            strum_ms: 10.0,
+            pm: false,
+            detune: 0.0,
+            stiff: 0.08,
+            tension_cents: 5.0,
+            symp: 0.22,
+            buzz: 0.0,
+            body_size: 1.0,
+            couple: 0.11,
+            chirality: 0.72,
+            orbit_hz: 0.31,
+            orbit_depth: 0.62,
+            curvature: 0.28,
+            courses: 11,
+            spectral_dimension: 1.35,
+        }
+    }
+}
+
+fn parsed(map: &BTreeMap<String, String>, key: &str, default: f64) -> f64 {
+    map.get(key)
+        .and_then(|value| value.parse::<f64>().ok())
+        .unwrap_or(default)
+}
+
+fn parsed_usize(map: &BTreeMap<String, String>, key: &str, default: usize) -> usize {
+    map.get(key)
+        .and_then(|value| value.parse::<f64>().ok())
+        .map(|value| value.round().max(0.0) as usize)
+        .unwrap_or(default)
+}
+
+impl From<&BTreeMap<String, String>> for PluckPatch {
+    fn from(map: &BTreeMap<String, String>) -> Self {
+        let d = Self::default();
+        Self {
+            sus: parsed(map, "sus", d.sus).clamp(0.05, 20.0),
+            damp: parsed(map, "damp", d.damp).clamp(0.0, 0.95),
+            pos: parsed(map, "pos", d.pos).clamp(0.02, 0.5),
+            pick: parsed(map, "pick", d.pick).clamp(0.0, 1.0),
+            body: parsed(map, "body", d.body).clamp(0.0, 1.0),
+            strum_ms: parsed(map, "strum", d.strum_ms).clamp(-80.0, 80.0),
+            pm: map
+                .get("pm")
+                .is_some_and(|value| value != "0" && value != "off" && value != "no"),
+            detune: parsed(map, "detune", d.detune).clamp(0.0, 60.0),
+            stiff: parsed(map, "stiff", d.stiff).clamp(0.0, 1.0),
+            tension_cents: parsed(map, "tension", d.tension_cents).clamp(0.0, 80.0),
+            symp: parsed(map, "symp", d.symp).clamp(0.0, 1.0),
