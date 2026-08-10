@@ -37,3 +37,4 @@ aigua/v2/*.npy
 aigua/v2/*.npz
 aigua/render/*.html
 *.egg-info/
+formal/.lake/
