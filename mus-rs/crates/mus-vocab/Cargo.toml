@@ -1,0 +1,10 @@
+[package]
+name = "mus-vocab"
+version = "0.1.0"
+description = "The golden contract as a crate: embedded mus-core/mus-ops vocabularies, vocab digest, the closed core param/flag registries, and core/extension classification (R2)."
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+sha2 = "0.10"

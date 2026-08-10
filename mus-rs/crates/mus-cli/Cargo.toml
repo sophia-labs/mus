@@ -1,0 +1,18 @@
+[package]
+name = "mus-cli"
+version = "0.1.0"
+description = "Command-line faces for the MUS graph"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "mus"
+path = "src/main.rs"
+
+[dependencies]
+mus-engine = { path = "../mus-engine" }
+mus-graph = { path = "../mus-graph" }
+mus-text = { path = "../mus-text" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

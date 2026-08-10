@@ -24,6 +24,8 @@
 use mus_oplog::{EventKind, EventState, Frac, LineageId, Op, OpBody, OpId, OpLog, VersionId};
 use std::collections::BTreeMap;
 
+pub mod timing;
+
 // ------------------------------------------------------------------- body
 
 #[derive(Debug, Clone, PartialEq)]
@@ -118,6 +120,28 @@ impl ScoreGraph {
         });
         out
     }
+}
+
+/// Count events-per-extension-param across current events and instrument
+/// declarations, given a core-classifier (provided by `mus-vocab`; the
+/// closure keeps both crates leaf-clean — WA's dependency-direction rule).
+pub fn extension_usage(g: &ScoreGraph, is_core: &dyn Fn(&str) -> bool) -> BTreeMap<String, u32> {
+    let mut out: BTreeMap<String, u32> = BTreeMap::new();
+    for (_, state, _) in g.current_events() {
+        for key in state.params.keys() {
+            if !is_core(key) {
+                *out.entry(key.clone()).or_default() += 1;
+            }
+        }
+    }
+    for inst in &g.instruments {
+        for key in inst.params.keys() {
+            if key != "voice" && key != "sample" && key != "mode" && !is_core(key) {
+                *out.entry(key.clone()).or_default() += 1;
+            }
+        }
+    }
+    out
 }
 
 // -------------------------------------------------------------- projection
