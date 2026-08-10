@@ -1,0 +1,33 @@
+# score: Weave — an impossible string instrument
+# summary: spectral dimension, chiral ordered scattering, moving coupling field, state-dependent geometry, audible holonomy
+# tempo: 78    time: 4/4    key: none    bars: 10
+# reverb: 1.8
+# master: rms=-17
+
+# instruments:
+#   wv = holonomy string network (treble, synth=weave, sus=3.8, damp=0.24, pos=0.11, pick=0.72, body=0.58, body_size=1.15, stiff=0.34, tension=12, courses=13, dimension=1.38, couple=0.145, chirality=0.82, orbit=0.29, orbit_depth=0.72, curvature=0.44, send=0.22)
+#   lo = deep weave (bass, synth=weave, sus=4.6, damp=0.42, pos=0.08, pick=0.46, body=0.50, body_size=1.65, stiff=0.48, courses=9, dimension=0.82, couple=0.10, chirality=-0.66, orbit=0.17, orbit_depth=0.58, curvature=0.32, send=0.15, gain=-1)
+
+# section: guitar limit [1] — the generalized engine before topology starts moving
+bar 1: wv=<E2 B2 E3 G3 B3 E4>w[couple=0,orbit=0,curvature=0,chirality=0,courses=6,dimension=1]  lo=-
+
+# section: enter the virtual courses [2-3] — mode density is a geometric control
+bar 2: wv=E3h[dimension=0.72,courses=9] E3h[dimension=1.38,courses=13]  lo=E1w
+bar 3: wv=<E3 B3 F#4>h[dimension=1.8,courses=16] <F3 C4 G4>h[dimension=2.5,courses=20]  lo=E1h F1h
+
+# section: clockwise word [4-5] — R01 R12 ... dominates
+bar 4: wv=<E2 B2 E3 G3>h[chirality=0.95,orbit=0.37,orbit_depth=0.82,curvature=0.60] <D3 A3 D4 F4>h[chirality=0.95,orbit=0.37,orbit_depth=0.82,curvature=0.60]  lo=E1w
+bar 5: wv=E3q->B4 G3q->D5 B3q->F#5 D4q->A5  lo=E1w[chirality=-0.4]
+
+# section: reverse the word [6] — same scalar endpoint, different ordered product
+bar 6: wv=<E2 B2 E3 G3>w[chirality=-0.95,orbit=0.37,orbit_depth=0.82,curvature=0.60]  lo=E1w
+
+# section: curved state space [7-8] — local energy changes the next junction angle, but never its norm
+bar 7: wv=E3e[curvature=1,couple=0.20] E4e[curvature=1,couple=0.20] B3e[curvature=1,couple=0.20] F#4e[curvature=1,couple=0.20] D4e[curvature=1,couple=0.20] A4e[curvature=1,couple=0.20] C5e[curvature=1,couple=0.20] G5e[curvature=1,couple=0.20]  lo=E1w[curvature=0.75]
+bar 8: wv=<C3 G3 D4 A4 E5>h[courses=24,dimension=2.2,couple=0.24,orbit=0.71] <B2 F#3 C#4 G#4 D#5>h[courses=24,dimension=0.61,couple=0.24,orbit=0.71]  lo=C1h B0h
+
+# section: impossible lutherie [9] — giant body, bright contact, counter-rotating low network
+bar 9: wv=<E3 B3 F#4 C#5>w[body_size=2.1,buzz=0.32,stiff=0.72,tension=28,orbit=1.13]  lo=E0w[body_size=2.2,chirality=-1,couple=0.18,orbit=0.23]
+
+# section: one cycle [10] — a final long state transformation
+bar 10: wv=<E2 B2 E3 G3 B3 E4>w[sus=7,courses=18,dimension=1.618,couple=0.19,chirality=0.88,orbit=0.23,orbit_depth=0.95,curvature=0.8,body=0.82]  lo=E0w[sus=7,courses=12,dimension=0.77,couple=0.14,chirality=-0.76,orbit=0.14]
