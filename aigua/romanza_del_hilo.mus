@@ -1,0 +1,62 @@
+# score: Romanza del hilo
+# summary: classical guitar romanza on the weave voice — guitar limit, waking lattice, chirality mirror, harmonic coda
+# tempo: 80
+# time: 3/4
+# key: Em
+# bars: 28
+# reverb: 1.4
+# master: rms=-16
+
+# text @b1: a romanza for the impossible guitar. three hands of one instrument:
+# text @b1: la voz sings apoyando (pos deep, pick soft), el arpegio rings tirando,
+# text @b1: el bordon walks underneath. couple stays low — the lattice only breathes.
+# text @b9: la vuelta al sol — the lattice wakes: couple rises, the orbit turns,
+# text @b9: curvature lets the loud courses bend the quiet ones toward them.
+# text @b17: la memoria — the same thread, walked backwards: chirality mirrored,
+# text @b17: hand over the soundhole. what returns is not what left.
+# text @b25: coda — plucked at the exact midpoint of the string, the even
+# text @b25: harmonics vanish: bells that are really physics.
+
+# instruments:
+#   vo = la voz (treble, synth=weave, sus=4.5, damp=0.20, pos=0.34, pick=0.32, body=0.55, stiff=0.10, tension=4, courses=9, dimension=1.9, couple=0.055, chirality=0.6, orbit=0.12, orbit_depth=0.3, curvature=0.08, strum=0, send=0.22, gain=1)
+#   ar = el arpegio (treble, synth=weave, sus=2.6, damp=0.30, pos=0.16, pick=0.48, body=0.45, stiff=0.08, tension=3, courses=9, dimension=1.9, couple=0.055, chirality=0.6, orbit=0.12, orbit_depth=0.3, curvature=0.08, strum=0, send=0.18, gain=-4)
+#   bj = el bordon (bass, synth=weave, sus=3.5, damp=0.34, pos=0.12, pick=0.36, body=0.50, stiff=0.12, tension=3, courses=7, dimension=1.9, couple=0.05, chirality=0.6, orbit=0.10, orbit_depth=0.2, curvature=0.05, strum=0, send=0.12)
+#   vm = la voz en memoria (treble, synth=weave, sus=4.5, damp=0.20, pos=0.40, pick=0.28, body=0.55, stiff=0.10, tension=4, courses=9, dimension=1.9, couple=0.055, chirality=-0.6, orbit=0.12, orbit_depth=0.3, curvature=0.08, strum=0, send=0.26, gain=1)
+#   am = el arpegio en memoria (treble, synth=weave, sus=2.6, damp=0.30, pos=0.22, pick=0.40, body=0.45, stiff=0.08, tension=3, courses=9, dimension=1.9, couple=0.055, chirality=-0.6, orbit=0.12, orbit_depth=0.3, curvature=0.08, strum=0, send=0.22, gain=-4)
+#   bm = el bordon en memoria (bass, synth=weave, sus=3.5, damp=0.34, pos=0.14, pick=0.32, body=0.50, stiff=0.12, tension=3, courses=7, dimension=1.9, couple=0.05, chirality=-0.6, orbit=0.10, orbit_depth=0.2, curvature=0.05, strum=0, send=0.16)
+
+# section: romanza [1-8]
+bar 1: vo={mp} B4h~q  ar=E3e G3e B3e E4e B3e G3e  bj=E2h~q  vm=-  am=-  bm=-
+bar 2: vo=B4q A4q G4q  ar=E3e G3e B3e E4e B3e G3e  bj=E2h B2q  vm=-  am=-  bm=-
+bar 3: vo=A4h~q  ar=E3e A3e C4e E4e C4e A3e  bj=A2h~q  vm=-  am=-  bm=-
+bar 4: vo=A4q G4q F#4q  ar=F#3e B3e D#4e F#4e D#4e B3e  bj=B2h~q  vm=-  am=-  bm=-
+bar 5: vo=G4h~q  ar=E3e G3e B3e E4e B3e G3e  bj=E2h~q  vm=-  am=-  bm=-
+bar 6: vo=G4h E4q  ar=G3e C4e E4e G4e E4e C4e  bj=C3h~q  vm=-  am=-  bm=-
+bar 7: vo=F#4h D#4q  ar=F#3e B3e D#4e F#4e D#4e B3e  bj=B2h~q  vm=-  am=-  bm=-
+bar 8: vo=E4h~q  ar=E3e G3e B3e E4e B3e G3e  bj=E2h~q  vm=-  am=-  bm=-
+
+# section: la vuelta al sol [9-16]
+bar 9: vo={mf} B4h~q[couple=0.10,orbit=0.35,curvature=0.2]  ar=G3e B3e D4e G4e D4e B3e  bj=G2h~q  vm=-  am=-  bm=-
+bar 10: vo=B4q C5q D5q  ar=G3e B3e D4e G4e D4e B3e  bj=G2h D3q  vm=-  am=-  bm=-
+bar 11: vo=E5h~q[couple=0.12,orbit=0.4,curvature=0.25]  ar=G3e C4e E4e G4e E4e C4e  bj=C3h~q  vm=-  am=-  bm=-
+bar 12: vo=C5q B4q A4q  ar=E3e A3e C4e E4e C4e A3e  bj=A2h~q  vm=-  am=-  bm=-
+bar 13: vo=B4h~q[couple=0.13,orbit=0.5,curvature=0.3]  ar=E3e G3e B3e E4e B3e G3e  bj=E2h~q  vm=-  am=-  bm=-
+bar 14: vo=A4q B4q C5q->B4  ar=E3e A3e C4e E4e C4e A3e  bj=A2h~q  vm=-  am=-  bm=-
+bar 15: vo=B4h A4q  ar=F#3e B3e D#4e F#4e D#4e B3e  bj=B2h~q  vm=-  am=-  bm=-
+bar 16: vo=F#4h~q[orbit=0.6,couple=0.12]  ar=F#3e A3e B3e D#4e B3e A3e  bj=B2h F#2q  vm=-  am=-  bm=-
+
+# section: la memoria [17-24]
+bar 17: vo=-  ar=-  bj=-  vm={p} B4h~q  am=E3e G3e B3e E4e B3e G3e  bm=E2h~q
+bar 18: vo=-  ar=-  bj=-  vm=B4q A4q G4q  am=E3e G3e B3e E4e B3e G3e  bm=E2h B2q
+bar 19: vo=-  ar=-  bj=-  vm=A4h~q  am=E3e A3e C4e E4e C4e A3e  bm=A2h~q
+bar 20: vo=-  ar=-  bj=-  vm=A4q G4q F#4q  am=F#3e B3e D#4e F#4e D#4e B3e  bm=B2h~q
+bar 21: vo=-  ar=-  bj=-  vm=G4h~q  am=E3e G3e B3e E4e B3e G3e  bm=E2h~q
+bar 22: vo=-  ar=-  bj=-  vm=G4h E4q  am=G3e C4e E4e G4e E4e C4e  bm=C3h~q
+bar 23: vo=-  ar=-  bj=-  vm=F#4h D#4q  am=F#3e B3e D#4e F#4e D#4e B3e  bm=B2h~q
+bar 24: vo=-  ar=-  bj=-  vm=E4h~q  am=E3e G3e B3e E4e B3e G3e  bm=E2h~q
+
+# section: coda — campanas [25-28]
+bar 25: vo=-  ar=-  bj=-  vm={pp} E5h~q[pos=0.5,pick=0,sus=6]  am=B4h~q[pos=0.5,pick=0,sus=6,gain=-8]  bm=E2h~q[sus=6]
+bar 26: vo=-  ar=-  bj=-  vm=B4h~q[pos=0.5,pick=0,sus=6]  am=G4h~q[pos=0.5,pick=0,sus=6,gain=-8]  bm=-
+bar 27: vo=-  ar=-  bj=-  vm={ppp} G4h~q[pos=0.5,pick=0,sus=7]  am=-  bm=B1h~q[sus=7]
+bar 28: vo=-  ar=-  bj=-  vm=E4h~q[pos=0.5,pick=0,sus=8]  am=-  bm=E2h~q[sus=8]
