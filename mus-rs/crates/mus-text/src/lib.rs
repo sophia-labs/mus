@@ -228,7 +228,7 @@ pub fn parse_score_lossy(text: &str) -> (Proposal, Vec<Diag>) {
                         }
                     }
                     "hairpin" => {}
-                    "rest" => onset = onset.add(frac_from_f64(token.ql)),
+                    "rest" => onset = onset + frac_from_f64(token.ql),
                     "note" | "chord" | "unpitched" => {
                         let mut params = token.params;
                         let quote = quote_from_params(&mut params);
@@ -257,7 +257,7 @@ pub fn parse_score_lossy(text: &str) -> (Proposal, Vec<Diag>) {
                             quote,
                         };
                         proposal.events.push(state);
-                        onset = onset.add(frac_from_f64(token.ql));
+                        onset = onset + frac_from_f64(token.ql);
                     }
                     _ => diagnostics.push(diag("unknown-token", raw_token)),
                 }
@@ -698,7 +698,7 @@ mod tests {
             })
             .collect::<Vec<_>>();
         paths.sort();
-        assert_eq!(paths.len(), 13);
+        assert_eq!(paths.len(), 16);
         for path in paths {
             let source = std::fs::read_to_string(&path).unwrap();
             let p1 = parse_score(&source)

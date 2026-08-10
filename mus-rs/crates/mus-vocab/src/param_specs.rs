@@ -149,10 +149,10 @@ pub fn param_specs() -> Vec<ParamSpec> {
         ParamSpec { name: "mode", layer: Extension, kind: Enum { values: &["varispeed", "vocoder"], default: Some("varispeed") }, doc: "pitch mechanism: tape (duration couples) or phase vocoder (duration held)" },
         ParamSpec { name: "gliss", layer: Extension, kind: NoteName, doc: "glissando target pitch (equivalent to the A6q->C7 arrow form)" },
         // ------------------------------------------------ mus-x: synth voice
-        ParamSpec { name: "synth", layer: Extension, kind: Enum { values: &["saw", "square", "tri", "sine", "pluck"], default: Some("saw") }, doc: "oscillator wave (declaring it makes the track a synth voice); pluck = the extended Karplus-Strong string" },
+        ParamSpec { name: "synth", layer: Extension, kind: Enum { values: &["saw", "square", "tri", "sine", "pluck", "weave"], default: Some("saw") }, doc: "oscillator wave (declaring it makes the track a synth voice); pluck = the physical guitar string network; weave = the Ariadne string network — a voice model, not a waveform" },
         ParamSpec { name: "osc2", layer: Extension, kind: Enum { values: &["saw", "square", "tri", "sine"], default: None }, doc: "second oscillator, one octave up, mixed at mix2" },
         ParamSpec { name: "mix2", layer: Extension, kind: Ratio { min: 0.0, max: 1.0, default: Some(0.5) }, doc: "osc2 mix (0 = osc1 only)" },
-        ParamSpec { name: "detune", layer: Extension, kind: Cents { min: 0.0, max: 100.0, default: Some(0.0) }, doc: "unison detune: adds a ± detuned pair around osc1" },
+        ParamSpec { name: "detune", layer: Extension, kind: Cents { min: 0.0, max: 100.0, default: Some(0.0) }, doc: "unison detune: adds a ± detuned pair around osc1; string voices grow a detuned companion course" },
         ParamSpec { name: "sub", layer: Extension, kind: Ratio { min: 0.0, max: 1.0, default: Some(0.0) }, doc: "sine sub-oscillator at half frequency" },
         ParamSpec { name: "cutoff", layer: Extension, kind: Hz { min: 50.0, max: 18_000.0, default: Some(4200.0), sweep: false }, doc: "filter cutoff (sweep end when famt > 0)" },
         ParamSpec { name: "famt", layer: Extension, kind: Hz { min: 0.0, max: 12_000.0, default: Some(0.0), sweep: false }, doc: "filter-envelope amount: sweep starts at cutoff+famt" },
@@ -178,6 +178,19 @@ pub fn param_specs() -> Vec<ParamSpec> {
         ParamSpec { name: "strum", layer: Extension, kind: Milliseconds { min: -80.0, max: 80.0, default: Some(10.0) }, doc: "chord stagger per string; negative strums upward" },
         ParamSpec { name: "pm", layer: Extension, kind: Toggle { default: false }, doc: "palm mute: short, dark, felt-soft" },
         ParamSpec { name: "haas", layer: Extension, kind: Milliseconds { min: 0.0, max: 40.0, default: Some(0.0) }, doc: "interaural delay on the right channel — width without a pan move" },
+        // -------------------------------- mus-x: string network (Ariadne)
+        ParamSpec { name: "stiff", layer: Extension, kind: Ratio { min: 0.0, max: 1.0, default: Some(0.08) }, doc: "string stiffness: allpass dispersion sharpens upper partials while the fundamental stays phase-compensated" },
+        ParamSpec { name: "tension", layer: Extension, kind: Cents { min: 0.0, max: 80.0, default: Some(5.0) }, doc: "onset tension: initial pitch elevation in cents, relaxing with the string's energy decay" },
+        ParamSpec { name: "symp", layer: Extension, kind: Ratio { min: 0.0, max: 1.0, default: Some(0.22) }, doc: "sympathetic coupling to the six open guitar strings (guitar voice only)" },
+        ParamSpec { name: "buzz", layer: Extension, kind: Ratio { min: 0.0, max: 1.0, default: Some(0.0) }, doc: "contractive fret/bridge contact: clean at 0, hard rattling contact at 1" },
+        ParamSpec { name: "body_size", layer: Extension, kind: Ratio { min: 0.45, max: 2.4, default: Some(1.0) }, doc: "body scale: larger lowers the resonant modes of the wood" },
+        ParamSpec { name: "couple", layer: Extension, kind: Ratio { min: 0.0, max: 0.45, default: Some(0.11) }, doc: "weave nearest-neighbour lossless scattering angle in radians; 0 = independent courses" },
+        ParamSpec { name: "chirality", layer: Extension, kind: Ratio { min: -1.0, max: 1.0, default: Some(0.72) }, doc: "weave ordered-path bias: reverse at -1, balanced at 0, forward at +1 (not pan)" },
+        ParamSpec { name: "orbit", layer: Extension, kind: Hz { min: 0.0, max: 20.0, default: Some(0.31), sweep: false }, doc: "rate of the travelling weave coupling field" },
+        ParamSpec { name: "orbit_depth", layer: Extension, kind: Ratio { min: 0.0, max: 1.0, default: Some(0.62) }, doc: "depth of the travelling coupling field; 0 makes orbit inaudible" },
+        ParamSpec { name: "curvature", layer: Extension, kind: Ratio { min: 0.0, max: 1.0, default: Some(0.28) }, doc: "state-energy deformation of weave coupling; scattering stays pointwise lossless" },
+        ParamSpec { name: "courses", layer: Extension, kind: Count { min: 3, max: 24, default: Some(11) }, doc: "target total weave courses, played plus virtual" },
+        ParamSpec { name: "dimension", layer: Extension, kind: Ratio { min: 0.55, max: 3.0, default: Some(1.35) }, doc: "Weyl-inspired spectral-dimension exponent spacing the virtual courses (a scaffold, not a measured graph spectrum)" },
     ]
 }
 

@@ -11,7 +11,7 @@
 use std::collections::BTreeMap;
 
 use mus_dsp::pitch::{pitch_polyline, varispeed, vocode};
-use mus_dsp::pluck::pluck_note;
+use mus_dsp::pluck::{pluck_note, weave_note};
 use mus_dsp::synth::{synth_note, Patch};
 use mus_notation::Note;
 
@@ -68,14 +68,16 @@ pub fn resolve(
             None => 1.0,
         };
         let freqs: Vec<f64> = ev.midis.iter().map(|&m| midi_to_hz(m, a4)).collect();
-        // The pluck is a POST-PARITY voice (mus-x): no oracle line to cite.
-        // Everything else about the event pipeline treats it exactly like
-        // the subtractive synth output.
-        if patch_map.get("synth").map(String::as_str) == Some("pluck") {
-            x = pluck_note(&patch_map, &freqs, slot_s, ratio);
-        } else {
-            let patch = Patch::from(&patch_map);
-            x = synth_note(&patch, &freqs, slot_s, ratio);
+        // The pluck and weave voices are POST-PARITY (mus-x): no oracle
+        // line to cite. Everything else about the event pipeline treats
+        // them exactly like the subtractive synth output.
+        match patch_map.get("synth").map(String::as_str) {
+            Some("pluck") => x = pluck_note(&patch_map, &freqs, slot_s, ratio),
+            Some("weave") => x = weave_note(&patch_map, &freqs, slot_s, ratio),
+            _ => {
+                let patch = Patch::from(&patch_map);
+                x = synth_note(&patch, &freqs, slot_s, ratio);
+            }
         }
     } else {
         // `int(float(ev.params.get("s", 1))) - 1` (line 941): unguarded —

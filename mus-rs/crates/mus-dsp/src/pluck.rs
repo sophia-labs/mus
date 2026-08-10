@@ -118,7 +118,10 @@ impl Default for PluckPatch {
             damp: 0.35,
             pos: 0.13,
             pick: 0.6,
-            body: 0.42,
+            // The handoff proposes 0.42, contingent on a listening
+            // decision; until that A/B, the public default stays at the
+            // established 0.25 and presets carry the stronger value.
+            body: 0.25,
             strum_ms: 10.0,
             pm: false,
             detune: 0.0,
@@ -164,7 +167,7 @@ impl From<&BTreeMap<String, String>> for PluckPatch {
             pm: map
                 .get("pm")
                 .is_some_and(|value| value != "0" && value != "off" && value != "no"),
-            detune: parsed(map, "detune", d.detune).clamp(0.0, 60.0),
+            detune: parsed(map, "detune", d.detune).clamp(0.0, 100.0),
             stiff: parsed(map, "stiff", d.stiff).clamp(0.0, 1.0),
             tension_cents: parsed(map, "tension", d.tension_cents).clamp(0.0, 80.0),
             symp: parsed(map, "symp", d.symp).clamp(0.0, 1.0),
@@ -537,7 +540,7 @@ impl DelayString {
     }
 
     fn read(&mut self, sample_index: usize) -> f64 {
-        if sample_index % 16 == 0 {
+        if sample_index.is_multiple_of(16) {
             self.update_loop(sample_index);
         }
         let read_index =

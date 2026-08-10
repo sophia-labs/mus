@@ -78,4 +78,33 @@ fn vocab_dump_covers_the_registry() {
         by_name("str").unwrap()["control"]["literals"],
         serde_json::json!(["fit"])
     );
+
+    // Ariadne registry: the weave voice is in the synth enum, and the four
+    // control shapes the handoff calls out dump with honest types — a
+    // frequency, a signed ratio, a count, and the spectral-dimension
+    // exponent's full range.
+    assert!(
+        by_name("synth").unwrap()["control"]["values"]
+            .as_array()
+            .unwrap()
+            .contains(&serde_json::json!("weave")),
+        "weave is a registered voice"
+    );
+    assert_eq!(
+        by_name("orbit").unwrap()["control"]["kind"],
+        serde_json::json!("hz")
+    );
+    assert_eq!(
+        by_name("chirality").unwrap()["control"]["min"],
+        serde_json::json!(-1.0),
+        "chirality is a signed ratio"
+    );
+    assert_eq!(
+        by_name("courses").unwrap()["control"]["kind"],
+        serde_json::json!("count")
+    );
+    assert_eq!(
+        by_name("dimension").unwrap()["control"]["max"],
+        serde_json::json!(3.0)
+    );
 }

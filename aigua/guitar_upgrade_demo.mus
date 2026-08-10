@@ -1,0 +1,40 @@
+# score: Guitar upgrade — conservative limit of Ariadne
+# summary: acceptance score for excitation, dispersion, tension, body coupling, sympathy, contact, mute, strum, and bend
+# tempo: 88    time: 4/4    key: Em    bars: 12
+# reverb: 1.1
+# master: rms=-16
+# note: requires the staged string-network pluck implementation; render the same score on the pre-upgrade branch for A/B where shared params permit
+
+# instruments:
+#   gc = clean guitar (treble, synth=pluck, sus=2.7, damp=0.30, pos=0.14, pick=0.52, body=0.48, stiff=0.07, tension=6, symp=0.18, buzz=0, body_size=1, strum=11, send=0.16)
+#   gs = steel course (treble, synth=pluck, sus=3.4, damp=0.24, pos=0.09, pick=0.78, body=0.55, stiff=0.18, tension=12, symp=0.28, buzz=0.04, detune=5, strum=14, send=0.18)
+#   gm = felt mute (treble, synth=pluck, sus=1.5, damp=0.62, pos=0.18, pick=0.12, body=0.32, stiff=0.04, tension=2, symp=0.08, buzz=0, pm=1, strum=7, send=0.08)
+#   gb = bass course (bass, synth=pluck, sus=2.2, damp=0.46, pos=0.11, pick=0.38, body=0.35, stiff=0.11, tension=7, symp=0.16, gain=1.5, send=0.08)
+
+# section: isolated hand [1-2] — attack and settled string without chord masking
+bar 1: gc=E2q B2q E3q G3q  gs=-  gm=-  gb=-
+bar 2: gc=E3q[pos=0.06,pick=0.9] E3q[pos=0.20,pick=0.52] E3q[pos=0.33,pick=0.25] E3q[pos=0.50,pick=0]  gs=-  gm=-  gb=-
+
+# section: stiffness and tension [3-4] — same pitch, increasing material and onset strain
+bar 3: gc=A2q[stiff=0,tension=0,body=0,symp=0] A2q[stiff=0.12,tension=0,body=0,symp=0] A2q[stiff=0.38,tension=0,body=0,symp=0] A2q[stiff=0.72,tension=0,body=0,symp=0]  gs=-  gm=-  gb=-
+bar 4: gc=D3q[tension=0,body=0,symp=0] D3q[tension=8,body=0,symp=0] D3q[tension=24,body=0,symp=0] D3q[tension=48,body=0,symp=0]  gs=-  gm=-  gb=-
+
+# section: body and sympathy [5-6] — post-EQ should not reproduce the evolving coupled result
+bar 5: gc=<E2 B2 E3 G3 B3 E4>h[body=0,symp=0,strum=18] <E2 B2 E3 G3 B3 E4>h[body=0.65,symp=0,strum=18]  gs=-  gm=-  gb=-
+bar 6: gc=<A2 E3 A3 C4 E4>h[body=0.55,symp=0,strum=16] <A2 E3 A3 C4 E4>h[body=0.55,symp=0.48,strum=16]  gs=-  gm=-  gb=-
+
+# section: fingerstyle [7-8] — phrase credibility, not isolated-note cleverness
+bar 7: gc=E2e B2e E3e G3e B3e E4e B3e G3e  gs=-  gm=-  gb=E1h B1h
+bar 8: gc=C3e G3e C4e E4e G4e E4e C4e G3e  gs=-  gm=-  gb=C2h G1h
+
+# section: strum and course [9] — signed traversal and modest double-course beating
+bar 9: gc=-  gs=<E2 B2 E3 G3 B3 E4>q[strum=15] <E2 B2 E3 G3 B3 E4>q[strum=-15] <C3 G3 C4 E4 G4>h[strum=20]  gm=-  gb=E1h C2h
+
+# section: hand contact [10] — felt mute, then controlled fret/bridge buzz
+bar 10: gc=E2e[pm] E2e[pm] G2e[pm] A2e[pm] B2q[buzz=0.12] B2q[buzz=0.38]  gs=-  gm=E3e E3e G3e A3e B3q B3q  gb=E1h B1h
+
+# section: physical retuning [11] — delay-line bend must land and ring at target
+bar 11: gc=G3q->A3 B3q A3q->G3 E3q  gs=-  gm=-  gb=E2w[sus=4]
+
+# section: let the coupled instrument breathe [12]
+bar 12: gc=-  gs=<E2 B2 E3 G3 B3 E4>w[strum=24,sus=6,body=0.72,symp=0.42]  gm=-  gb=E1w[sus=6,body=0.5]
