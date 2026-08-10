@@ -1,0 +1,161 @@
+        contact_output /= (self.strings.len().max(1) as f64).sqrt();
+
+        let raw = 0.18 * string_direct
+            + (0.92 + 0.52 * self.patch.body) * body_output
+            + 0.18 * bridge_force
+            + 0.20 * contact_output;
+        // One-pole DC blocker, useful under strongly curved Weave motion.
+        let output = raw - self.previous_input + 0.995 * self.previous_output;
+        self.previous_input = raw;
+        self.previous_output = output;
+        self.sample_index += 1;
+        (0.72 * output) as f32
+    }
+
+    /// Fill a host-provided block and return the number of live samples.
+    /// Any unused tail is explicitly zeroed.
+    pub fn render_block(&mut self, output: &mut [f32]) -> usize {
+        let mut written = 0;
+        for sample in output.iter_mut() {
+            if self.is_finished() {
+                *sample = 0.0;
+            } else {
+                *sample = self.next_sample();
+                written += 1;
+            }
+        }
+        written
+    }
+
+    pub fn render(mut self) -> Vec<f32> {
+        let mut output = vec![0.0; self.total_samples];
+        self.render_block(&mut output);
+        output
+    }
+}
+
+/// Render the deepened physical guitar. Existing callers keep the same
+/// signature and `synth=pluck` dispatch.
+pub fn pluck_note(
+    params: &BTreeMap<String, String>,
+    frequencies_hz: &[f64],
+    slot_s: f64,
+    gliss_ratio: f64,
+) -> Vec<f32> {
+    StringNetworkVoice::guitar(params, frequencies_hz, slot_s, gliss_ratio).render()
+}
+
+/// Render the impossible string network selected by `synth=weave`.
+pub fn weave_note(
+    params: &BTreeMap<String, String>,
+    frequencies_hz: &[f64],
+    slot_s: f64,
+    gliss_ratio: f64,
+) -> Vec<f32> {
+    StringNetworkVoice::weave(params, frequencies_hz, slot_s, gliss_ratio).render()
+}
+
+#[cfg(test)]
+mod mathematical_tests {
+    use super::*;
+
+    fn apply_01(vector: [f64; 3], angle: f64) -> [f64; 3] {
+        let (a, b) = givens(vector[0], vector[1], angle);
+        [a, b, vector[2]]
+    }
+
+    fn apply_12(vector: [f64; 3], angle: f64) -> [f64; 3] {
+        let (a, b) = givens(vector[1], vector[2], angle);
+        [vector[0], a, b]
+    }
+
+    fn norm_squared(vector: &[f64]) -> f64 {
+        vector.iter().map(|value| value * value).sum()
+    }
+
+    #[test]
+    fn every_givens_step_is_energy_exact() {
+        for (a, b, angle) in [
+            (0.7, -0.2, -2.0),
+            (1e-9, 3.0, 0.0),
+            (-1.2, 0.8, 0.37),
+            (40.0, -20.0, PI),
+        ] {
+            let before = a * a + b * b;
+            let (x, y) = givens(a, b, angle);
+            let after = x * x + y * y;
+            assert!((after - before).abs() <= before.max(1.0) * 2e-13);
+        }
+    }
+
+    #[test]
+    fn state_dependent_angles_remain_pointwise_norm_preserving() {
+        let mut state: [f64; 4] = [0.8, -0.3, 0.2, 0.7];
+        let before = norm_squared(&state);
+        for step in 0..2_000 {
+            let gradient: f64 = state[0] * state[0] - state[2] * state[2];
+            let angle: f64 = 0.17 * (0.01 * step as f64).sin() * (1.0 + 0.8 * gradient.tanh());
+            let left = step % 4;
+            let right = (step + 1) % 4;
+            let (a, b) = givens(state[left], state[right], angle);
+            state[left] = a;
+            state[right] = b;
+        }
+        let after = norm_squared(&state);
+        assert!((after - before).abs() < 2e-11, "{before} -> {after}");
+    }
+
+    #[test]
+    fn overlapping_rotations_have_audible_holonomy() {
+        let angle_a = 0.31;
+        let angle_b = -0.47;
+        let basis = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]];
+        let mut frobenius_squared = 0.0;
+        for vector in basis {
+            let ab = apply_12(apply_01(vector, angle_a), angle_b);
+            let ba = apply_01(apply_12(vector, angle_b), angle_a);
+            frobenius_squared += ab
+                .iter()
+                .zip(ba.iter())
+                .map(|(left, right)| (left - right).powi(2))
+                .sum::<f64>();
+        }
+        let measured = (0.5 * frobenius_squared).sqrt();
+        let closed_form = weave_holonomy_defect(angle_a, angle_b);
+        assert!((measured - closed_form).abs() < 1e-13);
+        assert!(closed_form > 0.1, "defect={closed_form}");
+    }
+
+    #[test]
+    fn physical_excitation_midpoint_suppresses_even_modes() {
+        let patch = PluckPatch {
+            pos: 0.5,
+            pick: 0.0,
+            ..PluckPatch::default()
+        };
+        let excitation = physical_excitation(
+            187.5,
+            1.0,
+            &patch,
+            0,
+            StringNetworkMode::Guitar,
+            1.0,
+        );
+        let n = excitation.len();
+        let coefficient = |harmonic: usize| -> f64 {
+            let omega = 2.0 * PI * harmonic as f64 / n as f64;
+            let real = excitation
+                .iter()
+                .enumerate()
+                .map(|(index, value)| value * (omega * index as f64).cos())
+                .sum::<f64>();
+            let imag = excitation
+                .iter()
+                .enumerate()
+                .map(|(index, value)| value * (omega * index as f64).sin())
+                .sum::<f64>();
+            real.hypot(imag)
+        };
+        assert!(coefficient(2) < coefficient(1) * 0.08);
+    }
+}
