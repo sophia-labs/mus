@@ -1,0 +1,972 @@
+[
+ {
+  "name": "ring_mod_sine",
+  "module": "kernels",
+  "func": "ring_mod",
+  "args": {
+   "f_hz": 220.0,
+   "wet": 1.0
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "",
+  "input": "ring_mod_sine.in.bin",
+  "shape_in": [
+   24000
+  ],
+  "output": "ring_mod_sine.out.bin",
+  "shape_out": [
+   24000
+  ]
+ },
+ {
+  "name": "ring_mod_burst_wet",
+  "module": "kernels",
+  "func": "ring_mod",
+  "args": {
+   "f_hz": 91.7,
+   "wet": 0.6
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "",
+  "input": "ring_mod_burst_wet.in.bin",
+  "shape_in": [
+   16800
+  ],
+  "output": "ring_mod_burst_wet.out.bin",
+  "shape_out": [
+   16800
+  ]
+ },
+ {
+  "name": "soft_clip_drive",
+  "module": "kernels",
+  "func": "soft_clip",
+  "args": {
+   "drive": 3.2
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "",
+  "input": "soft_clip_drive.in.bin",
+  "shape_in": [
+   16800
+  ],
+  "output": "soft_clip_drive.out.bin",
+  "shape_out": [
+   16800
+  ]
+ },
+ {
+  "name": "hard_clip_noise",
+  "module": "kernels",
+  "func": "hard_clip",
+  "args": {
+   "amount": 4.0
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "",
+  "input": "hard_clip_noise.in.bin",
+  "shape_in": [
+   48000
+  ],
+  "output": "hard_clip_noise.out.bin",
+  "shape_out": [
+   48000
+  ]
+ },
+ {
+  "name": "bitcrush_bits",
+  "module": "kernels",
+  "func": "bitcrush",
+  "args": {
+   "bits": 10,
+   "decim": null
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "",
+  "input": "bitcrush_bits.in.bin",
+  "shape_in": [
+   33600
+  ],
+  "output": "bitcrush_bits.out.bin",
+  "shape_out": [
+   33600
+  ]
+ },
+ {
+  "name": "bitcrush_decim",
+  "module": "kernels",
+  "func": "bitcrush",
+  "args": {
+   "bits": null,
+   "decim": 7
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "",
+  "input": "bitcrush_decim.in.bin",
+  "shape_in": [
+   33600
+  ],
+  "output": "bitcrush_decim.out.bin",
+  "shape_out": [
+   33600
+  ]
+ },
+ {
+  "name": "bitcrush_both",
+  "module": "kernels",
+  "func": "bitcrush",
+  "args": {
+   "bits": 6,
+   "decim": 3
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "",
+  "input": "bitcrush_both.in.bin",
+  "shape_in": [
+   16800
+  ],
+  "output": "bitcrush_both.out.bin",
+  "shape_out": [
+   16800
+  ]
+ },
+ {
+  "name": "stutter_5",
+  "module": "kernels",
+  "func": "stutter",
+  "args": {
+   "n": 5,
+   "slot_samples": 16800
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "",
+  "input": "stutter_5.in.bin",
+  "shape_in": [
+   16800
+  ],
+  "output": "stutter_5.out.bin",
+  "shape_out": [
+   16800
+  ]
+ },
+ {
+  "name": "chop_shuffle_8",
+  "module": "kernels",
+  "func": "chop_shuffle",
+  "args": {
+   "n_grains": 8,
+   "slot_samples": 24000
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "",
+  "input": "chop_shuffle_8.in.bin",
+  "shape_in": [
+   16800
+  ],
+  "output": "chop_shuffle_8.out.bin",
+  "shape_out": [
+   16800
+  ]
+ },
+ {
+  "name": "chop_shuffle_3_tight",
+  "module": "kernels",
+  "func": "chop_shuffle",
+  "args": {
+   "n_grains": 3,
+   "slot_samples": 4800
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "",
+  "input": "chop_shuffle_3_tight.in.bin",
+  "shape_in": [
+   33600
+  ],
+  "output": "chop_shuffle_3_tight.out.bin",
+  "shape_out": [
+   11200
+  ]
+ },
+ {
+  "name": "duck_envelope",
+  "module": "kernels",
+  "func": "duck_envelope",
+  "args": {
+   "onsets": [
+    0.0,
+    0.25,
+    0.5,
+    0.625,
+    0.75
+   ],
+   "n": 48000,
+   "depth": 0.6,
+   "release": 0.16,
+   "hold": 0.012
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "",
+  "output": "duck_envelope.out.bin",
+  "shape_out": [
+   48000
+  ]
+ },
+ {
+  "name": "pan_static",
+  "module": "kernels",
+  "func": "pan_stereo",
+  "args": {
+   "p0": 0.3,
+   "p1": 0.3
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "planar LR",
+  "input": "pan_static.in.bin",
+  "shape_in": [
+   24000
+  ],
+  "output": "pan_static.out.bin",
+  "shape_out": [
+   2,
+   24000
+  ]
+ },
+ {
+  "name": "pan_sweep",
+  "module": "kernels",
+  "func": "pan_stereo",
+  "args": {
+   "p0": -0.8,
+   "p1": 0.8
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "planar LR",
+  "input": "pan_sweep.in.bin",
+  "shape_in": [
+   33600
+  ],
+  "output": "pan_sweep.out.bin",
+  "shape_out": [
+   2,
+   33600
+  ]
+ },
+ {
+  "name": "maximum_filter1d",
+  "module": "kernels",
+  "func": "maximum_filter1d",
+  "args": {
+   "size": 961
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "scipy.ndimage semantics: window centered, reflect boundary",
+  "input": "maximum_filter1d.in.bin",
+  "shape_in": [
+   48000
+  ],
+  "output": "maximum_filter1d.out.bin",
+  "shape_out": [
+   48000
+  ]
+ },
+ {
+  "name": "sos_butter4_low_1200",
+  "module": "filters",
+  "func": "butter_sos",
+  "args": {
+   "order": 4,
+   "fc_hz": 1200.0,
+   "btype": "low"
+  },
+  "metric": "max_abs",
+  "tol": 1e-10,
+  "dtype": "<f8",
+  "note": "SOS rows [b0 b1 b2 a0 a1 a2]",
+  "output": "sos_butter4_low_1200.out.bin",
+  "shape_out": [
+   2,
+   6
+  ]
+ },
+ {
+  "name": "sos_butter4_high_300",
+  "module": "filters",
+  "func": "butter_sos",
+  "args": {
+   "order": 4,
+   "fc_hz": 300.0,
+   "btype": "high"
+  },
+  "metric": "max_abs",
+  "tol": 1e-10,
+  "dtype": "<f8",
+  "note": "SOS rows [b0 b1 b2 a0 a1 a2]",
+  "output": "sos_butter4_high_300.out.bin",
+  "shape_out": [
+   2,
+   6
+  ]
+ },
+ {
+  "name": "sos_butter2_low_5200",
+  "module": "filters",
+  "func": "butter_sos",
+  "args": {
+   "order": 2,
+   "fc_hz": 5200.0,
+   "btype": "low"
+  },
+  "metric": "max_abs",
+  "tol": 1e-10,
+  "dtype": "<f8",
+  "note": "SOS rows [b0 b1 b2 a0 a1 a2]",
+  "output": "sos_butter2_low_5200.out.bin",
+  "shape_out": [
+   1,
+   6
+  ]
+ },
+ {
+  "name": "sos_butter2_high_28",
+  "module": "filters",
+  "func": "butter_sos",
+  "args": {
+   "order": 2,
+   "fc_hz": 28.0,
+   "btype": "high"
+  },
+  "metric": "max_abs",
+  "tol": 1e-10,
+  "dtype": "<f8",
+  "note": "SOS rows [b0 b1 b2 a0 a1 a2]",
+  "output": "sos_butter2_high_28.out.bin",
+  "shape_out": [
+   1,
+   6
+  ]
+ },
+ {
+  "name": "sosfilt_low_noise",
+  "module": "filters",
+  "func": "sosfilt",
+  "args": {
+   "order": 4,
+   "fc_hz": 1200.0,
+   "btype": "low"
+  },
+  "metric": "max_abs",
+  "tol": 1e-05,
+  "dtype": "<f4",
+  "note": "",
+  "input": "sosfilt_low_noise.in.bin",
+  "shape_in": [
+   48000
+  ],
+  "output": "sosfilt_low_noise.out.bin",
+  "shape_out": [
+   48000
+  ]
+ },
+ {
+  "name": "sosfilt_zi_low_1200",
+  "module": "filters",
+  "func": "sosfilt_zi",
+  "args": {
+   "order": 4,
+   "fc_hz": 1200.0,
+   "btype": "low"
+  },
+  "metric": "max_abs",
+  "tol": 1e-09,
+  "dtype": "<f8",
+  "note": "",
+  "output": "sosfilt_zi_low_1200.out.bin",
+  "shape_out": [
+   2,
+   2
+  ]
+ },
+ {
+  "name": "sweep_static_low",
+  "module": "filters",
+  "func": "sweep_filter",
+  "args": {
+   "f_start": 1200.0,
+   "f_end": 1200.0,
+   "btype": "low"
+  },
+  "metric": "max_abs",
+  "tol": 1e-05,
+  "dtype": "<f4",
+  "note": "",
+  "input": "sweep_static_low.in.bin",
+  "shape_in": [
+   48000
+  ],
+  "output": "sweep_static_low.out.bin",
+  "shape_out": [
+   48000
+  ]
+ },
+ {
+  "name": "sweep_low_fall",
+  "module": "filters",
+  "func": "sweep_filter",
+  "args": {
+   "f_start": 4200.0,
+   "f_end": 800.0,
+   "btype": "low"
+  },
+  "metric": "max_abs",
+  "tol": 5e-05,
+  "dtype": "<f4",
+  "note": "",
+  "input": "sweep_low_fall.in.bin",
+  "shape_in": [
+   48000
+  ],
+  "output": "sweep_low_fall.out.bin",
+  "shape_out": [
+   48000
+  ]
+ },
+ {
+  "name": "sweep_high_rise",
+  "module": "filters",
+  "func": "sweep_filter",
+  "args": {
+   "f_start": 300.0,
+   "f_end": 2000.0,
+   "btype": "high"
+  },
+  "metric": "max_abs",
+  "tol": 5e-05,
+  "dtype": "<f4",
+  "note": "",
+  "input": "sweep_high_rise.in.bin",
+  "shape_in": [
+   48000
+  ],
+  "output": "sweep_high_rise.out.bin",
+  "shape_out": [
+   48000
+  ]
+ },
+ {
+  "name": "varispeed_up5",
+  "module": "pitch",
+  "func": "varispeed",
+  "args": {
+   "semitones": 5.0
+  },
+  "metric": "rel_rms",
+  "tol": 0.0005,
+  "dtype": "<f4",
+  "note": "librosa.resample res_type=soxr_hq; lengths must match exactly",
+  "input": "varispeed_up5.in.bin",
+  "shape_in": [
+   33600
+  ],
+  "output": "varispeed_up5.out.bin",
+  "shape_out": [
+   25172
+  ]
+ },
+ {
+  "name": "varispeed_down12",
+  "module": "pitch",
+  "func": "varispeed",
+  "args": {
+   "semitones": -12.0
+  },
+  "metric": "rel_rms",
+  "tol": 0.0005,
+  "dtype": "<f4",
+  "note": "",
+  "input": "varispeed_down12.in.bin",
+  "shape_in": [
+   16800
+  ],
+  "output": "varispeed_down12.out.bin",
+  "shape_out": [
+   33600
+  ]
+ },
+ {
+  "name": "vocode_up35",
+  "module": "pitch",
+  "func": "vocode",
+  "args": {
+   "semitones": 3.5
+  },
+  "metric": "rel_rms",
+  "tol": 0.005,
+  "dtype": "<f4",
+  "note": "librosa.effects.pitch_shift: stft(2048,512,hann)->phase_vocoder->istft->soxr",
+  "input": "vocode_up35.in.bin",
+  "shape_in": [
+   33600
+  ],
+  "output": "vocode_up35.out.bin",
+  "shape_out": [
+   33600
+  ]
+ },
+ {
+  "name": "vocode_down7",
+  "module": "pitch",
+  "func": "vocode",
+  "args": {
+   "semitones": -7.0
+  },
+  "metric": "rel_rms",
+  "tol": 0.005,
+  "dtype": "<f4",
+  "note": "",
+  "input": "vocode_down7.in.bin",
+  "shape_in": [
+   16800
+  ],
+  "output": "vocode_down7.out.bin",
+  "shape_out": [
+   16800
+  ]
+ },
+ {
+  "name": "stretch_140",
+  "module": "pitch",
+  "func": "stretch",
+  "args": {
+   "factor": 1.4
+  },
+  "metric": "rel_rms",
+  "tol": 0.005,
+  "dtype": "<f4",
+  "note": "",
+  "input": "stretch_140.in.bin",
+  "shape_in": [
+   16800
+  ],
+  "output": "stretch_140.out.bin",
+  "shape_out": [
+   23520
+  ]
+ },
+ {
+  "name": "stretch_060",
+  "module": "pitch",
+  "func": "stretch",
+  "args": {
+   "factor": 0.6
+  },
+  "metric": "rel_rms",
+  "tol": 0.005,
+  "dtype": "<f4",
+  "note": "",
+  "input": "stretch_060.in.bin",
+  "shape_in": [
+   33600
+  ],
+  "output": "stretch_060.out.bin",
+  "shape_out": [
+   20160
+  ]
+ },
+ {
+  "name": "pitch_ramp_lin",
+  "module": "pitch",
+  "func": "pitch_ramp",
+  "args": {
+   "st0": 8.0,
+   "st1": -4.0,
+   "curve": "lin",
+   "tau": 0.045
+  },
+  "metric": "max_abs",
+  "tol": 1e-05,
+  "dtype": "<f4",
+  "note": "pure numpy: iterative length solve + cumsum readback",
+  "input": "pitch_ramp_lin.in.bin",
+  "shape_in": [
+   33600
+  ],
+  "output": "pitch_ramp_lin.out.bin",
+  "shape_out": [
+   29342
+  ]
+ },
+ {
+  "name": "pitch_ramp_exp_kick",
+  "module": "pitch",
+  "func": "pitch_ramp",
+  "args": {
+   "st0": 0.0,
+   "st1": -40.0,
+   "curve": "exp",
+   "tau": 0.045
+  },
+  "metric": "max_abs",
+  "tol": 1e-05,
+  "dtype": "<f4",
+  "note": "",
+  "input": "pitch_ramp_exp_kick.in.bin",
+  "shape_in": [
+   16800
+  ],
+  "output": "pitch_ramp_exp_kick.out.bin",
+  "shape_out": [
+   158984
+  ]
+ },
+ {
+  "name": "pitch_polyline",
+  "module": "pitch",
+  "func": "pitch_polyline",
+  "args": {
+   "t_anchor": [
+    0.0,
+    0.12,
+    0.3,
+    0.42
+   ],
+   "st_anchor": [
+    -2.0,
+    3.0,
+    1.0,
+    -6.0
+   ]
+  },
+  "metric": "max_abs",
+  "tol": 1e-05,
+  "dtype": "<f4",
+  "note": "gesture quotation core; includes tape-runs-out fade branch",
+  "input": "pitch_polyline.in.bin",
+  "shape_in": [
+   16800
+  ],
+  "output": "pitch_polyline.out.bin",
+  "shape_out": [
+   20160
+  ]
+ },
+ {
+  "name": "load_buzz01_native",
+  "module": "pitch",
+  "func": "load_decode",
+  "args": {
+   "path": "aigua/samples/buzz_01.wav",
+   "native_sr": 48000,
+   "target_sr": 48000
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "librosa.load with source native rate == SR: pure decode, no resample; PCM_16 -> float32 scaled by 1/32768. If a future pack sample's native rate differs, the load path must resample with soxr_hq like varispeed.",
+  "output": "load_buzz01_native.out.bin",
+  "shape_out": [
+   8846
+  ]
+ },
+ {
+  "name": "osc_phase",
+  "module": "synth",
+  "func": "_osc_phase_input",
+  "args": {},
+  "metric": "max_abs",
+  "tol": 1e-09,
+  "dtype": "<f8",
+  "note": "shared phase array for the four osc cases",
+  "output": "osc_phase.out.bin",
+  "shape_out": [
+   2048
+  ]
+ },
+ {
+  "name": "osc_saw",
+  "module": "synth",
+  "func": "_osc",
+  "args": {
+   "wave": "saw"
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "",
+  "output": "osc_saw.out.bin",
+  "shape_out": [
+   2048
+  ]
+ },
+ {
+  "name": "osc_square",
+  "module": "synth",
+  "func": "_osc",
+  "args": {
+   "wave": "square"
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "",
+  "output": "osc_square.out.bin",
+  "shape_out": [
+   2048
+  ]
+ },
+ {
+  "name": "osc_tri",
+  "module": "synth",
+  "func": "_osc",
+  "args": {
+   "wave": "tri"
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "",
+  "output": "osc_tri.out.bin",
+  "shape_out": [
+   2048
+  ]
+ },
+ {
+  "name": "osc_sine",
+  "module": "synth",
+  "func": "_osc",
+  "args": {
+   "wave": "sine"
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "",
+  "output": "osc_sine.out.bin",
+  "shape_out": [
+   2048
+  ]
+ },
+ {
+  "name": "synth_note_funk_bass",
+  "module": "synth",
+  "func": "synth_note",
+  "args": {
+   "patch": {
+    "synth": "saw",
+    "detune": 12.0,
+    "sub": 0.4,
+    "cutoff": 900.0,
+    "famt": 2600.0,
+    "satk": 0.006,
+    "sdec": 0.08,
+    "ssus": 0.6,
+    "srel": 0.2
+   },
+   "freqs_hz": [
+    110.0
+   ],
+   "slot_s": 0.5,
+   "gliss_ratio": 1.0
+  },
+  "metric": "max_abs",
+  "tol": 5e-05,
+  "dtype": "<f4",
+  "note": "",
+  "output": "synth_note_funk_bass.out.bin",
+  "shape_out": [
+   33600
+  ]
+ },
+ {
+  "name": "synth_note_chord_gliss",
+  "module": "synth",
+  "func": "synth_note",
+  "args": {
+   "patch": {
+    "synth": "square",
+    "osc2": "sine",
+    "mix2": 0.35,
+    "cutoff": 4200.0
+   },
+   "freqs_hz": [
+    220.0,
+    277.18,
+    329.63
+   ],
+   "slot_s": 0.35,
+   "gliss_ratio": 1.5
+  },
+  "metric": "max_abs",
+  "tol": 5e-05,
+  "dtype": "<f4",
+  "note": "",
+  "output": "synth_note_chord_gliss.out.bin",
+  "shape_out": [
+   22560
+  ]
+ },
+ {
+  "name": "standard_normal_64",
+  "module": "rng",
+  "func": "standard_normal",
+  "args": {
+   "seed": 7,
+   "n": 64
+  },
+  "metric": "max_abs",
+  "tol": 1e-12,
+  "dtype": "<f8",
+  "note": "numpy ziggurat; must be bit-faithful",
+  "output": "standard_normal_64.out.bin",
+  "shape_out": [
+   64
+  ]
+ },
+ {
+  "name": "standard_normal_2x32",
+  "module": "rng",
+  "func": "standard_normal_2d",
+  "args": {
+   "seed": 7,
+   "shape": [
+    2,
+    32
+   ]
+  },
+  "metric": "max_abs",
+  "tol": 1e-12,
+  "dtype": "<f8",
+  "note": "row-major fill order",
+  "output": "standard_normal_2x32.out.bin",
+  "shape_out": [
+   2,
+   32
+  ]
+ },
+ {
+  "name": "make_ir_0_6",
+  "module": "bus",
+  "func": "make_ir",
+  "args": {
+   "seconds": 0.6,
+   "seed": 7
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "planar stereo; depends on np-rand standard_normal((2,n))",
+  "output": "make_ir_0_6.out.bin",
+  "shape_out": [
+   2,
+   29663
+  ]
+ },
+ {
+  "name": "make_ir_2_6",
+  "module": "bus",
+  "func": "make_ir",
+  "args": {
+   "seconds": 2.6,
+   "seed": 7
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "planar stereo; depends on np-rand standard_normal((2,n))",
+  "output": "make_ir_2_6.out.bin",
+  "shape_out": [
+   2,
+   125663
+  ]
+ },
+ {
+  "name": "make_ir_4_5",
+  "module": "bus",
+  "func": "make_ir",
+  "args": {
+   "seconds": 4.5,
+   "seed": 7
+  },
+  "metric": "max_abs",
+  "tol": 1e-06,
+  "dtype": "<f4",
+  "note": "planar stereo; depends on np-rand standard_normal((2,n))",
+  "output": "make_ir_4_5.out.bin",
+  "shape_out": [
+   2,
+   216863
+  ]
+ },
+ {
+  "name": "reverb_apply_0_6",
+  "module": "bus",
+  "func": "oaconvolve",
+  "args": {
+   "ir": "make_ir_0_6",
+   "n_out": 38400
+  },
+  "metric": "max_abs",
+  "tol": 1e-05,
+  "dtype": "<f4",
+  "note": "planar LR",
+  "input": "reverb_apply_0_6.in.bin",
+  "shape_in": [
+   38400
+  ],
+  "output": "reverb_apply_0_6.out.bin",
+  "shape_out": [
+   2,
+   38400
+  ]
+ },
+ {
+  "name": "master_rms14",
+  "module": "bus",
+  "func": "master",
+  "args": {
+   "target_rms_db": -14.0,
+   "ceiling": 0.89
+  },
+  "metric": "max_abs",
+  "tol": 0.0005,
+  "dtype": "<f4",
+  "note": "planar stereo in/out; includes limiter fftconvolve smoothing",
+  "input": "master_rms14.in.bin",
+  "shape_in": [
+   2,
+   72000
+  ],
+  "output": "master_rms14.out.bin",
+  "shape_out": [
+   2,
+   72000
+  ]
+ }
+]

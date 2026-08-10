@@ -1,0 +1,9 @@
+[package]
+name = "np-rand"
+version = "0.1.0"
+description = "NumPy-compatible random generation: SeedSequence + PCG64 + the numpy ziggurat, bit-faithful to np.random.default_rng"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]

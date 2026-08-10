@@ -8,6 +8,8 @@ members = [
     "crates/mus-engine",
     "crates/mus-cli",
     "crates/mus-vocab",
+    "crates/mus-dsp",
+    "crates/np-rand",
 ]
 
 [workspace.package]

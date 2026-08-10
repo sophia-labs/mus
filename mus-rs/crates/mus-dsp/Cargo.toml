@@ -1,0 +1,15 @@
+[package]
+name = "mus-dsp"
+version = "0.1.0"
+description = "Sample-faithful DSP for the MUS render face: numpy/scipy/librosa-parity kernels, filters, resampling, and bus processing"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+hound = "3.5"
+libsoxr = "0.2.9"
+np-rand = { path = "../np-rand" }
+realfft = "3"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
