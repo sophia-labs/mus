@@ -1,4 +1,5 @@
 mod check;
+mod service;
 
 use mus_engine::{render, sha256_bytes, write_wav, RenderStats, ENGINE_VERSION};
 use mus_text::{adopt, parse_score};
@@ -101,6 +102,9 @@ fn run() -> Result<(), String> {
     if command == "--help" || command == "-h" {
         println!("{}", usage());
         return Ok(());
+    }
+    if command == "service" {
+        return service::run_service();
     }
     if command == "check" {
         let score = PathBuf::from(args.next().ok_or_else(usage)?);
