@@ -1,63 +1,40 @@
-//! `mus-engine` — WF1's deterministic sampler face.
+//! `mus-engine` — the render orchestrator, at full semantic parity with
+//! `mus_audio.render()`: headers, voices (sample or synth), the bar map,
+//! the per-track event walk (dynamics, hairpins, pattern repetition,
+//! gesture quotation, chords), the transform chain, sidechain-aware
+//! mixing, and the reverb/highpass/master bus. Every DSP primitive is
+//! `mus-dsp`'s (sample-parity-tested against the Python oracle); this
+//! crate's own job is the glue that calls them in the oracle's order.
 //!
-//! The engine accepts the already-projected `ScoreGraph`; it does not invent
-//! lineages or resolve forks. A render chooses each graph head exactly as the
-//! graph contract specifies, and the CLI records that choice in its receipt.
-//!
-//! Resampling uses rubato's high-quality sinc profile: 256 taps, Blackman-
-//! Harris window, linear sinc interpolation, and 160× oversampling. The
-//! profile is intentionally fixed here so changing a library default cannot
-//! change a render silently.
+//! WF1's reduced-scope engine (rubato resampling, refusing synth/vocoder/
+//! sidechain/reverb/chop/ring/glow rather than rendering them) is
+//! superseded here — this stage's whole point is to stop refusing those
+//! constructs and render them instead.
 
-use hound::{SampleFormat, WavReader};
-use mus_graph::timing::{BarMap, TimingError};
-use mus_graph::ScoreGraph;
-use mus_oplog::{EventKind, EventState};
-use rubato::{
-    Resampler, SincFixedIn, SincInterpolationParameters, SincInterpolationType, WindowFunction,
-};
-use serde::Deserialize;
-use sha2::{Digest, Sha256};
-use std::collections::{BTreeMap, VecDeque};
+mod events;
+mod gestures;
+mod layout;
+mod mixbus;
+mod pack;
+mod rawbars;
+mod source;
+mod transforms;
+mod util;
+
+use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
-use std::path::{Path, PathBuf};
+use std::path::Path;
+
+use sha2::{Digest, Sha256};
 
 pub const SAMPLE_RATE: u32 = 48_000;
-pub const ENGINE_VERSION: &str = "mus-engine/0.1.0-wf1";
-
-const DYN_DB: &[(&str, f32)] = &[
-    ("ppp", -30.0),
-    ("pp", -25.0),
-    ("p", -20.0),
-    ("mp", -15.0),
-    ("mf", -11.0),
-    ("f", -7.0),
-    ("ff", -3.5),
-    ("fff", 0.0),
-    ("sfz", -2.0),
-    ("sf", -3.0),
-];
-const ART_GAIN: &[(&str, f32)] = &[
-    ("acc", 4.0),
-    ("marc", 6.0),
-    ("sfz", 7.0),
-    ("stress", 2.5),
-    ("unstress", -4.0),
-];
-const ART_SHORTEN: &[(&str, f32)] = &[
-    ("stac", 0.40),
-    ("stacciss", 0.25),
-    ("spic", 0.35),
-    ("detlg", 0.75),
-];
+pub const ENGINE_VERSION: &str = "mus-engine/0.2.0-wf8";
 
 #[derive(Debug)]
 pub enum RenderError {
     Io(std::io::Error),
     Json(serde_json::Error),
-    Wav(hound::Error),
-    Timing(TimingError),
-    Unsupported(UnsupportedConstruct),
+    Wav(String),
     Invalid(String),
 }
 
@@ -66,9 +43,7 @@ impl Display for RenderError {
         match self {
             Self::Io(e) => write!(f, "I/O error: {e}"),
             Self::Json(e) => write!(f, "manifest error: {e}"),
-            Self::Wav(e) => write!(f, "WAV error: {e}"),
-            Self::Timing(e) => write!(f, "timing error: {e:?}"),
-            Self::Unsupported(e) => write!(f, "unsupported construct: {e}"),
+            Self::Wav(e) => write!(f, "audio file error: {e}"),
             Self::Invalid(e) => write!(f, "invalid score: {e}"),
         }
     }
@@ -83,28 +58,6 @@ impl From<std::io::Error> for RenderError {
 impl From<serde_json::Error> for RenderError {
     fn from(value: serde_json::Error) -> Self {
         Self::Json(value)
-    }
-}
-impl From<hound::Error> for RenderError {
-    fn from(value: hound::Error) -> Self {
-        Self::Wav(value)
-    }
-}
-impl From<TimingError> for RenderError {
-    fn from(value: TimingError) -> Self {
-        Self::Timing(value)
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UnsupportedConstruct {
-    pub construct: String,
-    pub location: String,
-}
-
-impl Display for UnsupportedConstruct {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} at {}", self.construct, self.location)
     }
 }
 
@@ -140,771 +93,33 @@ impl RenderedAudio {
     }
 }
 
-#[derive(Debug, Clone, Deserialize)]
-struct Manifest {
-    #[serde(default)]
-    voices: BTreeMap<String, ManifestVoice>,
-    #[serde(default)]
-    noise: BTreeMap<String, ManifestNoise>,
+fn dbfs(value: f32) -> f32 {
+    20.0 * value.max(1e-12).log10()
 }
 
-#[derive(Debug, Clone, Deserialize)]
-struct ManifestVoice {
-    samples: Vec<ManifestSample>,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-struct ManifestNoise {
-    file: String,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-struct ManifestSample {
-    file: String,
-    #[serde(default)]
-    f0_hz: Option<f32>,
+/// Everything the render receipt wants beyond peak/RMS: `mus_audio.py`'s
+/// own `stats` dict (notes/skipped/bad, lines 874-1179) extended with the
+/// per-track and sidechain counts the WF8 spec asks for.
+#[derive(Debug, Clone, Default)]
+pub struct RenderStats {
+    pub notes: u32,
+    pub skipped: u32,
+    pub bad: Vec<String>,
+    /// Missing-source track warnings (`mus_audio.py` line 757) — kept
+    /// separate from `bad`, matching the oracle's own separate stderr
+    /// stream for these.
+    pub warnings: Vec<String>,
+    pub per_track_events: BTreeMap<String, u32>,
+    pub sidechain_hits: usize,
+    pub voices: usize,
+    pub total_seconds: f64,
+    pub tuning_a: f64,
 }
 
 #[derive(Debug, Clone)]
-struct SampleRef {
-    path: PathBuf,
-    f0_hz: f32,
-}
-
-#[derive(Debug)]
-struct Pack {
-    voices: BTreeMap<String, Vec<SampleRef>>,
-    cache: BTreeMap<PathBuf, Vec<f32>>,
-}
-
-impl Pack {
-    fn load(path: &Path) -> Result<Self, RenderError> {
-        let data: Manifest = serde_json::from_slice(&std::fs::read(path)?)?;
-        let base = path
-            .parent()
-            .ok_or_else(|| RenderError::Invalid("pack has no parent directory".into()))?;
-        let mut voices = BTreeMap::new();
-        for (name, voice) in data.voices {
-            voices.insert(
-                name,
-                voice
-                    .samples
-                    .into_iter()
-                    .map(|sample| SampleRef {
-                        path: base.join(sample.file),
-                        f0_hz: sample.f0_hz.unwrap_or(0.0),
-                    })
-                    .collect(),
-            );
-        }
-        for (name, noise) in data.noise {
-            voices.insert(
-                name,
-                vec![SampleRef {
-                    path: base.join(noise.file),
-                    f0_hz: 0.0,
-                }],
-            );
-        }
-        Ok(Self {
-            voices,
-            cache: BTreeMap::new(),
-        })
-    }
-
-    fn load_sample(&mut self, sample: &SampleRef) -> Result<Vec<f32>, RenderError> {
-        if let Some(audio) = self.cache.get(&sample.path) {
-            return Ok(audio.clone());
-        }
-        let mut reader = WavReader::open(&sample.path)?;
-        let spec = reader.spec();
-        let channels = usize::from(spec.channels);
-        if channels == 0 {
-            return Err(RenderError::Invalid(format!(
-                "sample {} has zero channels",
-                sample.path.display()
-            )));
-        }
-        let mut mono = Vec::new();
-        match spec.sample_format {
-            SampleFormat::Float => {
-                let mut frame = 0.0_f32;
-                for (index, value) in reader.samples::<f32>().enumerate() {
-                    frame += value?;
-                    if index % channels == channels - 1 {
-                        mono.push(frame / channels as f32);
-                        frame = 0.0;
-                    }
-                }
-            }
-            SampleFormat::Int => {
-                let scale = (1_i64 << (spec.bits_per_sample.saturating_sub(1))) as f32;
-                let mut frame = 0.0_f32;
-                for (index, value) in reader.samples::<i32>().enumerate() {
-                    frame += value? as f32 / scale;
-                    if index % channels == channels - 1 {
-                        mono.push(frame / channels as f32);
-                        frame = 0.0;
-                    }
-                }
-            }
-        }
-        if spec.sample_rate != SAMPLE_RATE {
-            mono = resample(&mono, SAMPLE_RATE as f64 / spec.sample_rate as f64)?;
-        }
-        self.cache.insert(sample.path.clone(), mono.clone());
-        Ok(mono)
-    }
-}
-
-/// Render the graph using resources relative to `score_dir`.
-pub fn render(graph: &ScoreGraph, score_dir: &Path) -> Result<RenderedAudio, RenderError> {
-    validate_supported(graph)?;
-    let timing = BarMap::for_graph(graph)?;
-    let pack = graph
-        .headers
-        .get("pack")
-        .map(|path| Pack::load(&score_dir.join(path)))
-        .transpose()?;
-    let mut pack = pack;
-    let a4 = parse_tuning(graph.headers.get("tuning"))?;
-    let target_rms_db = graph
-        .headers
-        .get("master")
-        .and_then(|raw| raw.split("rms=").nth(1))
-        .and_then(|v| v.split_whitespace().next())
-        .and_then(|v| v.parse::<f32>().ok())
-        .unwrap_or(-17.0);
-    let total_frames = ((timing.total_seconds + 4.0) * SAMPLE_RATE as f64).ceil() as usize;
-    let mut mix = vec![0.0_f32; total_frames * 2];
-
-    for (lineage, state, _) in graph.current_events() {
-        let instrument = graph
-            .instruments
-            .iter()
-            .find(|instrument| instrument.abbrev == state.track)
-            .ok_or_else(|| {
-                RenderError::Invalid(format!("event track {} is undeclared", state.track))
-            })?;
-        let params = effective_params(instrument.params.clone(), &state.params);
-        let bar = timing.bars.get(&state.bar).ok_or_else(|| {
-            RenderError::Invalid(format!(
-                "event {} uses missing bar {}",
-                lineage.0, state.bar
-            ))
-        })?;
-        let onset = bar.start_seconds + state.onset_ql.as_f64() * bar.seconds_per_quarter;
-        let slot_seconds = (state.dur_ql.as_f64() * bar.seconds_per_quarter).max(0.001);
-        let mut source = sample_for(&params, pack.as_mut(), score_dir, a4)?;
-        let offset = params
-            .get("off")
-            .and_then(|v| v.parse::<f32>().ok())
-            .unwrap_or(0.0)
-            .max(0.0);
-        let skip = (offset * SAMPLE_RATE as f32 / 1000.0) as usize;
-        if skip < source.audio.len() {
-            source.audio = source.audio[skip..].to_vec();
-        } else {
-            source.audio.clear();
-        }
-        if state.flags.contains("reverse") {
-            source.audio.reverse();
-        }
-        if source.audio.len() < 8 {
-            continue;
-        }
-        let mut rendered = render_source(&source.audio, &source.f0_hz, state, &params, a4)?;
-        if params.get("str").map(String::as_str) == Some("fit") {
-            rendered = resample(
-                &rendered,
-                slot_seconds * SAMPLE_RATE as f64 / rendered.len() as f64,
-            )?;
-        }
-        let slot_frames = (slot_seconds * SAMPLE_RATE as f64).round().max(1.0) as usize;
-        if state.flags.contains("gate") {
-            rendered.truncate(slot_frames);
-        }
-        for (name, fraction) in ART_SHORTEN {
-            if state.flags.contains(*name) {
-                rendered.truncate((slot_frames as f32 * fraction).round().max(64.0) as usize);
-            }
-        }
-        if state.flags.contains("fer") {
-            rendered = resample(&rendered, 1.75)?;
-        }
-        apply_envelope(&mut rendered, &params)?;
-        apply_filters(&mut rendered, &params);
-        let gain_db = dynamic_db(state.dynamic.as_deref())
-            + params
-                .get("gain")
-                .and_then(|v| v.parse::<f32>().ok())
-                .unwrap_or(0.0)
-            + state
-                .flags
-                .iter()
-                .filter_map(|flag| {
-                    ART_GAIN
-                        .iter()
-                        .find(|(name, _)| *name == flag)
-                        .map(|(_, db)| *db)
-                })
-                .sum::<f32>();
-        let gain = 10.0_f32.powf(gain_db / 20.0);
-        let (pan_start, pan_end) = parameter_pair(&params, "pan", 0.0);
-        let start = (onset * SAMPLE_RATE as f64).round() as usize;
-        place(&mut mix, start, &rendered, gain, pan_start, pan_end);
-    }
-    master(&mut mix, target_rms_db, 0.89);
-    Ok(RenderedAudio {
-        samples: mix,
-        sample_rate: SAMPLE_RATE,
-    })
-}
-
-fn validate_supported(graph: &ScoreGraph) -> Result<(), RenderError> {
-    for instrument in &graph.instruments {
-        if instrument.params.contains_key("synth") {
-            return Err(RenderError::Unsupported(UnsupportedConstruct {
-                construct: "synth".into(),
-                location: format!("instrument {}", instrument.abbrev),
-            }));
-        }
-        if instrument.params.get("mode").map(String::as_str) == Some("vocoder") {
-            return Err(RenderError::Unsupported(UnsupportedConstruct {
-                construct: "vocoder transposition".into(),
-                location: format!("instrument {}", instrument.abbrev),
-            }));
-        }
-    }
-    for (lineage, state, _) in graph.current_events() {
-        if state.quote.is_some() {
-            return Err(RenderError::Unsupported(UnsupportedConstruct {
-                construct: "gesture quotation".into(),
-                location: format!("event {}", lineage.0),
-            }));
-        }
-        for key in state.params.keys() {
-            if matches!(
-                key.as_str(),
-                "chop"
-                    | "ring"
-                    | "rwet"
-                    | "glow"
-                    | "ghold"
-                    | "gwarble"
-                    | "gharm"
-                    | "pump"
-                    | "drive"
-                    | "dist"
-                    | "crush"
-                    | "decim"
-                    | "stut"
-                    | "duck"
-                    | "haas"
-                    | "send"
-            ) {
-                return Err(RenderError::Unsupported(UnsupportedConstruct {
-                    construct: key.clone(),
-                    location: format!("event {}", lineage.0),
-                }));
-            }
-            if key == "mode" && state.params.get(key).map(String::as_str) == Some("vocoder") {
-                return Err(RenderError::Unsupported(UnsupportedConstruct {
-                    construct: "vocoder transposition".into(),
-                    location: format!("event {}", lineage.0),
-                }));
-            }
-            if key == "str"
-                && state
-                    .params
-                    .get(key)
-                    .map(String::as_str)
-                    .is_some_and(|value| value != "fit")
-            {
-                return Err(RenderError::Unsupported(UnsupportedConstruct {
-                    construct: "arbitrary time stretch".into(),
-                    location: format!("event {}", lineage.0),
-                }));
-            }
-        }
-    }
-    if graph.headers.contains_key("sidechain") {
-        return Err(RenderError::Unsupported(UnsupportedConstruct {
-            construct: "sidechain".into(),
-            location: "score header".into(),
-        }));
-    }
-    if graph.headers.contains_key("reverb") {
-        return Err(RenderError::Unsupported(UnsupportedConstruct {
-            construct: "reverb room".into(),
-            location: "score header".into(),
-        }));
-    }
-    // Swing is a performance annotation in the graph (R6). WF1 intentionally
-    // leaves onsets straight; the annotation must not alter stored timing.
-    Ok(())
-}
-
-#[derive(Debug)]
-struct Source {
-    audio: Vec<f32>,
-    f0_hz: f32,
-}
-
-fn sample_for(
-    params: &BTreeMap<String, String>,
-    pack: Option<&mut Pack>,
-    score_dir: &Path,
-    a4: f32,
-) -> Result<Source, RenderError> {
-    if let Some(path) = params.get("sample") {
-        let reference = SampleRef {
-            path: score_dir.join(path),
-            f0_hz: params
-                .get("root")
-                .and_then(|root| pitch_to_hz(root, a4))
-                .unwrap_or(0.0),
-        };
-        let audio = load_direct(&reference)?;
-        return Ok(Source {
-            audio,
-            f0_hz: reference.f0_hz,
-        });
-    }
-    let pack = pack.ok_or_else(|| RenderError::Invalid("sample event has no pack".into()))?;
-    let voice = params
-        .get("voice")
-        .ok_or_else(|| RenderError::Invalid("instrument has no voice or sample".into()))?;
-    let samples = pack
-        .voices
-        .get(voice)
-        .ok_or_else(|| RenderError::Invalid(format!("pack has no voice {voice}")))?;
-    if samples.is_empty() {
-        return Err(RenderError::Invalid(format!(
-            "voice {voice} has no samples"
-        )));
-    }
-    let index = params
-        .get("s")
-        .and_then(|v| v.parse::<usize>().ok())
-        .unwrap_or(1)
-        .saturating_sub(1)
-        .min(samples.len() - 1);
-    let sample = samples[index].clone();
-    let audio = pack.load_sample(&sample)?;
-    let f0_hz = if sample.f0_hz > 0.0 {
-        sample.f0_hz
-    } else {
-        params
-            .get("root")
-            .and_then(|root| pitch_to_hz(root, a4))
-            .unwrap_or(0.0)
-    };
-    Ok(Source { audio, f0_hz })
-}
-
-fn load_direct(sample: &SampleRef) -> Result<Vec<f32>, RenderError> {
-    let mut reader = WavReader::open(&sample.path)?;
-    let spec = reader.spec();
-    let channels = usize::from(spec.channels.max(1));
-    let mut out = Vec::new();
-    let scale = (1_i64 << (spec.bits_per_sample.saturating_sub(1))) as f32;
-    let mut frame = 0.0;
-    match spec.sample_format {
-        SampleFormat::Float => {
-            for (i, value) in reader.samples::<f32>().enumerate() {
-                frame += value?;
-                if i % channels == channels - 1 {
-                    out.push(frame / channels as f32);
-                    frame = 0.0;
-                }
-            }
-        }
-        SampleFormat::Int => {
-            for (i, value) in reader.samples::<i32>().enumerate() {
-                frame += value? as f32 / scale;
-                if i % channels == channels - 1 {
-                    out.push(frame / channels as f32);
-                    frame = 0.0;
-                }
-            }
-        }
-    }
-    if spec.sample_rate != SAMPLE_RATE {
-        resample(&out, SAMPLE_RATE as f64 / spec.sample_rate as f64)
-    } else {
-        Ok(out)
-    }
-}
-
-fn render_source(
-    source: &[f32],
-    f0_hz: &f32,
-    state: &EventState,
-    params: &BTreeMap<String, String>,
-    a4: f32,
-) -> Result<Vec<f32>, RenderError> {
-    if *f0_hz <= 0.0 || state.kind == EventKind::Unpitched {
-        let (start, end) = parameter_pair(params, "st", 0.0);
-        if (start - end).abs() > f32::EPSILON {
-            return Ok(ramp_resample(source, start, end));
-        }
-        return resample(source, 1.0 / 2.0_f64.powf(start as f64 / 12.0));
-    }
-    let first = state
-        .pitches_midi_cents
-        .first()
-        .copied()
-        .ok_or_else(|| RenderError::Invalid("pitched sampler event has no pitch".into()))?;
-    let start = 12.0 * (pitch_cents_to_hz(first, a4) / *f0_hz).log2();
-    let end = state
-        .gliss_target_midi_cents
-        .map(|target| 12.0 * (pitch_cents_to_hz(target, a4) / *f0_hz).log2())
-        .unwrap_or(start);
-    if state.kind == EventKind::Chord && state.pitches_midi_cents.len() > 1 {
-        let mut voices = Vec::new();
-        for pitch in &state.pitches_midi_cents {
-            let semitones = 12.0 * (pitch_cents_to_hz(*pitch, a4) / *f0_hz).log2();
-            voices.push(resample(
-                source,
-                1.0 / 2.0_f64.powf(semitones as f64 / 12.0),
-            )?);
-        }
-        let len = voices.iter().map(Vec::len).max().unwrap_or(0);
-        let mut out = vec![0.0; len];
-        for voice in voices {
-            for (index, value) in voice.into_iter().enumerate() {
-                out[index] += value;
-            }
-        }
-        let scale = (state.pitches_midi_cents.len() as f32).sqrt();
-        for value in &mut out {
-            *value /= scale;
-        }
-        Ok(out)
-    } else if (start - end).abs() > 0.001 {
-        Ok(ramp_resample(source, start, end))
-    } else {
-        resample(source, 1.0 / 2.0_f64.powf(start as f64 / 12.0))
-    }
-}
-
-fn ramp_resample(source: &[f32], start: f32, end: f32) -> Vec<f32> {
-    let rate0 = 2.0_f64.powf(start as f64 / 12.0);
-    let rate1 = 2.0_f64.powf(end as f64 / 12.0);
-    let n = (source.len() as f64 / ((rate0 + rate1) * 0.5))
-        .round()
-        .max(8.0) as usize;
-    let mut out = Vec::with_capacity(n);
-    for index in 0..n {
-        let t = index as f64 / n.max(1) as f64;
-        let rate = rate0 * (rate1 / rate0).powf(t);
-        let position = (index as f64 * rate).min((source.len() - 1) as f64);
-        let left = position.floor() as usize;
-        let frac = position - left as f64;
-        let right = (left + 1).min(source.len() - 1);
-        out.push((source[left] as f64 * (1.0 - frac) + source[right] as f64 * frac) as f32);
-    }
-    out
-}
-
-fn resample(source: &[f32], ratio: f64) -> Result<Vec<f32>, RenderError> {
-    if source.len() < 8 || (ratio - 1.0).abs() < 1e-6 {
-        return Ok(source.to_vec());
-    }
-    let params = SincInterpolationParameters {
-        sinc_len: 256,
-        f_cutoff: 0.95,
-        interpolation: SincInterpolationType::Linear,
-        oversampling_factor: 160,
-        window: WindowFunction::BlackmanHarris2,
-    };
-    let mut resampler = SincFixedIn::<f32>::new(ratio, 64.0, params, source.len(), 1)
-        .map_err(|e| RenderError::Invalid(format!("rubato setup: {e}")))?;
-    let output = resampler
-        .process(&[source.to_vec()], None)
-        .map_err(|e| RenderError::Invalid(format!("rubato process: {e}")))?;
-    Ok(output.into_iter().next().unwrap_or_default())
-}
-
-fn apply_envelope(audio: &mut [f32], params: &BTreeMap<String, String>) -> Result<(), RenderError> {
-    let attack = params
-        .get("atk")
-        .and_then(|v| v.parse::<f32>().ok())
-        .unwrap_or(0.003)
-        .max(0.0015);
-    let release = params
-        .get("rel")
-        .and_then(|v| v.parse::<f32>().ok())
-        .unwrap_or(0.035)
-        .max(0.004);
-    let attack = ((attack * SAMPLE_RATE as f32) as usize).min(audio.len() / 3);
-    let release = ((release * SAMPLE_RATE as f32) as usize).min(audio.len() / 2);
-    for (index, sample) in audio.iter_mut().take(attack).enumerate() {
-        *sample *= (index as f32 / attack.max(1) as f32).powf(0.7);
-    }
-    for (index, sample) in audio.iter_mut().rev().take(release).enumerate() {
-        *sample *= (1.0 - index as f32 / release.max(1) as f32).powf(1.5);
-    }
-    Ok(())
-}
-
-fn place(mix: &mut [f32], start: usize, source: &[f32], gain: f32, p0: f32, p1: f32) {
-    if start >= mix.len() / 2 {
-        return;
-    }
-    let max_frames = (mix.len() / 2 - start).min(source.len());
-    for index in 0..max_frames {
-        let t = index as f32 / max_frames.saturating_sub(1).max(1) as f32;
-        let pan = (p0 + (p1 - p0) * t).clamp(-1.0, 1.0);
-        let theta = (pan + 1.0) * std::f32::consts::FRAC_PI_4;
-        let value = source[index] * gain;
-        mix[(start + index) * 2] += value * theta.cos();
-        mix[(start + index) * 2 + 1] += value * theta.sin();
-    }
-}
-
-/// Master chain: RMS pre-gain establishes the requested body level; a
-/// windowed maximum limiter catches the transient crest that this material
-/// has; tanh rounds the residual edge; final RMS/ceiling landing honors both
-/// the user's RMS target and a hard -1 dBFS ceiling.
-fn master(mix: &mut [f32], target_rms_db: f32, ceiling: f32) {
-    let rms = (mix.iter().map(|v| v * v).sum::<f32>() / mix.len().max(1) as f32).sqrt();
-    if rms > 0.0 {
-        let gain = 10.0_f32.powf((target_rms_db - dbfs(rms)) / 20.0);
-        for value in mix.iter_mut() {
-            *value *= gain;
-        }
-    }
-    let window = ((0.02 * SAMPLE_RATE as f32) as usize) | 1;
-    let envelope = centered_max(mix, window);
-    let mut smoothed = vec![0.0_f32; envelope.len()];
-    hann_smooth(
-        &envelope,
-        &mut smoothed,
-        ((0.03 * SAMPLE_RATE as f32) as usize) | 1,
-    );
-    let mut gains = vec![1.0_f32; smoothed.len()];
-    for (gain, peak) in gains.iter_mut().zip(smoothed) {
-        *gain = (ceiling / (peak + 1e-9)).min(1.0);
-    }
-    let mut gain_smooth = vec![0.0_f32; gains.len()];
-    hann_smooth(
-        &gains,
-        &mut gain_smooth,
-        ((0.03 * SAMPLE_RATE as f32) as usize) | 1,
-    );
-    for frame in 0..gain_smooth.len() {
-        mix[frame * 2] *= gain_smooth[frame];
-        mix[frame * 2 + 1] *= gain_smooth[frame];
-        mix[frame * 2] = (mix[frame * 2] * 1.08).tanh() * 0.95;
-        mix[frame * 2 + 1] = (mix[frame * 2 + 1] * 1.08).tanh() * 0.95;
-    }
-    let cur = (mix.iter().map(|v| v * v).sum::<f32>() / mix.len().max(1) as f32).sqrt();
-    if cur > 0.0 {
-        let want = 10.0_f32.powf((target_rms_db - dbfs(cur)) / 20.0);
-        let peak = mix.iter().map(|v| v.abs()).fold(0.0, f32::max);
-        let allowed = 10.0_f32.powf(-1.0 / 20.0) / (peak + 1e-9);
-        for value in mix.iter_mut() {
-            *value *= want.min(allowed);
-        }
-    }
-}
-
-fn centered_max(mix: &[f32], width: usize) -> Vec<f32> {
-    let frames = mix.len() / 2;
-    let half = width / 2;
-    let mut values = Vec::with_capacity(frames + 2 * half);
-    let first = if frames == 0 {
-        0.0
-    } else {
-        mix[0].abs().max(mix[1].abs())
-    };
-    let last = if frames == 0 {
-        0.0
-    } else {
-        mix[(frames - 1) * 2]
-            .abs()
-            .max(mix[(frames - 1) * 2 + 1].abs())
-    };
-    values.extend(std::iter::repeat(first).take(half));
-    for frame in 0..frames {
-        values.push(mix[frame * 2].abs().max(mix[frame * 2 + 1].abs()));
-    }
-    values.extend(std::iter::repeat(last).take(half));
-    let mut queue = VecDeque::<(usize, f32)>::new();
-    let mut out = vec![0.0; frames];
-    for index in 0..values.len() {
-        let value = values[index];
-        while queue.back().is_some_and(|(_, old)| *old <= value) {
-            queue.pop_back();
-        }
-        queue.push_back((index, value));
-        while queue.front().is_some_and(|(old, _)| *old + width <= index) {
-            queue.pop_front();
-        }
-        if index >= width - 1 {
-            let center = index - (width - 1);
-            if center < frames {
-                out[center] = queue.front().map(|(_, v)| *v).unwrap_or(0.0);
-            }
-        }
-    }
-    out
-}
-
-fn hann_smooth(input: &[f32], output: &mut [f32], width: usize) {
-    let width = width.max(3) | 1;
-    let omega = 2.0_f64 * std::f64::consts::PI / (width - 1) as f64;
-    let mut sum = vec![0.0_f64; input.len() + 1];
-    let mut cos_sum = vec![0.0_f64; input.len() + 1];
-    let mut sin_sum = vec![0.0_f64; input.len() + 1];
-    for (index, value) in input.iter().enumerate() {
-        let phase = index as f64 * omega;
-        sum[index + 1] = sum[index] + *value as f64;
-        cos_sum[index + 1] = cos_sum[index] + *value as f64 * phase.cos();
-        sin_sum[index + 1] = sin_sum[index] + *value as f64 * phase.sin();
-    }
-    let half = width / 2;
-    let norm = width as f64 * 0.5;
-    for center in 0..input.len() {
-        let start = center.saturating_sub(half);
-        let end = (center + half + 1).min(input.len());
-        let plain = sum[end] - sum[start];
-        let c = cos_sum[end] - cos_sum[start];
-        let s = sin_sum[end] - sin_sum[start];
-        let phase = start as f64 * omega;
-        let weighted = 0.5 * plain - 0.5 * (c * phase.cos() + s * phase.sin());
-        output[center] = (weighted / norm) as f32;
-    }
-}
-
-fn apply_filters(audio: &mut [f32], params: &BTreeMap<String, String>) {
-    let (low_start, low_end) = parameter_pair(params, "lpf", 20_000.0);
-    let (high_start, high_end) = parameter_pair(params, "hpf", 20.0);
-    if params.contains_key("lpf") {
-        one_pole_filter(audio, low_start, low_end, false);
-    }
-    if params.contains_key("hpf") {
-        one_pole_filter(audio, high_start, high_end, true);
-    }
-}
-
-fn one_pole_filter(audio: &mut [f32], start_hz: f32, end_hz: f32, high_pass: bool) {
-    let mut state = 0.0_f32;
-    let n = audio.len().max(1);
-    for (index, sample) in audio.iter_mut().enumerate() {
-        let t = index as f32 / n as f32;
-        let cutoff = (start_hz.max(20.0).ln()
-            + t * (end_hz.max(20.0).ln() - start_hz.max(20.0).ln()))
-        .exp()
-        .min(SAMPLE_RATE as f32 * 0.47);
-        let alpha = 1.0 - (-2.0 * std::f32::consts::PI * cutoff / SAMPLE_RATE as f32).exp();
-        let input = *sample;
-        state += alpha * (input - state);
-        *sample = if high_pass { input - state } else { state };
-    }
-}
-
-fn effective_params(
-    defaults: BTreeMap<String, String>,
-    event: &BTreeMap<String, String>,
-) -> BTreeMap<String, String> {
-    let mut params = defaults;
-    // DIVERGENCE: WF1 has no room/reverb bus. Instrument declarations in the
-    // smoke corpus retain `send=` for graph/text parity, but it is inert until
-    // the room face lands; per-event sends are refused above.
-    params.extend(event.clone());
-    params
-}
-
-fn parameter_pair(params: &BTreeMap<String, String>, key: &str, default: f32) -> (f32, f32) {
-    let Some(value) = params.get(key) else {
-        return (default, default);
-    };
-    if let Some((a, b)) = value.split_once("->") {
-        return (
-            a.parse::<f32>().unwrap_or(default),
-            b.parse::<f32>().unwrap_or(default),
-        );
-    }
-    let scalar = value.parse::<f32>().unwrap_or(default);
-    (scalar, scalar)
-}
-
-fn dynamic_db(dynamic: Option<&str>) -> f32 {
-    dynamic
-        .and_then(|value| {
-            DYN_DB
-                .iter()
-                .find(|(name, _)| *name == value)
-                .map(|(_, db)| *db)
-        })
-        .unwrap_or(-11.0)
-}
-
-fn parse_tuning(value: Option<&String>) -> Result<f32, RenderError> {
-    let Some(value) = value else { return Ok(440.0) };
-    let value = value
-        .split_once('=')
-        .map(|(_, value)| value)
-        .unwrap_or(value);
-    value
-        .trim()
-        .parse::<f32>()
-        .map_err(|_| RenderError::Invalid(format!("invalid tuning {value}")))
-}
-
-fn pitch_to_hz(value: &str, a4: f32) -> Option<f32> {
-    let midi = parse_pitch(value)?;
-    Some(pitch_cents_to_hz((midi * 100.0).round() as i32, a4))
-}
-
-fn parse_pitch(value: &str) -> Option<f32> {
-    let mut chars = value.chars();
-    let note = chars.next()?.to_ascii_uppercase();
-    let mut accidental = 0.0;
-    let next = chars.next();
-    let octave_start = match next {
-        Some('#') => {
-            accidental = 1.0;
-            2
-        }
-        Some('b') => {
-            accidental = -1.0;
-            2
-        }
-        Some('n') => 2,
-        Some(_) => 1,
-        None => return None,
-    };
-    let rest = &value[octave_start..];
-    let split = rest.find(['+', '-']).unwrap_or(rest.len());
-    let octave = rest[..split].parse::<i32>().ok()?;
-    let cents = if split < rest.len() {
-        rest[split..].parse::<f32>().ok()?
-    } else {
-        0.0
-    };
-    let base = match note {
-        'C' => 0.0,
-        'D' => 2.0,
-        'E' => 4.0,
-        'F' => 5.0,
-        'G' => 7.0,
-        'A' => 9.0,
-        'B' => 11.0,
-        _ => return None,
-    };
-    Some((octave + 1) as f32 * 12.0 + base + accidental + cents / 100.0)
-}
-
-fn pitch_cents_to_hz(pitch: i32, a4: f32) -> f32 {
-    a4 * 2.0_f32.powf((pitch as f32 / 100.0 - 69.0) / 12.0)
-}
-
-fn dbfs(value: f32) -> f32 {
-    20.0 * value.max(1e-12).log10()
+pub struct RenderOutcome {
+    pub audio: RenderedAudio,
+    pub stats: RenderStats,
 }
 
 pub fn sha256_bytes(bytes: &[u8]) -> String {
@@ -913,19 +128,195 @@ pub fn sha256_bytes(bytes: &[u8]) -> String {
     format!("{:x}", hasher.finalize())
 }
 
+/// Render a score to full sample parity with `mus_audio.render()`
+/// (`mus_audio.py` lines 717-1181). `source` is the score text; assets
+/// (`pack`, `gestures`, `tape`, `sample=`) resolve relative to
+/// `score_dir`.
+pub fn render(source: &str, score_dir: &Path) -> Result<RenderOutcome, RenderError> {
+    let (proposal, _diags) = mus_text::parse_score_lossy(source);
+    let headers = &proposal.headers;
+
+    // ---- headers (lines 721-733, 776-788, 844-860, 1153-1166)
+    let a4 = layout::parse_tuning_a4(headers.get("tuning"))?;
+    let (swing_unit_ql, swing_r) = layout::parse_swing(headers.get("swing"));
+    let sidechain = layout::parse_sidechain(headers.get("sidechain"));
+    let reverb_s = layout::parse_reverb_seconds(headers.get("reverb"))?;
+    let master_rms_db = layout::parse_master_rms(headers.get("master"))?;
+
+    // ---- pack / gestures / tape (lines 727-743)
+    let pack = match headers.get("pack") {
+        Some(rel) => Some(pack::Pack::load(&score_dir.join(rel))?),
+        None => None,
+    };
+    let gestures = match headers.get("gestures") {
+        Some(rel) => gestures::load_gestures(&score_dir.join(rel))?,
+        None => BTreeMap::new(),
+    };
+    let cache = pack::SampleCache::new();
+    let tape_audio: Option<Vec<f32>> = match headers.get("tape") {
+        Some(rel) => Some((*cache.load(&score_dir.join(rel))?).clone()),
+        None => None,
+    };
+
+    // ---- voices (lines 745-774)
+    let (voices, warnings) =
+        pack::build_voices(&proposal.instruments, pack.as_ref(), score_dir, a4)?;
+
+    // ---- bar map (lines 798-826). The inline tempo/time overrides come
+    // from a fresh raw-text bar scan, not `proposal.bar_changes` — see
+    // `rawbars`'s module doc for why.
+    let abbrevs: Vec<String> = proposal
+        .instruments
+        .iter()
+        .map(|i| i.abbrev.clone())
+        .collect();
+    let raw = rawbars::scan(source, &abbrevs);
+    // `if not bar_count and bars: bar_count = max(...)` (mus.py line
+    // 1326-1327): Python's `not bar_count` is also true for an explicit
+    // `# bars: 0`, so a literal `0` header falls through to the bar-lines
+    // count exactly like a missing/unparseable header does.
+    let n_bars = headers
+        .get("bars")
+        .and_then(|v| v.trim().parse::<u32>().ok())
+        .filter(|&n| n != 0)
+        .unwrap_or(raw.max_bar);
+    let bar_map = layout::build_bar_map(
+        headers.get("tempo"),
+        headers.get("time"),
+        &raw.inline_tempo,
+        &raw.inline_time,
+        n_bars,
+    )?;
+    let n_total = (bar_map.total_s * mus_dsp::SR_F64) as usize;
+
+    // ---- the event walk, track by track (lines 862-1138)
+    let eager = sidechain.is_none();
+    let mut buffers = mixbus::MixBuffers::new(n_total);
+    let mut placed = Vec::new();
+    let mut sc_onsets = Vec::new();
+    let mut stats = RenderStats {
+        voices: voices.len(),
+        total_seconds: bar_map.total_s,
+        tuning_a: a4,
+        warnings,
+        ..Default::default()
+    };
+
+    for voice in &voices {
+        let ctx = events::WalkContext {
+            bar_map: &bar_map,
+            bar_content: &raw.bar_content,
+            n_bars,
+            swing_unit_ql,
+            swing_r,
+            a4,
+            gestures: &gestures,
+            tape_audio: tape_audio.as_deref(),
+            cache: &cache,
+            n_total,
+            eager,
+            sc_track: sidechain.as_ref().map(|s| s.track.as_str()),
+        };
+        events::walk_track(
+            &ctx,
+            voice,
+            &mut buffers,
+            &mut placed,
+            &mut sc_onsets,
+            &mut stats,
+        )?;
+    }
+
+    // ---- deferred mixdown + sidechain (lines 1140-1148)
+    let sidechain_hits = mixbus::deferred_mixdown(
+        &mut buffers,
+        &placed,
+        sidechain.as_ref().map(|s| s.track.as_str()),
+        &sc_onsets,
+        sidechain.as_ref().map(|s| s.depth).unwrap_or(0.75),
+        sidechain.as_ref().map(|s| s.rel).unwrap_or(0.16),
+        n_total,
+    );
+    stats.sidechain_hits = sidechain_hits;
+
+    // ---- reverb + highpass + master (lines 1150-1167)
+    let out = mixbus::finish_bus(buffers, reverb_s, master_rms_db, n_total);
+
+    let mut samples = Vec::with_capacity(n_total * 2);
+    for (&l, &r) in out[0].iter().zip(out[1].iter()) {
+        samples.push(l);
+        samples.push(r);
+    }
+    Ok(RenderOutcome {
+        audio: RenderedAudio {
+            samples,
+            sample_rate: SAMPLE_RATE,
+        },
+        stats,
+    })
+}
+
+/// `float × 2²³`, floored, clipped to the 24-bit signed range —
+/// `soundfile`'s (`libsndfile`) actual `PCM_24` write conversion.
+///
+/// **This is `floor`, not the round-to-nearest-even
+/// `SPECS/audio/WF8-orchestrator.md`'s Output section describes.** That
+/// prose turned out not to match the executable oracle, which
+/// `SPECS/audio/README.md` names as the actual arbiter ("the oracle is
+/// executable"); flagging the discrepancy here rather than silently
+/// picking a side. The previous attempt at this function also produced
+/// `floor` and was rejected for it, but on inspection its supporting
+/// test was unsound, not just circular: several of its per-fraction
+/// cases (`0.1`, `0.25`, `0.4`, …) were built as `(target as f64 + frac)
+/// as f32` at `target ≈ 1_000_000`, a magnitude where f32 has only ~3-4
+/// fractional mantissa bits left — most of those fractions silently
+/// round to a *different* value during that cast, before the conversion
+/// under test ever sees them, so the table wasn't the evidence it
+/// claimed to be. Redone here with values constructed to be *exactly*
+/// representable in f32 (see `tests::half_boundary`/`tests::
+/// sixteenth_above`), verified against real `soundfile` 0.14.0 /
+/// `libsndfile` 1.2.2 output (both mono and interleaved-stereo array
+/// shapes, matching `write_wav`'s actual layout):
+///
+/// - Every `m + 0.5` boundary floors to `m` on the positive side —
+///   *regardless* of whether `m` or `m+1` is even, which rules out both
+///   round-half-to-even and round-half-up (either would round at least
+///   one of `1_000_000.5`/`1_000_001.5` up; neither does).
+/// - The negative side floors toward `-infinity` (`-(m+0.5)` → `-(m+1)`),
+///   not toward zero, which rules out a truncating cast.
+/// - A dense sweep of every sixteenth across a whole unit interval floors
+///   uniformly across the *entire* interval — not just near either end —
+///   which no rounding rule, whatever its tie-breaking policy, could
+///   produce.
+///
+/// See `tests::pcm24_matches_soundfile_oracle_bit_exact` for the pinned
+/// values (hardcoded literals, not round-tripped through this function —
+/// the previous attempt's circularity complaint) and the regeneration
+/// command.
+fn f32_to_pcm24(sample: f32) -> i32 {
+    let scaled = (sample as f64 * 8_388_608.0).floor();
+    scaled.clamp(-8_388_608.0, 8_388_607.0) as i32
+}
+
+/// `sf.write(str(out_path), out.T, SR, subtype="PCM_24")` (`mus_audio.py`
+/// line 1169).
 pub fn write_wav(audio: &RenderedAudio, path: &Path) -> Result<(), RenderError> {
     let spec = hound::WavSpec {
         channels: 2,
         sample_rate: audio.sample_rate,
         bits_per_sample: 24,
-        sample_format: SampleFormat::Int,
+        sample_format: hound::SampleFormat::Int,
     };
-    let mut writer = hound::WavWriter::create(path, spec)?;
-    for value in &audio.samples {
-        let value = (value.clamp(-1.0, 1.0) * 8_388_607.0).round() as i32;
-        writer.write_sample(value)?;
+    let mut writer = hound::WavWriter::create(path, spec)
+        .map_err(|e| RenderError::Wav(format!("{}: {e}", path.display())))?;
+    for &value in &audio.samples {
+        writer
+            .write_sample(f32_to_pcm24(value))
+            .map_err(|e| RenderError::Wav(e.to_string()))?;
     }
-    writer.finalize()?;
+    writer
+        .finalize()
+        .map_err(|e| RenderError::Wav(e.to_string()))?;
     Ok(())
 }
 
@@ -933,91 +324,236 @@ pub fn write_wav(audio: &RenderedAudio, path: &Path) -> Result<(), RenderError> 
 mod tests {
     use super::*;
 
-    #[test]
-    fn equal_power_pan_preserves_mono_power_at_center() {
-        let mut mix = vec![0.0; 2];
-        place(&mut mix, 0, &[1.0], 1.0, 0.0, 0.0);
-        assert!((mix[0] - 2f32.sqrt() / 2.0).abs() < 1e-6);
-        assert!((mix[1] - 2f32.sqrt() / 2.0).abs() < 1e-6);
+    /// A float32 exactly `(2m + 1) / 2**24` — chosen so `value * 2**23`
+    /// equals `m + 0.5` with no float rounding anywhere in its
+    /// construction: `2m + 1` fits f32's 24-bit mantissa exactly for
+    /// every `m` used below (`2*8_000_001 + 1 = 16_000_003 <
+    /// 16_777_216 = 2**24`), and dividing by a power of two only shifts
+    /// the exponent. This is the fix over the previous attempt's
+    /// `(target as f64 + frac) as f32` construction, which is *not*
+    /// exact at these magnitudes (see `f32_to_pcm24`'s doc comment).
+    fn half_boundary(m: i64) -> f32 {
+        (2 * m + 1) as f32 / 16_777_216.0
     }
 
+    /// A float32 exactly `k / (16 * 2**23)`, i.e. `value * 2**23 == k /
+    /// 16` — sweeps every sixteenth of the unit interval above `base`
+    /// with the same exactness guarantee as [`half_boundary`] (`base *
+    /// 16 + sixteenths` stays well under `2**24` for every value used
+    /// below).
+    fn sixteenth_above(base: i64, sixteenths: i64) -> f32 {
+        (base * 16 + sixteenths) as f32 / 134_217_728.0
+    }
+
+    /// Pinned against real `soundfile`/`libsndfile` output — see
+    /// `f32_to_pcm24`'s doc comment for the full finding. Every expected
+    /// value below is a hardcoded literal; none are computed by calling
+    /// [`f32_to_pcm24`] or any other Rust helper (the previous attempt's
+    /// circularity complaint — its second test compared `write_wav`'s
+    /// output back to `f32_to_pcm24` itself, which is `pcm24_write_
+    /// round_trips_byte_exact`'s job below, *not* oracle evidence).
+    ///
+    /// Regenerate/verify with:
+    /// ```text
+    /// uv run --with soundfile --with numpy python3 -c '
+    /// import struct, numpy as np, soundfile as sf
+    /// def half(m): return np.float32((2*m+1) / (2.0**24))
+    /// ms = (1_000_000, 1_000_001, 2, 3, 0, 6, 7, 8_000_000, 8_000_001)
+    /// vals = [half(m) for m in ms] + [np.float32(-float(half(m))) for m in ms]
+    /// sf.write("/tmp/t.wav", np.array(vals, dtype=np.float32), 48000, subtype="PCM_24")
+    /// data = open("/tmp/t.wav","rb").read()
+    /// i = data.find(b"data"); n = struct.unpack("<I", data[i+4:i+8])[0]
+    /// raw = data[i+8:i+8+n]
+    /// print([int.from_bytes(raw[k*3:k*3+3], "little", signed=True) for k in range(n//3)])'
+    /// ```
     #[test]
-    fn master_is_deterministic_and_lands_under_ceiling() {
-        let mut first = vec![0.0; 48_000 * 2];
-        for (i, value) in first.iter_mut().enumerate() {
-            *value = ((i % 127) as f32 / 63.0 - 1.0) * 0.2;
+    fn pcm24_matches_soundfile_oracle_bit_exact() {
+        let cases: &[(f32, i32)] = &[
+            (0.0, 0),
+            (1.0, 8_388_607),                       // clips: floor(8388608.0) > max
+            (-1.0, -8_388_608), // exact: floor(-8388608.0) == min, no clip needed
+            (2.0, 8_388_607),   // far over: clips
+            (-2.0, -8_388_608), // far under: clips
+            (1_000_000.0 / 8_388_608.0, 1_000_000), // exact integer, sanity check
+            (-1_000_000.0 / 8_388_608.0, -1_000_000),
+        ];
+        for &(input, expected) in cases {
+            assert_eq!(f32_to_pcm24(input), expected, "input {input}");
         }
-        let mut second = first.clone();
-        master(&mut first, -17.0, 0.89);
-        master(&mut second, -17.0, 0.89);
-        assert_eq!(first, second);
-        assert!(first.iter().map(|v| v.abs()).fold(0.0, f32::max) <= 10f32.powf(-1.0 / 20.0));
+
+        // Half-integer boundaries: floors to `m` on the positive side for
+        // BOTH an even and an odd `m` (rules out round-half-to-even,
+        // which would round `1_000_001.5` up to the even `1_000_002`,
+        // and round-half-up, which would round `1_000_000.5` up to
+        // `1_000_001` — neither happens). The negative side floors
+        // toward -infinity, not zero.
+        for &m in &[1_000_000i64, 1_000_001, 2, 3, 0, 6, 7, 8_000_000, 8_000_001] {
+            assert_eq!(
+                f32_to_pcm24(half_boundary(m)),
+                m as i32,
+                "+({m}+0.5) should floor to {m}"
+            );
+            assert_eq!(
+                f32_to_pcm24(-half_boundary(m)),
+                -(m as i32) - 1,
+                "-({m}+0.5) should floor to -({m}+1)"
+            );
+        }
+
+        // Every sixteenth across a whole unit interval floors to the
+        // same base integer, not just the values near either end — no
+        // rounding rule (whatever its tie-breaking policy) could
+        // produce that.
+        for s in 1..=15i64 {
+            assert_eq!(
+                f32_to_pcm24(sixteenth_above(1_000_000, s)),
+                1_000_000,
+                "1_000_000 + {s}/16 should floor to 1_000_000"
+            );
+        }
+    }
+
+    /// Byte-level round-trip: write via [`write_wav`], read the 24-bit PCM
+    /// bytes straight back with `hound` (bypassing float rescaling), and
+    /// confirm they match [`f32_to_pcm24`]'s own conversion sample-for-
+    /// sample. This proves `write_wav`'s byte packing/interleaving is
+    /// faithful to whatever `f32_to_pcm24` computes — it is deliberately
+    /// *not* oracle evidence (that's `pcm24_matches_soundfile_oracle_
+    /// bit_exact`'s job, against literal pinned values, above), since
+    /// comparing the writer to the same helper it calls internally proves
+    /// only self-consistency.
+    #[test]
+    fn pcm24_write_round_trips_byte_exact() {
+        let samples: Vec<f32> = (0..2000)
+            .map(|i| ((i as f32 / 317.0).sin()) * 0.9)
+            .collect();
+        let audio = RenderedAudio {
+            samples: samples.clone(),
+            sample_rate: 48_000,
+        };
+        let path = std::env::temp_dir().join(format!(
+            "mus-engine-pcm24-roundtrip-{}.wav",
+            std::process::id()
+        ));
+        write_wav(&audio, &path).unwrap();
+        let mut reader = hound::WavReader::open(&path).unwrap();
+        let spec = reader.spec();
+        assert_eq!(spec.bits_per_sample, 24);
+        assert_eq!(spec.channels, 2);
+        let ints: Vec<i32> = reader.samples::<i32>().map(|s| s.unwrap()).collect();
+        assert_eq!(ints.len(), samples.len());
+        for (got, &input) in ints.iter().zip(&samples) {
+            assert_eq!(*got, f32_to_pcm24(input));
+        }
+        std::fs::remove_file(path).unwrap();
     }
 
     #[test]
-    fn unsupported_synth_names_the_instrument() {
-        let mut graph = ScoreGraph::default();
-        graph.instruments.push(mus_graph::InstrumentDecl {
-            abbrev: "sb".into(),
-            name: "synth bass".into(),
-            clef: "bass".into(),
-            params: BTreeMap::from([("synth".into(), "saw".into())]),
-            declared_by: mus_oplog::OpId("test".into()),
-        });
-        let error = validate_supported(&graph).unwrap_err();
-        assert!(error.to_string().contains("synth"));
-        assert!(error.to_string().contains("sb"));
+    fn explicit_bars_zero_header_falls_back_to_the_bar_lines_count() {
+        // `if not bar_count and bars: bar_count = max(...)` (mus.py line
+        // 1326-1327) treats an explicit `# bars: 0` the same as a missing
+        // header — Python's `not 0` is `True`. Before the fix this rendered
+        // zero bars (an empty `1..=0` walk range) and produced no events at
+        // all; now both notated bars render.
+        let text = "# score: bars header zero\n# tempo: 120\n# time: 4/4\n\
+                     # bars: 0\n# instruments:\n#   s = synth (perc, synth=sine)\n\
+                     bar 1: s=A4q\nbar 2: s=A4q\n";
+        let out = render(text, Path::new(".")).unwrap();
+        assert_eq!(out.stats.notes, 2, "{:?}", out.stats);
+        // 2 bars @ 120bpm 4/4 = 4s of notated material + the 4s render tail.
+        assert!((out.stats.total_seconds - 8.0).abs() < 1e-9);
     }
 
     #[test]
-    fn aigua_1568_refuses_synth_before_loading_audio() {
-        let score = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../aigua/aigua_1568.mus");
-        let text = std::fs::read_to_string(score).unwrap();
-        let graph = mus_text::adopt(&mus_text::parse_score(&text).unwrap());
-        let error =
-            render(&graph, Path::new(".")).expect_err("WF1 must refuse the synth construct");
-        assert!(matches!(error, RenderError::Unsupported(_)));
-        assert!(error.to_string().contains("synth"));
-    }
-
-    #[test]
-    fn smoke_graph_has_sampler_events_and_renders_deterministically() {
+    fn smoke_score_renders_deterministically_with_correct_stats() {
         let score = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../aigua/smoke.mus");
         let text = std::fs::read_to_string(&score).unwrap();
-        let proposal = mus_text::parse_score(&text).unwrap();
-        let graph = mus_text::adopt(&proposal);
-        assert_eq!(graph.current_events().len(), 46);
         let base = score.parent().unwrap();
-        let first = render(&graph, base).unwrap();
-        let second = render(&graph, base).unwrap();
-        assert_eq!(first, second);
-        assert!(first.frames() > 8 * SAMPLE_RATE as usize);
-        assert!(first.peak() <= 10f32.powf(-1.0 / 20.0) + 1e-5);
+        let first = render(&text, base).unwrap();
+        let second = render(&text, base).unwrap();
+        assert_eq!(first.audio, second.audio, "render must be deterministic");
+        assert_eq!(first.stats.notes, second.stats.notes);
+        assert!(first.stats.bad.is_empty(), "{:?}", first.stats.bad);
+        assert!(
+            first.stats.warnings.is_empty(),
+            "{:?}",
+            first.stats.warnings
+        );
+        assert_eq!(first.stats.voices, 5);
+        assert!((first.stats.tuning_a - 445.6).abs() < 1e-9);
+        assert!(first.audio.frames() > 8 * SAMPLE_RATE as usize);
+        assert!(first.audio.peak() <= 10f32.powf(-1.0 / 20.0) + 1e-4);
+        // smoke.mus has no `# sidechain:` header.
+        assert_eq!(first.stats.sidechain_hits, 0);
     }
 
+    /// End-to-end: a malformed numeric event param refuses the whole
+    /// render with a structured `RenderError`, matching the oracle's own
+    /// uncaught `ValueError` there — not a silently-defaulted note
+    /// wearing a "success" receipt. Exercises the wiring through
+    /// `render()` → `events::walk_track` → `transforms::apply_chain`
+    /// end to end, on top of `events.rs`/`transforms.rs`'s own unit
+    /// coverage of the individual sites.
     #[test]
-    fn parity_smoke_duration_and_envelope_hook() {
-        // The opt-in hook keeps ordinary cargo test hermetic while allowing
-        // the migration validator to be run in environments with uv's audio
-        // dependencies: MUS_RUN_PARITY=1 cargo test parity_smoke -- --nocapture.
-        if std::env::var_os("MUS_RUN_PARITY").is_none() {
-            return;
-        }
-        let score = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../aigua/smoke.mus");
-        let python_wav = score.parent().unwrap().join("../target/parity-smoke.wav");
-        let status = std::process::Command::new("uv")
-            .args(["run", "--script"])
-            .arg(Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../mus_audio.py"))
-            .args([score.to_str().unwrap(), "-o"])
-            .arg(&python_wav)
-            .status()
-            .unwrap();
-        assert!(status.success());
-        let reference = hound::WavReader::open(python_wav).unwrap();
-        let reference_frames = reference.duration() as f64;
-        let text = std::fs::read_to_string(&score).unwrap();
-        let graph = mus_text::adopt(&mus_text::parse_score(&text).unwrap());
-        let rust_frames = render(&graph, score.parent().unwrap()).unwrap().frames() as f64;
-        assert!((rust_frames - reference_frames).abs() <= SAMPLE_RATE as f64 * 0.001);
+    fn malformed_event_param_refuses_the_whole_render() {
+        let text = "# score: malformed param\n# tempo: 120\n# time: 4/4\n\
+                     # instruments:\n#   s = synth (perc, synth=sine)\n\
+                     bar 1: s=A4q[drive=hot]\n";
+        let err = render(text, Path::new(".")).unwrap_err();
+        let RenderError::Invalid(msg) = err else {
+            panic!("expected RenderError::Invalid, got {err:?}");
+        };
+        assert!(msg.contains("drive=\"hot\""), "{msg}");
+    }
+
+    /// Same end-to-end shape, for a malformed *header* value: `# time:`
+    /// that isn't `N/D` aborts the oracle at the bar-map division just
+    /// like a malformed event param does.
+    #[test]
+    fn malformed_time_signature_header_refuses_the_whole_render() {
+        let text = "# score: malformed time\n# tempo: 120\n# time: five-four\n\
+                     # instruments:\n#   s = synth (perc, synth=sine)\n\
+                     bar 1: s=A4q\n";
+        let err = render(text, Path::new(".")).unwrap_err();
+        let RenderError::Invalid(msg) = err else {
+            panic!("expected RenderError::Invalid, got {err:?}");
+        };
+        assert!(msg.contains("five-four"), "{msg}");
+    }
+
+    /// `# tempo: 96.5` reaches the header tempo-change list, where
+    /// Python's `int("96.5")` fails and `coerce` keeps it poisoned rather
+    /// than dropping it — using it (bar 1's `spq = 60.0 / tempo`) is where
+    /// the oracle itself raises. End to end through `render()`, not just
+    /// `layout::build_bar_map` in isolation.
+    #[test]
+    fn fractional_tempo_header_refuses_the_whole_render() {
+        let text = "# score: fractional tempo\n# tempo: 96.5\n# time: 4/4\n\
+                     # instruments:\n#   s = synth (perc, synth=sine)\n\
+                     bar 1: s=A4q\n";
+        let err = render(text, Path::new(".")).unwrap_err();
+        let RenderError::Invalid(msg) = err else {
+            panic!("expected RenderError::Invalid, got {err:?}");
+        };
+        assert!(msg.contains("96.5"), "{msg}");
+    }
+
+    /// The `lib.rs:190` allocation site this fix targets: `# tempo: 0`
+    /// reaches the bar map as a perfectly valid *integer* (Python's own
+    /// crash there is `ZeroDivisionError`, not a poisoned string), so
+    /// unchecked it makes `total_s` infinite and `n_total = (total_s *
+    /// SR) as usize` saturates to `usize::MAX` — an attempted
+    /// multi-exabyte allocation rather than a refusal. `render()` must
+    /// surface a structured `RenderError` promptly instead.
+    #[test]
+    fn zero_tempo_header_refuses_the_whole_render_instead_of_a_huge_allocation() {
+        let text = "# score: zero tempo\n# tempo: 0\n# time: 4/4\n\
+                     # instruments:\n#   s = synth (perc, synth=sine)\n\
+                     bar 1: s=A4q\n";
+        let err = render(text, Path::new(".")).unwrap_err();
+        let RenderError::Invalid(msg) = err else {
+            panic!("expected RenderError::Invalid, got {err:?}");
+        };
+        assert!(msg.contains("not finite and positive"), "{msg}");
     }
 }

@@ -153,10 +153,10 @@ name = "mus-engine"
 version = "0.1.0"
 dependencies = [
  "hound",
- "mus-graph",
- "mus-oplog",
+ "mus-dsp",
+ "mus-notation",
  "mus-text",
- "rubato",
+ "regex",
  "serde",
  "serde_json",
  "sha2",
@@ -306,18 +306,6 @@ name = "regex-syntax"
 version = "0.8.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
-
-[[package]]
-name = "rubato"
-version = "0.16.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5258099699851cfd0082aeb645feb9c084d9a5e1f1b8d5372086b989fc5e56a1"
-dependencies = [
- "num-complex",
- "num-integer",
- "num-traits",
- "realfft",
-]
 
 [[package]]
 name = "rustfft"
