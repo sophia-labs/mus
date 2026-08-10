@@ -277,6 +277,12 @@ fn split_headers(body: &str) -> Vec<&str> {
     out
 }
 
+// DIVERGENCE: the Python reference (mus.py parse_mus) accepts a section's
+// trailing prose but discards it; this parser PRESERVES it in
+// ProposalSection.prose. Rationale: prose is part of the score's rhetoric
+// (the check contract carries it too), and reduction must be able to write
+// it back — dropping it would break the round-trip law for every score in
+// the corpus that annotates its sections.
 fn parse_section(body: &str) -> Option<ProposalSection> {
     let body = body.strip_prefix("section")?.strip_prefix(':')?.trim();
     let open = body.rfind('[')?;
@@ -342,27 +348,29 @@ fn parse_bar_line(line: &str) -> Option<(u32, u32, Vec<String>, &str)> {
     let after = body
         .strip_prefix("bar ")
         .or_else(|| body.strip_prefix("bars "))?;
-    let (range, rest) = after.split_once(':')?;
-    let (from, to) = if let Some((a, b)) = range.split_once('-') {
+    let (head, rest) = after.split_once(':')?;
+    // Inline changes ride the head (`bar 11 [tempo=88]:`, `bars 2-4 [time=3/4]:`).
+    // The bracket group must come OFF before endpoint parsing — parsing the
+    // endpoint first fed "2 [tempo=88]" to parse() and silently dropped the
+    // whole line (Terra finding, run wf_317a71eb).
+    let (range_part, changes) = if let Some(open) = head.find('[') {
+        let close = head[open..].find(']')? + open;
+        (
+            head[..open].trim(),
+            head[open + 1..close]
+                .split(',')
+                .map(|s| s.trim().to_string())
+                .collect(),
+        )
+    } else {
+        (head.trim(), Vec::new())
+    };
+    let (from, to) = if let Some((a, b)) = range_part.split_once('-') {
         (a.trim().parse().ok()?, b.trim().parse().ok()?)
     } else {
-        (
-            range.split_whitespace().next()?.parse().ok()?,
-            range.split_whitespace().next()?.parse().ok()?,
-        )
+        (range_part.parse().ok()?, range_part.parse().ok()?)
     };
-    let (changes, content) = if let Some(open) = range.find('[') {
-        let close = range[open..].find(']')? + open;
-        (
-            range[open + 1..close]
-                .split(',')
-                .map(|s| s.trim().into())
-                .collect(),
-            rest,
-        )
-    } else {
-        (Vec::new(), rest)
-    };
+    let content = rest;
     Some((from, to, changes, content.trim()))
 }
 
@@ -534,6 +542,91 @@ mod tests {
     }
 
     #[test]
+    fn range_bars_carry_inline_changes() {
+        // Regression for the Terra finding (run wf_317a71eb): the endpoint
+        // was parsed before the bracket came off, so this exact line form
+        // silently vanished.
+        let text = "# score: t\n# bars: 3\n# instruments:\n#   v = voice (treble)\nbars 2-3 [tempo=88, time=3/4]: v=C4q\n";
+        let p = parse_score(text).unwrap();
+        assert_eq!(p.bar_changes[&2], vec!["tempo=88", "time=3/4"]);
+        assert_eq!(p.bar_changes[&3], vec!["tempo=88", "time=3/4"]);
+        assert_eq!(p.events.iter().filter(|e| e.bar == 2).count(), 1);
+        assert_eq!(p.events.iter().filter(|e| e.bar == 3).count(), 1);
+    }
+
+    #[test]
+    fn contested_bodies_refuse_text_reduction() {
+        // The text face cannot write >1 head per lineage (mus:Take reserved);
+        // it must refuse loudly, never silently pick.
+        use mus_oplog::{EventKind, EventState, LineageId, OpBody, OpLog};
+        fn state(mc: i32) -> EventState {
+            EventState {
+                track: "v".into(),
+                bar: 1,
+                onset_ql: Frac::new(0, 1),
+                dur_ql: Frac::new(1, 1),
+                kind: EventKind::Note,
+                pitches_midi_cents: vec![mc],
+                gliss_target_midi_cents: None,
+                dynamic: None,
+                params: Default::default(),
+                flags: Default::default(),
+                lyric: None,
+                quote: None,
+            }
+        }
+        let mut base = OpLog::new();
+        base.append("v", 1, OpBody::ScoreInit { title: "t".into() });
+        base.append(
+            "v",
+            2,
+            OpBody::SetHeader {
+                key: "bars".into(),
+                value: "1".into(),
+            },
+        );
+        base.append(
+            "v",
+            3,
+            OpBody::DeclareInstrument {
+                abbrev: "v".into(),
+                name: "voice".into(),
+                clef: "treble".into(),
+                params: Default::default(),
+            },
+        );
+        let minted = base.append("v", 4, OpBody::AddEvent { state: state(6000) });
+        let lineage = LineageId(minted.0.clone());
+        let basis = state(6000).version_id();
+        let mut a = base.clone();
+        let mut b = base.clone();
+        a.append(
+            "agent-a",
+            1,
+            OpBody::SupersedeEvent {
+                lineage: lineage.clone(),
+                basis: basis.clone(),
+                state: state(6100),
+            },
+        );
+        b.append(
+            "agent-b",
+            1,
+            OpBody::SupersedeEvent {
+                lineage,
+                basis,
+                state: state(6300),
+            },
+        );
+        a.merge(&b);
+        let contested = mus_graph::project(&a);
+        match mus_graph::reduce_to_text(&contested) {
+            Err(mus_graph::ReduceError::Contested(ids)) => assert_eq!(ids.len(), 1),
+            other => panic!("expected Contested refusal, got {other:?}"),
+        }
+    }
+
+    #[test]
     fn round_trip_law() {
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../../..")
@@ -558,6 +651,7 @@ mod tests {
                 .unwrap_or_else(|diags| panic!("reduced {}: {diags:?}\n{reduced}", path.display()));
             assert_eq!(p1.title, p2.title, "{}", path.display());
             assert_eq!(p1.headers, p2.headers, "{}", path.display());
+            assert_eq!(p1.performance, p2.performance, "{}", path.display());
             assert_eq!(p1.instruments, p2.instruments, "{}", path.display());
             assert_eq!(p1.sections, p2.sections, "{}", path.display());
             assert_eq!(p1.texts, p2.texts, "{}", path.display());

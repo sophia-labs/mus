@@ -250,9 +250,20 @@ const HEADER_ORDER: &[&str] = &[
 pub enum ReduceError {
     /// v0 formatter met a construct it cannot yet write. LOUD by design.
     Unformattable(String),
+    /// The TEXT face refuses contested bodies: mus syntax has no way to
+    /// write >1 head per lineage yet (mus:Take is reserved, unimplemented —
+    /// R4). Faces that CAN choose a head must name their choice; this one
+    /// cannot, so it fails loudly with every contested lineage listed.
+    Contested(Vec<String>),
 }
 
 pub fn reduce_to_text(g: &ScoreGraph) -> Result<String, ReduceError> {
+    let contested = g.contested_lineages();
+    if !contested.is_empty() {
+        return Err(ReduceError::Contested(
+            contested.iter().map(|l| l.0.clone()).collect(),
+        ));
+    }
     let mut out = String::new();
     out.push_str(&format!("# score: {}\n", g.title));
     let mut emitted: Vec<&str> = Vec::new();
@@ -332,6 +343,16 @@ pub fn reduce_to_text(g: &ScoreGraph) -> Result<String, ReduceError> {
             .entry(state.bar)
             .or_default()
             .push(state);
+    }
+    // Every event's track must be declared: reduction iterates instruments,
+    // so an undeclared track would be SILENTLY dropped — the exact failure
+    // mode canonical reduction exists to rule out (Terra finding).
+    for track in by_track.keys() {
+        if !g.instruments.iter().any(|i| &i.abbrev == track) {
+            return Err(ReduceError::Unformattable(format!(
+                "events on undeclared track '{track}'"
+            )));
+        }
     }
     let mut cells_by_bar: BTreeMap<u32, Vec<(usize, String)>> = BTreeMap::new();
     for (idx, instrument) in g.instruments.iter().enumerate() {
