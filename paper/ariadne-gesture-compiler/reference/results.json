@@ -1,0 +1,482 @@
+{
+  "exact_closed_loop_so3": {
+    "factor_count": 12,
+    "gate_count_mismatches": 0,
+    "max_edge_control_closure": 0.0,
+    "max_reconstruction_error_fro": 2.469154477134275e-15,
+    "max_reconstruction_error_rad": 1.72145910194806e-15,
+    "named": [
+      {
+        "balanced_generator_angle_rad": 0.8250573083443424,
+        "duration": 2.0,
+        "factor_count": 12,
+        "max_edge_control_closure": 0.0,
+        "minimum_quadratic_cost": 52.94013022639691,
+        "orthogonality_error_fro": 7.024736704727772e-16,
+        "reconstruction_error_fro": 5.502328482176191e-16,
+        "reconstruction_error_rad": 2.697324656489668e-16,
+        "schedule": [
+          {
+            "i": 1,
+            "j": 2,
+            "theta": -1.555880041973977
+          },
+          {
+            "i": 0,
+            "j": 1,
+            "theta": -0.5965080133458113
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": 0.9771367914483965
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": 0.4803742449963452
+          },
+          {
+            "i": 0,
+            "j": 1,
+            "theta": -0.7807415065728973
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": -0.7542661173570819
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": -0.9771367914483965
+          },
+          {
+            "i": 0,
+            "j": 1,
+            "theta": 0.5965080133458113
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": 1.555880041973977
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": 0.7542661173570819
+          },
+          {
+            "i": 0,
+            "j": 1,
+            "theta": 0.7807415065728973
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": -0.4803742449963452
+          }
+        ],
+        "target_angle_rad": 0.6457718232379018,
+        "thermodynamic_length": 10.289813431389017,
+        "zero_work_residual": 4.440892098500626e-16
+      },
+      {
+        "balanced_generator_angle_rad": 1.4393082838921551,
+        "duration": 2.0,
+        "factor_count": 12,
+        "max_edge_control_closure": 0.0,
+        "minimum_quadratic_cost": 113.22057372749443,
+        "orthogonality_error_fro": 2.846597259547471e-16,
+        "reconstruction_error_fro": 4.0436549343196473e-16,
+        "reconstruction_error_rad": 2.833279376849887e-16,
+        "schedule": [
+          {
+            "i": 1,
+            "j": 2,
+            "theta": 2.3437038248828004
+          },
+          {
+            "i": 0,
+            "j": 1,
+            "theta": -0.46867631248333863
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": 2.5655242730053267
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": -0.692991801186465
+          },
+          {
+            "i": 0,
+            "j": 1,
+            "theta": -1.337725064602591
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": 0.11535950955040435
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": -2.5655242730053267
+          },
+          {
+            "i": 0,
+            "j": 1,
+            "theta": 0.46867631248333863
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": -2.3437038248828004
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": -0.11535950955040435
+          },
+          {
+            "i": 0,
+            "j": 1,
+            "theta": 1.337725064602591
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": 0.692991801186465
+          }
+        ],
+        "target_angle_rad": 1.7976891295541595,
+        "thermodynamic_length": 15.047961571421853,
+        "zero_work_residual": 4.440892098500626e-16
+      },
+      {
+        "balanced_generator_angle_rad": 1.9364946107840508,
+        "duration": 2.0,
+        "factor_count": 12,
+        "max_edge_control_closure": 0.0,
+        "minimum_quadratic_cost": 108.47796608813901,
+        "orthogonality_error_fro": 3.6124085356211036e-16,
+        "reconstruction_error_fro": 7.148071168125942e-16,
+        "reconstruction_error_rad": 3.9685711411917574e-16,
+        "schedule": [
+          {
+            "i": 1,
+            "j": 2,
+            "theta": 0.49581756149846445
+          },
+          {
+            "i": 0,
+            "j": 1,
+            "theta": -1.7415834901935485
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": -1.4867977922276157
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": -2.3269996880629087
+          {
+            "i": 0,
+            "j": 1,
+            "theta": -0.8019018194230425
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": 0.5116116622490957
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": 1.4867977922276157
+          },
+          {
+            "i": 0,
+            "j": 1,
+            "theta": 1.7415834901935485
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": -0.49581756149846445
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": -0.5116116622490957
+          },
+          {
+            "i": 0,
+            "j": 1,
+            "theta": 0.8019018194230425
+          },
+          {
+            "i": 1,
+            "j": 2,
+            "theta": 2.3269996880629087
+          }
+        ],
+        "target_angle_rad": 2.9845130209103035,
+        "thermodynamic_length": 14.729424027309351,
+        "zero_work_residual": 4.440892098500626e-16
+      }
+    ],
+    "targets": 1000,
+    "theorem_target": "every SO(3) target is one conjugated balanced commutator; each macro is exactly lowered to graph-edge Givens gates"
+  },
+  "exact_edge_compiler": {
+    "by_dimension": {
+      "10": {
+        "gate_count": 45,
+        "max_reconstruction_error_fro": 1.3627575828480534e-15,
+        "trials": 24
+      },
+      "11": {
+        "gate_count": 55,
+        "max_reconstruction_error_fro": 1.4976464149060136e-15,
+        "trials": 24
+      },
+      "12": {
+        "gate_count": 66,
+        "max_reconstruction_error_fro": 1.7364166613402646e-15,
+        "trials": 24
+      },
+      "13": {
+        "gate_count": 78,
+        "max_reconstruction_error_fro": 1.7154669429911643e-15,
+        "trials": 24
+      },
+      "14": {
+        "gate_count": 91,
+        "max_reconstruction_error_fro": 1.890227470218597e-15,
+        "trials": 24
+      },
+      "15": {
+        "gate_count": 105,
+        "max_reconstruction_error_fro": 2.1851801907344063e-15,
+        "trials": 24
+      },
+      "16": {
+        "gate_count": 120,
+        "max_reconstruction_error_fro": 2.0537485393261662e-15,
+        "trials": 24
+      },
+      "2": {
+        "gate_count": 1,
+        "max_reconstruction_error_fro": 2.9373740229761033e-16,
+        "trials": 24
+      },
+      "3": {
+        "gate_count": 3,
+        "max_reconstruction_error_fro": 5.107044768930868e-16,
+        "trials": 24
+      },
+      "4": {
+        "gate_count": 6,
+        "max_reconstruction_error_fro": 8.478876912972012e-16,
+        "trials": 24
+      },
+      "5": {
+        "gate_count": 10,
+        "max_reconstruction_error_fro": 1.1652694251399183e-15,
+        "trials": 24
+      },
+      "6": {
+        "gate_count": 15,
+        "max_reconstruction_error_fro": 1.031470721604893e-15,
+        "trials": 24
+      },
+      "7": {
+        "gate_count": 21,
+        "max_reconstruction_error_fro": 1.3733182476132973e-15,
+        "trials": 24
+      },
+      "8": {
+        "gate_count": 28,
+        "max_reconstruction_error_fro": 1.3644237686922667e-15,
+        "trials": 24
+      },
+      "9": {
+        "gate_count": 36,
+        "max_reconstruction_error_fro": 1.4672440983532483e-15,
+        "trials": 24
+      }
+    },
+    "disconnected_rank_mismatches": 0,
+    "gate_count_mismatches": 0,
+    "gl_kie_rank_mismatches": 0,
+    "max_determinant_error": 2.4424906541753444e-15,
+    "max_orthogonality_error_fro": 1.9784046208851677e-15,
+    "max_reconstruction_error_fro": 2.1851801907344063e-15,
+    "rotation_lie_rank_mismatches": 0,
+    "sl_lie_rank_mismatches": 0,
+    "theorem_target": "connected graph => exact SO(n) synthesis in n(n-1)/2 graph-edge Givens gates",
+    "trials": 360
+  },
+  "factor_order_work": {
+    "analytic_mean_work_difference": 0.0,
+    "analytic_rms_work_difference": 0.2879871835921571,
+    "bound_violations": 0,
+    "exact_max_abs_work_difference": 1.110588484950766,
+    "exact_operator_norm": 2.221176969901532,
+    "n": 7,
+    "observed_max_abs_work_difference": 1.0670044824283018,
+    "observd_mean_work_difference": -0.00047374304930162224,
+    "observed_rms_work_difference": 0.2879637977636688,
+    "spectral_spread_bound": 2.671294940248355,
+    "state_samples": 100000
+  },
+  "mode": "full",
+  "nonabelian_constant_gap_bundle": {
+    "compiled_gate_count": 28,
+    "compiled_real_dimension": 8,
+    "compiled_reconstruction_error_fro": 4.586933128099661e-16,
+    "constant_gap": 1.99999999999999991,
+    "degenerate_rank": 2,
+    "dimension_complex": 4,
+    "gauge_determinant_error": 2.3317062445099087e-14,
+    "gauge_trace_error": 2.0175840826237854e-14,
+    "loop_a_eigenphases": [
+      -0.6238502703504489,
+      0.6238502703504489
+    ],
+    "loop_a_unitarity_error_fro": 2.26093361701947e-14,
+    "loop_b_eigenphases": [
+      -0.5781361232102628,
+      0.5781361232102626
+    ],
+    "loop_b_unitarity_error_fro": 2.8897947330336305e-14,
+    "loop_commutator_norm_fro": 0.9029041482115785,
+    "realification_skew_error_fro": 0.0,
+    "same_homotopy_deformation_change_fro": 0.00807771092786398
+  },
+  "optimized_rectangular_closed_loop_so3": [
+    {
+      "duration": 2.0,
+      "factor_count": 12,
+      "jacobian_condition_number": 9.163785873424182,
+      "jacobian_max_singular_value": 1.1089178765767334,
+      "jacobian_min_singular_value": 0.12101088915583424,
+      "loops": 3,
+      "minimum_quadratic_cost": 7.455700502275203,
+      "orthogonality_error_fro": 5.284777389547668e-16,
+      "parameters": [
+        -0.9473896928742943,
+        -0.6993558843058232,
+       -0.14642595320171192,
+       -0.13759194871930988,
+        -3.383390479023128e-07,
+      -3.45045122940516e-07
+      ],
+      "reconstruction_error_rad": 4.3209302239928604e-14,
+      "thermodynamic_length": 3.8615283249706205,
+      "zero_work_residual": 1.3322676295501878e-15
+    },
+    {
+      "duration": 2.0,
+      "factor_count": 12,
+      "jacobian_condition_number": 4.888691608638824,
+      "jacobian_max_singular_value": 1.8513312996339457,
+      "jacobian_min_singular_value": 0.37869668366121756,
+      "loops": 3,
+      "minimum_quadratic_cost": 37.93165598850061,
+      "orthonality_error_fro": 5.328185779946412e-16,
+      "parameters": [
+        -1.0320801193951235e-08,
+       -2.223384690288224e-08,
+       1.1612657986450905,
+       2.04930876293562,
+       -0.6593573495801309,
+       0.4850454378848217
+      ],
+      "reconstruction_error_rad": 2.1658950871724677e-16,
+      "thermodynamic_length": 8.709954763200622,
+      "zero_work_residual": 1.3322676295501878e-15
+    },
+    {
+      "duration": 2.0,
+      "factor_count": 12,
+      "jacobian_condition_number": 6.418472489322953,
+      "jacobian_max_singular_value": 2.3595382598669774,
+      "jacobian_min_singular_value": 0.3676167910343215,
+      "loops": 3,
+      "minimum_quadratic_cost": 161.8000786406892,
+      "orthogonality_error_fro": 9.397594571242101e-16,
+      "parameters": [
+        1.8173340372666722,
+       1.433831162907974,
+       -1.3045847810676543,
+      -1.4243916197175077,
+       1.5016786154178154,
+       1.5126246981429279
+      ],
+      "reconstruction_error_rad": 1.2776374217905015e-15,
+      "thermodynamic_length": 17.988889829041103,
+      "zero_work_residual": 1.7763568394002505e-15
+    }
+  ],
+  "optimized_rectangular_closed_loop_so3_survey": {
+    "failures_above_1e-8_rad": 0,
+    "max_endpoint_error_rad": 6.26356098265908e-13,
+    "max_jacobian_condition_number": 7.625480096190341,
+    "max_minimum_quadratic_cost": 117.92007593495573,
+    "median_endpoint_error_rad": 6.067891655133437e-15,
+    "median_jacobian_condition_number": 3.2944185586482306,
+    "median_minimum_quadratic_cost": 69.83849533343621,
+    "p95_endpoint_error_rad": 1.2489833642294728e-13,
+    "targets": 40
+  },
+  "pump_bound": {
+    "bound_violations": 0,
+    "lower_energy_ratio": 0.020056777592039988,
+    "observed_max_ratio": 2.1141679840182226,
+    "observed_min_ratio": 0.2921047895007598,
+    "radius_sum": 1.9545940739173218,
+    "steps": 12,
+    "total_determinant_error": 6.106226635438361e-15,
+    "upper_energy_ratio": 49.85845784104791
+  },
+  "schema": "ariadne-inverse-geometry/2",
+  "seed": 175222028,
+  "topological_pump": {
+    "deformation_chern_max_error": 2.6645352591003757e-15,
+    "deformation_min_gap": 1.206307093201631,
+    "deformations": 16,
+    "nontrivial_chern": 1.0000000000000007,
+    "nontrivial_min_gap": 1.208000413837067,
+    "nontrivial_polarization_winding": 1.0,
+    "realification_skew_error_fro": 0.0,
+    "trivial_chern": 2.0460843714981364e-17,
+    "trivial_min_gap": 2.6046921723890986
+  },
+  "topological_step_compilation": {
+    "dimension": 4,
+    "duration": 0.01,
+    "gate_count": 6,
+    "generator_skew_error_fro": 0.0,
+    "propagator_determinant_error": 0.0,
+    "propagator_orthogonality_error_fro": 2.22212884272719e-16,
+    "reconstruction_error_fro": 1.5623590308357154e-16
+  },
+  "weighted_tree_search": {
+    "baseline_minimum_quadratic_cost": 1480.9326062241664,
+    "best_constant_speed_residual": 0.0,
+    "best_minimum_quadratic_cost": 710.2434066456178,
+    "best_reconstruction_error_fro": 7.710216524336898e-16,
+    "best_thermodynamic_length": 37.68934615101774,
+    "candidates": 192,
+    "edges": 11,
+    "improvement_fraction": 0.5204080160970476,
+    "vertices": 8
+  }
+}
