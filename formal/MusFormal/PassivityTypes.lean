@@ -45,7 +45,7 @@ theorem balance :
   | neutral energy => rfl
   | supply energy amount => rfl
   | dispose handler after amount =>
-      rw [Nat.add_comm]
+      simp [Nat.add_comm]
   | @seq before middle after supplied₁ disposed₁ supplied₂ disposed₂ first second ihFirst ihSecond =>
       calc
         after + (disposed₁ + disposed₂)
