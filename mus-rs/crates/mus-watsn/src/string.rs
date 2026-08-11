@@ -115,8 +115,7 @@ fn allpass_phase_delay(coefficient: f64, omega: f64) -> f64 {
         return (1.0 - coefficient) / (1.0 + coefficient);
     }
     let numerator_phase = (-omega.sin()).atan2(coefficient + omega.cos());
-    let denominator_phase =
-        (-coefficient * omega.sin()).atan2(1.0 + coefficient * omega.cos());
+    let denominator_phase = (-coefficient * omega.sin()).atan2(1.0 + coefficient * omega.cos());
     let mut phase = numerator_phase - denominator_phase;
     while phase > 0.0 {
         phase -= 2.0 * PI;
@@ -156,8 +155,7 @@ fn excitation(sample_rate: f64, frequency: f64) -> Vec<f64> {
     for value in &mut values {
         *value -= mean;
     }
-    let rms = (values.iter().map(|value| value * value).sum::<f64>()
-        / values.len() as f64)
+    let rms = (values.iter().map(|value| value * value).sum::<f64>() / values.len() as f64)
         .sqrt()
         .max(1.0e-12);
     for value in &mut values {
@@ -238,8 +236,8 @@ impl ReferenceString {
         if self.config.tension_cents <= 1.0e-12 {
             return nominal;
         }
-        let cents = self.config.tension_cents
-            * (-(sample_index as f64) / self.tension_tau_samples).exp();
+        let cents =
+            self.config.tension_cents * (-(sample_index as f64) / self.tension_tau_samples).exp();
         nominal * 2.0_f64.powf(cents / 1200.0)
     }
 
@@ -247,8 +245,7 @@ impl ReferenceString {
         let delay = delay.clamp(1, self.line.len());
         (0..delay)
             .map(|offset| {
-                let index =
-                    (self.write_index + self.line.len() - delay + offset) % self.line.len();
+                let index = (self.write_index + self.line.len() - delay + offset) % self.line.len();
                 self.line[index]
             })
             .collect()
@@ -264,18 +261,20 @@ impl ReferenceString {
         resample_periodic_linear_neutral(&source, &mut target);
         let clear_len = old_delay.max(new_delay).min(self.line.len());
         for offset in 0..clear_len {
-            let index =
-                (self.write_index + self.line.len() - clear_len + offset) % self.line.len();
+            let index = (self.write_index + self.line.len() - clear_len + offset) % self.line.len();
             self.line[index] = 0.0;
         }
         for (offset, value) in target.into_iter().enumerate() {
-            let index =
-                (self.write_index + self.line.len() - new_delay + offset) % self.line.len();
+            let index = (self.write_index + self.line.len() - new_delay + offset) % self.line.len();
             self.line[index] = value;
         }
     }
 
-    fn set_allpass_coefficient(section: &mut AllpassSection, coefficient: f64, neutral: bool) -> f64 {
+    fn set_allpass_coefficient(
+        section: &mut AllpassSection,
+        coefficient: f64,
+        neutral: bool,
+    ) -> f64 {
         let receipt = if neutral {
             section.set_coefficient_neutral(coefficient)
         } else {
@@ -339,8 +338,7 @@ impl ReferenceString {
         let line_energy_after = self.active_line_energy(self.integer_delay);
         let line_work = line_energy_after - line_energy_before;
 
-        let fractional_coefficient =
-            allpass_coefficient_for_delay(fractional_delay, omega);
+        let fractional_coefficient = allpass_coefficient_for_delay(fractional_delay, omega);
         filter_work += Self::set_allpass_coefficient(
             &mut self.fractional,
             fractional_coefficient,
@@ -355,8 +353,7 @@ impl ReferenceString {
         self.sum_abs_line_control_work += line_work.abs();
         self.sum_abs_filter_control_work += filter_work.abs();
         self.max_abs_line_control_work = self.max_abs_line_control_work.max(line_work.abs());
-        self.max_abs_filter_control_work =
-            self.max_abs_filter_control_work.max(filter_work.abs());
+        self.max_abs_filter_control_work = self.max_abs_filter_control_work.max(filter_work.abs());
         self.coefficient_updates += 1;
     }
 
@@ -379,8 +376,7 @@ impl ReferenceString {
         let read_index =
             (self.write_index + self.line.len() - self.integer_delay) % self.line.len();
         let delayed = self.line[read_index];
-        let mut value =
-            (1.0 - self.config.damp) * delayed + self.config.damp * self.damping_x1;
+        let mut value = (1.0 - self.config.damp) * delayed + self.config.damp * self.damping_x1;
         self.damping_x1 = delayed;
         if self.dispersion[0].coefficient().abs() > 1.0e-12 {
             value = self.dispersion[0].tick(value);

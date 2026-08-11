@@ -3,9 +3,7 @@ use std::fs::{create_dir_all, File};
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
-use mus_watsn::{
-    run_string_experiment, RetunePolicy, StringExperimentConfig, StringExperimentRun,
-};
+use mus_watsn::{run_string_experiment, RetunePolicy, StringExperimentConfig, StringExperimentRun};
 
 fn correlation(left: &[f64], right: &[f64]) -> f64 {
     assert_eq!(left.len(), right.len());
@@ -87,18 +85,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     let legacy = run_string_experiment(config, RetunePolicy::Legacy);
                     let neutral_filters =
                         run_string_experiment(config, RetunePolicy::NeutralFilters);
-                    let neutral_remap =
-                        run_string_experiment(config, RetunePolicy::NeutralRemap);
+                    let neutral_remap = run_string_experiment(config, RetunePolicy::NeutralRemap);
                     let filters_correlation = correlation(&legacy.output, &neutral_filters.output);
                     let remap_correlation = correlation(&legacy.output, &neutral_remap.output);
 
                     write_row(&mut csv, config, &legacy, 1.0)?;
-                    write_row(
-                        &mut csv,
-                        config,
-                        &neutral_filters,
-                        filters_correlation,
-                    )?;
+                    write_row(&mut csv, config, &neutral_filters, filters_correlation)?;
                     write_row(&mut csv, config, &neutral_remap, remap_correlation)?;
 
                     all_finite &= legacy.result.finite
@@ -111,16 +103,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     neutral_filters_max_abs_filter_step_work =
                         neutral_filters_max_abs_filter_step_work
                             .max(neutral_filters.result.max_abs_filter_control_work);
-                    legacy_max_abs_line_step_work = legacy_max_abs_line_step_work
-                        .max(legacy.result.max_abs_line_control_work);
+                    legacy_max_abs_line_step_work =
+                        legacy_max_abs_line_step_work.max(legacy.result.max_abs_line_control_work);
                     legacy_max_abs_filter_step_work = legacy_max_abs_filter_step_work
                         .max(legacy.result.max_abs_filter_control_work);
                     min_neutral_filters_correlation =
                         min_neutral_filters_correlation.min(filters_correlation);
                     min_neutral_remap_correlation =
                         min_neutral_remap_correlation.min(remap_correlation);
-                    max_neutral_remap_energy_ratio = max_neutral_remap_energy_ratio
-                        .max(neutral_remap.result.max_energy_ratio);
+                    max_neutral_remap_energy_ratio =
+                        max_neutral_remap_energy_ratio.max(neutral_remap.result.max_energy_ratio);
                     max_legacy_energy_ratio =
                         max_legacy_energy_ratio.max(legacy.result.max_energy_ratio);
                 }
@@ -131,8 +123,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let canonical_config = StringExperimentConfig::default();
     let canonical_legacy = run_string_experiment(canonical_config, RetunePolicy::Legacy);
-    let canonical_filters =
-        run_string_experiment(canonical_config, RetunePolicy::NeutralFilters);
+    let canonical_filters = run_string_experiment(canonical_config, RetunePolicy::NeutralFilters);
     let canonical_remap = run_string_experiment(canonical_config, RetunePolicy::NeutralRemap);
     let canonical_filters_correlation =
         correlation(&canonical_legacy.output, &canonical_filters.output);
