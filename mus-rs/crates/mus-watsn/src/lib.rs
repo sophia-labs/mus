@@ -11,6 +11,7 @@ pub mod delay;
 pub mod givens;
 pub mod ledger;
 pub mod program;
+pub mod string;
 
 pub use allpass::{
     allpass_normalized_state, allpass_storage_energy, neutral_allpass_state_transport,
@@ -26,3 +27,7 @@ pub use givens::{
 };
 pub use ledger::{WorkFrame, WorkLedger};
 pub use program::{OperatorProgram, PlaneRotation, ProgramError};
+pub use string::{
+    run_string_experiment, RetunePolicy, StringExperimentConfig, StringExperimentResult,
+    StringExperimentRun,
+};

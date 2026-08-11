@@ -40,9 +40,13 @@ jobs:
         working-directory: mus-rs
         run: cargo clippy -p mus-watsn --all-targets -- -D warnings
 
-      - name: Generate deterministic research artifacts
+      - name: Generate algebraic research artifacts
         working-directory: mus-rs
-        run: cargo run -p mus-watsn --example next_phase --release -- /tmp/ariadne-next-phase
+        run: cargo run -p mus-watsn --example next_phase --release -- /tmp/ariadne-next-phase/law
+
+      - name: Generate changing-delay research artifacts
+        working-directory: mus-rs
+        run: cargo run -p mus-watsn --example string_retune --release -- /tmp/ariadne-next-phase/string
 
       - name: Verify scientific stop conditions
         run: |
@@ -50,16 +54,26 @@ jobs:
           import json
           from pathlib import Path
 
-          result = json.loads(Path('/tmp/ariadne-next-phase/results.json').read_text())
-          assert result['allpass']['max_neutral_abs_work'] <= 1e-12
-          assert result['allpass']['max_legacy_abs_work'] >= 1e-2
-          assert result['delay_remap']['max_neutral_relative_residual'] <= 1e-12
-          assert result['delay_remap']['max_raw_energy_ratio_error'] >= 1e-2
-          assert result['delay_remap']['hundred_cycle_max_abs_energy_drift'] <= 1e-10
-          assert 0.95 <= result['delay_remap']['hundred_cycle_state_correlation'] < 0.99999
-          assert result['commutator']['principal_angle_rad'] > 0.1
-          assert result['factor_order']['exact_max_abs_difference'] > 1.0
-          print(json.dumps(result, indent=2, sort_keys=True))
+          law = json.loads(Path('/tmp/ariadne-next-phase/law/results.json').read_text())
+          assert law['allpass']['max_neutral_abs_work'] <= 1e-12
+          assert law['allpass']['max_legacy_abs_work'] >= 1e-2
+          assert law['delay_remap']['max_neutral_relative_residual'] <= 1e-12
+          assert law['delay_remap']['max_raw_energy_ratio_error'] >= 1e-2
+          assert law['delay_remap']['hundred_cycle_max_abs_energy_drift'] <= 1e-10
+          assert 0.95 <= law['delay_remap']['hundred_cycle_state_correlation'] < 0.99999
+          assert law['commutator']['principal_angle_rad'] > 0.1
+          assert law['factor_order']['exact_max_abs_difference'] > 1.0
+
+          string = json.loads(Path('/tmp/ariadne-next-phase/string/results.json').read_text())
+          assert string['sweep']['all_finite']
+          assert string['sweep']['neutral_remap_max_abs_step_work'] <= 1e-9
+          assert string['sweep']['neutral_filters_max_abs_filter_step_work'] <= 1e-10
+          assert string['sweep']['legacy_max_abs_line_step_work'] >= 1e-8
+          assert string['sweep']['legacy_max_abs_filter_step_work'] >= 1e-8
+          assert string['sweep']['min_neutral_filters_correlation'] > 0.5
+          assert string['sweep']['min_neutral_remap_correlation'] > 0.5
+
+          print(json.dumps({'law': law, 'string': string}, indent=2, sort_keys=True))
           PY
 
       - name: Upload research artifacts
