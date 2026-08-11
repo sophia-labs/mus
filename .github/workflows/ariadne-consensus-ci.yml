@@ -1,0 +1,154 @@
+name: Ariadne research consensus
+
+on:
+  push:
+    branches:
+      - agent/ariadne-research-consensus
+  pull_request:
+    paths:
+      - "ARIADNE-IMPLEMENTATION-CONSENSUS.md"
+      - "mus-rs/crates/mus-watsn/**"
+      - "mus-rs/Cargo.toml"
+      - "mus-rs/Cargo.lock"
+      - "paper/ariadne-gesture-compiler/**"
+      - "SPEC-GESTURE.md"
+      - "formal/**"
+      - ".github/workflows/ariadne-consensus-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  executable-laws:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Format
+        working-directory: mus-rs
+        run: cargo fmt --all -- --check
+
+      - name: Test executable law layer
+        working-directory: mus-rs
+        run: cargo test -p mus-watsn --all-targets -- --nocapture
+
+      - name: Clippy
+        working-directory: mus-rs
+        run: cargo clippy -p mus-watsn --all-targets -- -D warnings
+
+      - name: Generate deterministic law artifacts
+        working-directory: mus-rs
+        run: |
+          cargo run -p mus-watsn --example next_phase --release -- /tmp/ariadne-consensus/law
+          cargo run -p mus-watsn --example string_retune --release -- /tmp/ariadne-consensus/string
+
+      - name: Verify law and retuning decisions
+        run: |
+          python - <<'PY'
+          import json
+          import math
+          from pathlib import Path
+
+          law = json.loads(Path('/tmp/ariadne-consensus/law/results.json').read_text())
+          string = json.loads(Path('/tmp/ariadne-consensus/string/results.json').read_text())
+
+          assert law['allpass']['max_neutral_abs_work'] <= 1e-12
+          assert law['allpass']['max_legacy_abs_work'] >= 1e-2
+          assert law['delay_remap']['max_neutral_relative_residual'] <= 1e-12
+          assert law['delay_remap']['hundred_cycle_max_abs_energy_drift'] <= 1e-10
+          assert law['commutator']['principal_angle_rad'] > 0.1
+
+          assert string['sweep']['all_finite']
+          assert string['sweep']['neutral_remap_max_abs_step_work'] <= 1e-9
+          assert string['sweep']['neutral_filters_max_abs_filter_step_work'] <= 1e-10
+          assert string['sweep']['min_neutral_filters_correlation'] >= 0.98
+          remap = string['sweep']['min_neutral_remap_correlation']
+          assert math.isfinite(remap) and -1.0000001 <= remap <= 1.0000001
+          # The failed state-fidelity gate is a retained scientific result.
+          assert remap < 0.9
+          PY
+
+      - name: Upload executable-law artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ariadne-consensus-laws
+          path: /tmp/ariadne-consensus
+          if-no-files-found: error
+
+  inverse-gesture-oracle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install scientific runtime
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "numpy>=2" "scipy>=1.14"
+
+      - name: Compile and run quick oracle suite
+        working-directory: paper/ariadne-gesture-compiler/reference
+        run: |
+          python -m py_compile ariadne_gesture/*.py run_experiments.py
+          python run_experiments.py --quick --no-write >/tmp/ariadne-gesture-results.json
+          python -m json.tool /tmp/ariadne-gesture-results.json >/dev/null
+
+      - name: Verify inverse-compiler gates
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          result = json.loads(Path('/tmp/ariadne-gesture-results.json').read_text())
+          edge = result['exact_edge_compiler']
+          closed = result['exact_closed_loop_so3']
+
+          assert edge['gate_count_mismatches'] == 0
+          assert edge['rotation_lie_rank_mismatches'] == 0
+          assert edge['max_reconstruction_error_fro'] < 1e-11
+          assert closed['gate_count_mismatches'] == 0
+          assert closed['factor_count'] == 12
+          assert closed['max_edge_control_closure'] == 0.0
+          assert closed['max_reconstruction_error_fro'] < 1e-11
+          PY
+
+      - name: Upload inverse-gesture result
+        uses: actions/upload-artifact@v4
+        with:
+          name: ariadne-consensus-gesture-oracle
+          path: /tmp/ariadne-gesture-results.json
+          if-no-files-found: error
+
+  formal-core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Build Lean proofs
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: formal
+          build: true
+          test: false
+          lint: false
+          nanoda: false
