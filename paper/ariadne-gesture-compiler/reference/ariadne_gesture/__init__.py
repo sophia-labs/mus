@@ -7,7 +7,11 @@ from .core import (
     compile_so_on_tree, thermodynamic_schedule, optimize_tree_compilation,
     lie_closure_rank, graph_rotation_lie_rank, graph_transport_lie_rank,
 )
-from .closed_loop import ClosedLoopCertificate, compile_closed_loop_so3
+from .closed_loop import (
+    ClosedLoopCertificate, ExactClosedLoopCertificate,
+    balanced_commutator_angle, compile_closed_loop_so3,
+    compile_exact_closed_loop_so3,
+)
 from .work import (
     PumpBoundCertificate, WorkOrderCertificate, spectral_log_radius,
     volume_neutral_anisotropy, verify_pump_bound, verify_factor_order_work,

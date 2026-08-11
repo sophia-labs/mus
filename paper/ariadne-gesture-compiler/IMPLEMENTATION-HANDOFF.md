@@ -152,25 +152,28 @@ achieve rotation(target=@R) on @field
 
 The first parser may accept a serialized target matrix or axis-angle target. Do not wait for the full query language.
 
-### Commit F — closed-loop `SO(3)` solver
+### Commit F — exact closed-loop `SO(3)` compiler
 
-Port the three-commutator prototype as an explicitly experimental backend:
+Port `compile_exact_closed_loop_so3` first.  For a target axis/angle:
 
-```text
-C(a,b) = A(a) >> B(b) >> A(-a) >> B(-b)
-```
+1. compute `t = 2 asin(sqrt(sin(phi/4)))`;
+2. form the balanced local commutator from `R01(t)` and `R12(t)`;
+3. conjugate its axis onto the target axis;
+4. compile the two macro rotations `A` and `B` with tree QR;
+5. emit `B^-1, A^-1, B, A` under the left-action schedule convention.
 
 Requirements:
 
-- every primitive closes scalar controls symbolically;
-- every factor is metric-orthogonal;
-- nonlinear solve reports endpoint error and Jacobian singular values;
-- multiple deterministic restarts;
-- hard angle bounds;
-- solver failure is a typed result, not a near-target schedule silently accepted;
-- exact replay in Rust and Python.
+- every nonidentity target uses twelve authored-edge gates;
+- every per-edge integrated angle closes to zero;
+- endpoint error `< 1e-11` Frobenius across 1,000 random targets;
+- the direct commutator and lowered gate word agree;
+- identity compiles to the empty path;
+- work is zero in the declared metric.
 
-Do not claim universal three-loop coverage. Add a broad deterministic target corpus and retain failures.
+Retain the three-rectangular-loop nonlinear solver as an explicitly
+experimental cost backend.  It may return a cheaper local vocabulary, but it
+must no longer be presented as the reachability oracle.
 
 ### Commit G — deformation controls and reachable-pair IR
 
@@ -192,7 +195,7 @@ Static analysis reports the generated Lie-algebra target class:
 
 The report must distinguish theorem hypotheses from numerical Lie-rank evidence. One-sided controls are semigroup controls and must not be labeled fully controllable.
 
-### Commit H — deformation budget and work-order probes
+### Commit H — Deformation budget and work-order probes
 
 Implement local polar radius
 

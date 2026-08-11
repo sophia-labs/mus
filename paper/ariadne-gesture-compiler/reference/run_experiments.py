@@ -20,6 +20,7 @@ from ariadne_gesture import (
     canonical_edge,
     chern_number_fhs,
     compile_closed_loop_so3,
+    compile_exact_closed_loop_so3,
     compile_skew_propagator,
     compile_so_on_tree,
     graph_rotation_lie_rank,
@@ -190,6 +191,22 @@ def run(*, quick: bool) -> dict:
         )
         for index, target in enumerate(closed_loop_targets)
     ]
+    exact_named_certificates = [
+        compile_exact_closed_loop_so3(target, duration=2.0)
+        for target in closed_loop_targets
+    ]
+
+    exact_closed_targets = 120 if quick else 1000
+    exact_closed_errors: list[float] = []
+    exact_closed_rad_errors: list[float] = []
+    exact_closed_closure: list[float] = []
+    exact_closed_gate_mismatches = 0
+    for _ in range(exact_closed_targets):
+        certificate = compile_exact_closed_loop_so3(random_so(3, rng), duration=2.0)
+        exact_closed_errors.append(certificate.reconstruction_error_fro)
+        exact_closed_rad_errors.append(certificate.reconstruction_error_rad)
+        exact_closed_closure.append(certificate.max_edge_control_closure)
+        exact_closed_gate_mismatches += int(certificate.factor_count != 12)
 
     survey_targets = 8 if quick else 40
     survey_errors: list[float] = []
@@ -268,8 +285,23 @@ def run(*, quick: bool) -> dict:
                 tree_optimization.compile.reconstruction_error_fro
             ),
         },
-        "closed_loop_so3": [asdict(item) for item in closed_loop_certificates],
-        "closed_loop_so3_survey": {
+        "exact_closed_loop_so3": {
+            "theorem_target": (
+                "every SO(3) target is one conjugated balanced commutator; "
+                "each macro is exactly lowered to graph-edge Givens gates"
+            ),
+            "named": [asdict(item) for item in exact_named_certificates],
+            "targets": exact_closed_targets,
+            "factor_count": 12,
+            "gate_count_mismatches": exact_closed_gate_mismatches,
+            "max_reconstruction_error_fro": max(exact_closed_errors),
+            "max_reconstruction_error_rad": max(exact_closed_rad_errors),
+            "max_edge_control_closure": max(exact_closed_closure),
+        },
+        "optimized_rectangular_closed_loop_so3": [
+            asdict(item) for item in closed_loop_certificates
+        ],
+        "optimized_rectangular_closed_loop_so3_survey": {
             "targets": survey_targets,
             "failures_above_1e-8_rad": sum(error > 1e-8 for error in survey_errors),
             "max_endpoint_error_rad": max(survey_errors),
@@ -298,8 +330,12 @@ def run(*, quick: bool) -> dict:
     assert exact["gl_lie_rank_mismatches"] == 0
     assert exact["disconnected_rank_mismatches"] == 0
     assert exact["max_reconstruction_error_fro"] < 1e-10
+    exact_closed = results["exact_closed_loop_so3"]
+    assert exact_closed["gate_count_mismatches"] == 0
+    assert exact_closed["max_reconstruction_error_fro"] < 1e-10
+    assert exact_closed["max_edge_control_closure"] < 1e-12
     assert all(item.reconstruction_error_rad < 1e-8 for item in closed_loop_certificates)
-    assert results["closed_loop_so3_survey"]["failures_above_1e-8_rad"] == 0
+    assert results["optimized_rectangular_closed_loop_so3_survey"]["failures_above_1e-8_rad"] == 0
     assert pump_bound.bound_violations == 0
     assert factor_order.bound_violations == 0
     assert abs(topological.nontrivial_chern - 1.0) < 1e-9

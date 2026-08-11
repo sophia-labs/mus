@@ -20,7 +20,8 @@ target effect + graph + budgets -> certified control path
 - graph and mixed work/rotation Lie-closure ranks;
 - exact constant-speed scheduling for a fixed factor word;
 - spanning-tree and leaf-order cost search;
-- closed rectangular-loop synthesis for `SO(3)`;
+- exact one-commutator closed-loop synthesis for every `SO(3)` target;
+- cost-refined rectangular-loop synthesis as a secondary backend;
 - deformation-budget and factor-order work bounds;
 - an Abelian Rice–Mele topological pump;
 - a constant-gap non-Abelian Wilson-loop model;
@@ -55,8 +56,9 @@ They prove the graph/bracket skeleton of reachability, a quantized passivity eff
 1. A connected `n`-vertex edge graph can compile every `SO(n)` target in exactly `n(n-1)/2` edge Givens gates. The implementation reproduces 360 random targets through dimension 16 with worst Frobenius error `2.19e-15`.
 2. Adding one reversible traceless anisotropic actuator to the connected rotation controls generates `sl(n,R)` at the Lie-algebra level; adding isotropic scale generates `gl(n,R)`. The operator-level polar target becomes all volume-neutral, then all positive-determinant, work–holonomy pairs.
 3. For a fixed word, the exact minimum quadratic gesture cost is `L^2 / duration`, reached by constant thermodynamic speed. A 192-candidate graph search reduced one eight-mode target's cost by 52.0% without changing target or gate count.
-4. Three closed rectangular commutator loops compiled 40 random `SO(3)` targets with no endpoint error above `1e-8` radians; the worst was `2.85e-13` radians. This is numerical evidence, not a coverage theorem.
-5. The topological work now has two explicit halves: a robust Chern-one pump and a noncommuting constant-gap rank-two Wilson bundle. The first is protected but Abelian; the second is non-Abelian but geometric rather than protected.
+4. A constructive conjugated-commutator compiler realizes every `SO(3)` target as a twelve-gate closed edge-control word. Across 1,000 random targets, worst Frobenius error was `2.47e-15` and every per-edge control sum closed exactly.
+5. The secondary three-rectangle optimizer compiled 40 random targets with no endpoint error above `1e-8` radians; its coverage and optimality remain empirical.
+6. The topological work now has two explicit halves: a robust Chern-one pump and a noncommuting constant-gap rank-two Wilson bundle. The first is protected but Abelian; the second is non-Abelian but geometric rather than protected.
 
 ## Files
 

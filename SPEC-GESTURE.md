@@ -289,8 +289,11 @@ provenance
 exact-tree-qr
   open SO(n) target, connected graph, continuous edge angles
 
-closed-commutator-so3
-  same-endpoint SO(3), experimental numerical solver
+exact-commutator-so3
+  exact same-endpoint SO(3), conjugated balanced commutator, 12 edge gates
+
+closed-rectangles-so3
+  cost-refined same-endpoint SO(3), experimental numerical solver
 
 subriemannian-shooting
   bounded continuous controls, future
