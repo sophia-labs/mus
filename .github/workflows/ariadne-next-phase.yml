@@ -1,0 +1,70 @@
+name: Ariadne next-phase research
+
+on:
+  push:
+    branches:
+      - agent/ariadne-next-phase
+  pull_request:
+    paths:
+      - "mus-rs/crates/mus-watsn/**"
+      - "mus-rs/Cargo.toml"
+      - "mus-rs/Cargo.lock"
+      - ".github/workflows/ariadne-next-phase.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  law-layer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Format
+        working-directory: mus-rs
+        run: cargo fmt --all -- --check
+
+      - name: Unit and example tests
+        working-directory: mus-rs
+        run: cargo test -p mus-watsn --all-targets -- --nocapture
+
+      - name: Clippy
+        working-directory: mus-rs
+        run: cargo clippy -p mus-watsn --all-targets -- -D warnings
+
+      - name: Generate deterministic research artifacts
+        working-directory: mus-rs
+        run: cargo run -p mus-watsn --example next_phase --release -- /tmp/ariadne-next-phase
+
+      - name: Verify scientific stop conditions
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          result = json.loads(Path('/tmp/ariadne-next-phase/results.json').read_text())
+          assert result['allpass']['max_neutral_abs_work'] <= 1e-12
+          assert result['allpass']['max_legacy_abs_work'] >= 1e-2
+          assert result['delay_remap']['max_neutral_relative_residual'] <= 1e-12
+          assert result['delay_remap']['max_raw_energy_ratio_error'] >= 1e-2
+          assert result['delay_remap']['hundred_cycle_max_abs_energy_drift'] <= 1e-10
+          assert 0.95 <= result['delay_remap']['hundred_cycle_state_correlation'] < 0.99999
+          assert result['commutator']['principal_angle_rad'] > 0.1
+          assert result['factor_order']['exact_max_abs_difference'] > 1.0
+          print(json.dumps(result, indent=2, sort_keys=True))
+          PY
+
+      - name: Upload research artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ariadne-next-phase
+          path: /tmp/ariadne-next-phase
+          if-no-files-found: error

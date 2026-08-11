@@ -1,0 +1,9 @@
+[package]
+name = "mus-watsn"
+version = "0.1.0"
+description = "Work-accounted state transports and ordered scattering laws for MUS"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]

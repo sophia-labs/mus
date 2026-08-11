@@ -9,6 +9,7 @@ members = [
     "crates/mus-cli",
     "crates/mus-vocab",
     "crates/mus-dsp",
+    "crates/mus-watsn",
     "crates/np-rand",
 ]
 
