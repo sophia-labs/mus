@@ -1,0 +1,53 @@
+{
+  "schema": "ariadne-work-holonomy-condensed/1",
+  "seed": 168930574,
+  "exact": {
+    "order_defect_squared": "16*x*y*(1-x*y)",
+    "commutator_half_angle_squared": "4*x*y*(1-x*y)",
+    "defect_angle_relation": "delta=2*sin(phi/2)",
+    "balanced_inverse": "a=b=2*asin(sqrt(sin(phi/4)))"
+  },
+  "reference_commutator": {
+    "a_rad": 0.31,
+    "b_rad": -0.47,
+    "angle_rad": 0.14381627598663013,
+    "angle_deg": 8.240065639322555,
+    "order_defect": 0.14369236763143287,
+    "trace": 2.9793525034844732,
+    "axis": [0.1502339534, -0.9614767643, 0.2302003279]
+  },
+  "verification_max_errors": {
+    "order_defect": 8.881784197001252e-16,
+    "commutator_angle": 4.440892098500626e-16,
+    "defect_chord": 9.992007221626409e-16,
+    "weighted_isometry": 8.7145736697937e-15,
+    "polar_reconstruction": 1.3111907696285675e-14,
+    "work_identity": 2.0747847884194925e-12,
+    "path_ledger": 3.552713678800501e-14,
+    "rank_contraction_partition": 1.3322676295501878e-15,
+    "rank_expansion_isometry": 4.357045651032217e-15,
+    "balanced_inverse_vs_root_rad": 2.297051437949449e-13
+  },
+  "loop_taxonomy": {
+    "pure_holonomy": {"work": -1.1102230246251565e-16, "angle_deg": 8.240065639322557},
+    "pure_work": {"work": 0.1033095254836156, "angle_deg": 3.36849305492002e-15},
+    "mixed": {"work": 0.10330952548361605, "angle_deg": 7.405677001294299}
+  },
+  "factor_order": {
+    "work_U_after_H": 0.7800000000000002,
+    "work_H_after_U": -0.255,
+    "absolute_difference": 1.0350000000000001,
+    "sphere_samples": 100000,
+    "sphere_rms_difference": 0.5337436727920752,
+    "sphere_max_abs_difference": 1.034986926063865
+  },
+  "coupled_medium": {
+    "resonators": 6,
+    "state_dimension": 12,
+    "duration_s": 2.0,
+    "neutral_max_abs_step_work": 5.551115123125783e-17,
+    "neutral_max_abs_ledger_residual": 5.551115123125783e-16,
+    "peak_space_energy_fraction": 0.25402083684955523,
+    "relative_pickup_rms_policy_difference": 0.02796715218400273
+  }
+}
