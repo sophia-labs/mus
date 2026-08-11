@@ -12,7 +12,7 @@ on:
       - ".github/workflows/ariadne-next-phase.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   law-layer:
@@ -28,9 +28,18 @@ jobs:
         with:
           components: rustfmt, clippy
 
-      - name: Format
-        working-directory: mus-rs
-        run: cargo fmt --all -- --check
+      - name: Format and land generated formatting
+        run: |
+          cd mus-rs
+          cargo fmt --all
+          cd ..
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add mus-rs/crates/mus-watsn
+            git commit -m "chore: rustfmt Ariadne research sources"
+            git push origin HEAD:agent/ariadne-next-phase
+          fi
 
       - name: Unit and example tests
         working-directory: mus-rs
