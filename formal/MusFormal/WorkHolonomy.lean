@@ -1,3 +1,5 @@
+import Std.Tactic.Omega
+
 /-!
 # Work and holonomy: a pure-core executable skeleton
 
@@ -18,8 +20,6 @@ The finite three-mode witness is the permutation shadow of the continuous
 Givens commutator.  The two-coordinate witness is the discrete shadow of the
 nonseparability of the polar factors along a path.
 -/
-
-import Std.Tactic.Omega
 
 namespace MusFormal.WorkHolonomy
 
