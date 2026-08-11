@@ -7,5 +7,4 @@ package MusFormal where
   -- package needs real analysis, as its own deliberate upgrade.
 
 @[default_target]
-lean_lib MusFormal where
-  globs := #[.submodules `MusFormal]
+lean_lib MusFormal
