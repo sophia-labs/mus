@@ -153,12 +153,8 @@ impl AllpassSection {
     }
 
     pub fn set_coefficient_neutral(&mut self, coefficient: f64) -> AllpassTransportReceipt {
-        let (x1, y1, receipt) = neutral_allpass_state_transport(
-            self.coefficient,
-            coefficient,
-            self.x1,
-            self.y1,
-        );
+        let (x1, y1, receipt) =
+            neutral_allpass_state_transport(self.coefficient, coefficient, self.x1, self.y1);
         self.coefficient = receipt.new_coefficient;
         self.x1 = x1;
         self.y1 = y1;
@@ -196,8 +192,7 @@ mod tests {
                 let receipt = section.set_coefficient_neutral(new);
                 assert!(receipt.control_work.abs() <= 3.0e-14);
                 assert!(
-                    (receipt.new_normalized_state - receipt.old_normalized_state).abs()
-                        <= 3.0e-14
+                    (receipt.new_normalized_state - receipt.old_normalized_state).abs() <= 3.0e-14
                 );
             }
         }

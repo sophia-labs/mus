@@ -6,8 +6,7 @@ use std::path::PathBuf;
 
 use mus_watsn::{
     balanced_inverse_branches, commutator_matrix, order_defect, principal_rotation_angle,
-    quadratic_energy, resample_periodic_linear, resample_periodic_linear_neutral,
-    AllpassSection,
+    quadratic_energy, resample_periodic_linear, resample_periodic_linear_neutral, AllpassSection,
 };
 
 fn deterministic_state(len: usize, phase_offset: f64) -> Vec<f64> {
@@ -97,8 +96,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut contracted = vec![0.0; 147];
         resample_periodic_linear_neutral(&expanded, &mut contracted);
         cycle_state = contracted;
-        max_cycle_energy_drift = max_cycle_energy_drift
-            .max((quadratic_energy(&cycle_state) - initial_energy).abs());
+        max_cycle_energy_drift =
+            max_cycle_energy_drift.max((quadratic_energy(&cycle_state) - initial_energy).abs());
     }
     let cycle_correlation = normalized_correlation(&original, &cycle_state);
 
@@ -114,11 +113,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let (x, y) = mus_watsn::givens(value[0], value[1], FRAC_PI_2);
         [x, y, value[2]]
     };
-    let apply_stretch = |value: [f64; 3]| -> [f64; 3] {
-        [stretch[0] * value[0], stretch[1] * value[1], value[2]]
-    };
+    let apply_stretch =
+        |value: [f64; 3]| -> [f64; 3] { [stretch[0] * value[0], stretch[1] * value[1], value[2]] };
     let energy = |value: [f64; 3]| -> f64 {
-        0.5 * value.iter().map(|component| component * component).sum::<f64>()
+        0.5 * value
+            .iter()
+            .map(|component| component * component)
+            .sum::<f64>()
     };
     let uh_work = energy(rotate(apply_stretch(state))) - energy(state);
     let hu_work = energy(apply_stretch(rotate(state))) - energy(state);
@@ -173,11 +174,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     )?;
     writeln!(json, "    \"order_defect\": {:.17e},", defect)?;
     writeln!(json, "    \"balanced_inverse_low\": {:.17e},", inverse_low)?;
-    writeln!(
-        json,
-        "    \"balanced_inverse_high\": {:.17e}",
-        inverse_high
-    )?;
+    writeln!(json, "    \"balanced_inverse_high\": {:.17e}", inverse_high)?;
     writeln!(json, "  }},")?;
     writeln!(json, "  \"factor_order\": {{")?;
     writeln!(json, "    \"work_U_after_H\": {:.17e},", uh_work)?;

@@ -6,10 +6,7 @@ pub type Mat3 = [[f64; 3]; 3];
 
 pub fn givens(a: f64, b: f64, angle: f64) -> (f64, f64) {
     let (sin_angle, cos_angle) = angle.sin_cos();
-    (
-        cos_angle * a - sin_angle * b,
-        sin_angle * a + cos_angle * b,
-    )
+    (cos_angle * a - sin_angle * b, sin_angle * a + cos_angle * b)
 }
 
 pub fn rotation_01(angle: f64) -> Mat3 {
