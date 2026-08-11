@@ -1,0 +1,38 @@
+{
+  "schema": "ariadne-string-retune/1",
+  "source_branch": "agent/ariadne-next-phase",
+  "workflow_run_id": 31453757295,
+  "sweep": {
+    "configurations": 72,
+    "policy_rows": 216,
+    "all_finite": true,
+    "neutral_remap_max_abs_step_work": 1.0699774399824946e-14,
+    "neutral_filters_max_abs_filter_step_work": 1.3877787807814457e-16,
+    "legacy_max_abs_line_step_work": 0.7097904634686554,
+    "legacy_max_abs_filter_step_work": 0.3749911097992168,
+    "min_neutral_filters_correlation": 0.9834120041721044,
+    "median_neutral_filters_correlation": 0.996414,
+    "min_neutral_remap_correlation": 0.4711929703516048,
+    "median_neutral_remap_correlation": 0.822820,
+    "max_legacy_energy_ratio": 1.0385144555830574,
+    "max_neutral_remap_energy_ratio": 1.0030789950129702
+  },
+  "canonical_48khz_upward_fifth": {
+    "legacy_max_energy_ratio": 1.0,
+    "neutral_filters_max_energy_ratio": 1.0,
+    "neutral_remap_max_energy_ratio": 1.0,
+    "legacy_sum_abs_line_work": 2.0368254901485616,
+    "legacy_sum_abs_filter_work": 4.015972831170508,
+    "neutral_filters_sum_abs_line_work": 2.074831388021909,
+    "neutral_filters_sum_abs_filter_work": 2.0104775383569683e-15,
+    "neutral_remap_sum_abs_line_work": 5.875577802072485e-13,
+    "neutral_remap_sum_abs_filter_work": 2.2968096500387414e-15,
+    "neutral_filters_correlation_to_legacy": 0.9964837580634783,
+    "neutral_remap_correlation_to_legacy": 0.8560851567215739
+  },
+  "decision": {
+    "neutral_filters": "ready_for_production_trial",
+    "neutral_remap": "research_only_not_ready_for_production",
+    "reason": "Neutral filter transport closes its declared storage law with very high waveform continuity. The scalar-normalized active-line remap closes the declared state-contingent ledger but changes the waveform too strongly in large low-register rank changes and is not a globally linear or physical transport."
+  }
+}
