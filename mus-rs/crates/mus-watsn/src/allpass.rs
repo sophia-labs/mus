@@ -153,8 +153,26 @@ impl AllpassSection {
     }
 
     pub fn set_coefficient_neutral(&mut self, coefficient: f64) -> AllpassTransportReceipt {
-        let (x1, y1, receipt) =
-            neutral_allpass_state_transport(self.coefficient, coefficient, self.x1, self.y1);
+        let new_coefficient = clamp_coefficient(coefficient);
+        if new_coefficient.to_bits() == self.coefficient.to_bits() {
+            let normalized_state = self.normalized_state();
+            let energy = self.storage_energy();
+            return AllpassTransportReceipt {
+                old_coefficient: self.coefficient,
+                new_coefficient: self.coefficient,
+                energy_before: energy,
+                energy_after: energy,
+                control_work: 0.0,
+                old_normalized_state: normalized_state,
+                new_normalized_state: normalized_state,
+            };
+        }
+        let (x1, y1, receipt) = neutral_allpass_state_transport(
+            self.coefficient,
+            new_coefficient,
+            self.x1,
+            self.y1,
+        );
         self.coefficient = receipt.new_coefficient;
         self.x1 = x1;
         self.y1 = y1;
@@ -196,6 +214,19 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn neutral_noop_is_byte_inert() {
+        let mut section = AllpassSection::from_state(0.71, -0.33, 0.27);
+        let before = section;
+        let receipt = section.set_coefficient_neutral(0.71);
+        assert_eq!(section, before);
+        assert_eq!(receipt.control_work.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(
+            receipt.old_normalized_state.to_bits(),
+            receipt.new_normalized_state.to_bits()
+        );
     }
 
     #[test]
