@@ -30,5 +30,4 @@ jobs:
           build: true
           test: false
           lint: false
-          nanoda: true
-          nanoda-allow-sorry: false
+          nanoda: false
