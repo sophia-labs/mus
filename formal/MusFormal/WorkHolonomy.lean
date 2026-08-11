@@ -43,8 +43,8 @@ def Preserving (f : σ → σ) : Prop := ∀ x, E.energy (f x) = E.energy x
 /-- Work is a telescoping difference under composition. -/
 theorem work_comp (g f : σ → σ) (x : σ) :
     work E (g ∘w f) x = work E g (f x) + work E f x := by
-  simp [work, compose, Int.sub_eq_add_neg, Int.add_assoc, Int.add_comm]
-  rw [← Int.add_assoc, Int.add_neg_cancel, Int.zero_add]
+  simp [work, compose, Int.sub_eq_add_neg, Int.add_assoc, Int.add_comm,
+    Int.add_left_comm, Int.add_left_neg, Int.add_right_neg]
 
 /-- A preserving map performs zero work. -/
 theorem preserving_work_zero {u : σ → σ} (hu : Preserving E u) (x : σ) :
@@ -88,8 +88,7 @@ theorem path_work_closes : ∀ (path : List (σ → σ)) (x : σ),
   | cons f rest ih =>
       intro x
       simp [pathWork, run, ih, work, Int.sub_eq_add_neg, Int.add_assoc,
-        Int.add_comm]
-      rw [← Int.add_assoc, Int.add_neg_cancel, Int.zero_add]
+        Int.add_comm, Int.add_left_comm, Int.add_left_neg, Int.add_right_neg]
 
 /-- If every segment is preserving, the whole path preserves energy. -/
 def AllPreserving : List (σ → σ) → Prop
