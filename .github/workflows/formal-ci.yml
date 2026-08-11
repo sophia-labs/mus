@@ -1,0 +1,34 @@
+name: Lean formal core
+
+on:
+  push:
+    branches:
+      - main
+      - agent/ariadne-field-theory
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: formal
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Build Lean proofs
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: formal
+          build: true
+          test: false
+          lint: false
+          nanoda: true
+          nanoda-allow-sorry: false
