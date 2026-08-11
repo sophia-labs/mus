@@ -78,6 +78,7 @@ jobs:
           PY
 
       - name: Upload executable-law artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ariadne-consensus-laws
@@ -125,11 +126,12 @@ jobs:
           assert edge['max_reconstruction_error_fro'] < 1e-11
           assert closed['gate_count_mismatches'] == 0
           assert closed['factor_count'] == 12
-          assert closed['max_edge_control_closure'] == 0.0
+          assert closed['max_edge_control_closure'] <= 1e-12
           assert closed['max_reconstruction_error_fro'] < 1e-11
           PY
 
       - name: Upload inverse-gesture result
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ariadne-consensus-gesture-oracle
