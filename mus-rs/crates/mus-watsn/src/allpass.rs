@@ -167,12 +167,8 @@ impl AllpassSection {
                 new_normalized_state: normalized_state,
             };
         }
-        let (x1, y1, receipt) = neutral_allpass_state_transport(
-            self.coefficient,
-            new_coefficient,
-            self.x1,
-            self.y1,
-        );
+        let (x1, y1, receipt) =
+            neutral_allpass_state_transport(self.coefficient, new_coefficient, self.x1, self.y1);
         self.coefficient = receipt.new_coefficient;
         self.x1 = x1;
         self.y1 = y1;
