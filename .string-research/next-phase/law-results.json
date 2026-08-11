@@ -1,0 +1,30 @@
+{
+  "schema": "ariadne-next-phase/1",
+  "source_branch": "agent/ariadne-next-phase",
+  "workflow_run_id": 31453757295,
+  "artifact_sha256": "a0c85dde6c5905947b3057b38a5540748ee47d6900ff0e09c8668f5201d3c26d",
+  "allpass": {
+    "max_neutral_abs_work": 1.7763568394002505e-15,
+    "max_legacy_abs_work": 9.386035952216933
+  },
+  "delay_remap": {
+    "max_neutral_relative_residual": 1.9508399659552936e-15,
+    "max_raw_energy_ratio_error": 0.9999831603751677,
+    "hundred_cycle_max_abs_energy_drift": 2.0961010704922956e-13,
+    "hundred_cycle_state_correlation": 0.9987094441802173
+  },
+  "commutator": {
+    "a_rad": 0.31,
+    "b_rad": -0.47,
+    "principal_angle_rad": 0.14381627598662986,
+    "order_defect": 0.14369236763143287,
+    "balanced_inverse_low": 0.38149961532036375,
+    "balanced_inverse_high": 3.09074318211798
+  },
+  "factor_order": {
+    "work_U_after_H": 0.7800000000000002,
+    "work_H_after_U": -0.255,
+    "exact_max_abs_difference": 1.0350000000000004,
+    "exact_rms_difference": 0.5344717017766237
+  }
+}
