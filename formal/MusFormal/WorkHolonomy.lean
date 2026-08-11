@@ -1,10 +1,8 @@
-import Std.Tactic.Omega
-
 /-!
 # Work and holonomy: a pure-core executable skeleton
 
 This file formalizes the algebraic part of the Ariadne paper without real
-analysis or matrices.  The analytic implementation uses positive-definite
+analysis or matrices. The analytic implementation uses positive-definite
 metrics and a polar decomposition; the statements below isolate the laws that
 remain true for any state space carrying an integer-valued energy witness.
 
@@ -17,7 +15,7 @@ The file proves four facts used by the paper:
    work, even when the same two local factors are used.
 
 The finite three-mode witness is the permutation shadow of the continuous
-Givens commutator.  The two-coordinate witness is the discrete shadow of the
+Givens commutator. The two-coordinate witness is the discrete shadow of the
 nonseparability of the polar factors along a path.
 -/
 
@@ -29,7 +27,7 @@ def compose {σ : Type} (g f : σ → σ) : σ → σ := fun x => g (f x)
 
 infixr:90 " ∘w " => compose
 
-/-- A state space with a signed energy witness.  Physical stored energy is
+/-- A state space with a signed energy witness. Physical stored energy is
     nonnegative; `Int` is used here so that work may be positive or negative. -/
 structure Energized (σ : Type) where
   energy : σ → Int
@@ -45,8 +43,8 @@ def Preserving (f : σ → σ) : Prop := ∀ x, E.energy (f x) = E.energy x
 /-- Work is a telescoping difference under composition. -/
 theorem work_comp (g f : σ → σ) (x : σ) :
     work E (g ∘w f) x = work E g (f x) + work E f x := by
-  simp [work, compose]
-  omega
+  simp [work, compose, Int.sub_eq_add_neg, Int.add_assoc, Int.add_comm,
+    Int.add_left_comm]
 
 /-- A preserving map performs zero work. -/
 theorem preserving_work_zero {u : σ → σ} (hu : Preserving E u) (x : σ) :
@@ -54,20 +52,20 @@ theorem preserving_work_zero {u : σ → σ} (hu : Preserving E u) (x : σ) :
   simp [work, hu x]
 
 /-- A preserving turn applied after a stretch does not alter the stretch's
-    scalar work.  This is the abstract shadow of the orthogonal polar factor
+    scalar work. This is the abstract shadow of the orthogonal polar factor
     cancelling out of `xᵀ(AᵀA-I)x/2`. -/
 theorem preserving_after_work {u h : σ → σ} (hu : Preserving E u) (x : σ) :
     work E (u ∘w h) x = work E h x := by
   simp [work, compose, hu (h x)]
 
 /-- If the same preserving turn occurs before the work-bearing map, the work
-    is evaluated on the turned state.  It therefore need not agree with the
+    is evaluated on the turned state. It therefore need not agree with the
     previous theorem. -/
 theorem preserving_before_work {u h : σ → σ} (hu : Preserving E u) (x : σ) :
     work E (h ∘w u) x = work E h (u x) := by
   rw [work_comp]
   rw [preserving_work_zero E hu]
-  omega
+  simp
 
 /-- Execute a path from left to right. -/
 def run : List (σ → σ) → σ → σ
@@ -89,8 +87,8 @@ theorem path_work_closes : ∀ (path : List (σ → σ)) (x : σ),
       simp [pathWork, run]
   | cons f rest ih =>
       intro x
-      simp [pathWork, run, ih, work]
-      omega
+      simp [pathWork, run, ih, work, Int.sub_eq_add_neg, Int.add_assoc,
+        Int.add_comm, Int.add_left_comm]
 
 /-- If every segment is preserving, the whole path preserves energy. -/
 def AllPreserving : List (σ → σ) → Prop
